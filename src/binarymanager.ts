@@ -4,7 +4,7 @@ import { globalContext } from './extension';
 import { MirrordAPI } from './api';
 import { Utils } from 'vscode-uri';
 import * as fs from 'node:fs';
-import { Uri, workspace, window, ProgressLocation } from 'vscode';
+import { Uri, workspace, window, ProgressLocation, ExtensionMode } from 'vscode';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 const binaryCheckInterval = 1000 * 60 * 3;
@@ -70,7 +70,13 @@ async function getLatestSupportedVersion(): Promise<string> {
     // if (lastBinaryVersion && lastChecked > Date.now() - binaryCheckInterval) {
     //     return lastBinaryVersion;
     // }
-
+    let version;
+    // send test for test runs
+    if ((globalContext.extensionMode === ExtensionMode.Development) || (process.env["BUILD_PLUGIN"] === "true")) {
+        version = "test";
+    } else {
+        version = globalContext.extension.packageJSON.version;
+    }
     const response = await axios.get(mirrordBinaryEndpoint, {
         "params": { "source": 1, "version": globalContext.extension.packageJSON.version },
         timeout: 2000,
