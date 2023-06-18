@@ -1,0 +1,1 @@
+mirrord cli is now obtained on demand
