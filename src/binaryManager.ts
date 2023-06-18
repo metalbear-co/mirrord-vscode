@@ -72,7 +72,7 @@ async function getLatestSupportedVersion(): Promise<string> {
     // }
     let version;
     // send test for test runs
-    if ((globalContext.extensionMode === ExtensionMode.Development) || (process.env["BUILD_PLUGIN"] === "true")) {
+    if ((globalContext.extensionMode === ExtensionMode.Development) || (process.env.CI_BUILD_PLUGIN === "true")) {
         version = "test";
     } else {
         version = globalContext.extension.packageJSON.version;
