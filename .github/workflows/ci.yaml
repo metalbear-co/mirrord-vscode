@@ -48,6 +48,10 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
+      # this is to avoid timeout on download
+      - name: get mirrord latest
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh | bash
       - name: Start minikube
         uses: medyagh/setup-minikube@master
         with:
