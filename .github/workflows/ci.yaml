@@ -85,5 +85,5 @@ jobs:
         env:
           CI_SUCCESS: ${{ (needs.e2e.result == 'success') &&
             (needs.towncrier_check.result == 'success') &&
-            (needs.lint.result == 'success')
+            (needs.lint.result == 'success') }}
         run: echo $CI_SUCCESS && if [ "$CI_SUCCESS" == "true" ]; then echo "SUCCESS" && exit 0; else echo "Failure" && exit 1; fi
