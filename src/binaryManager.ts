@@ -78,7 +78,7 @@ async function getLatestSupportedVersion(): Promise<string> {
         version = globalContext.extension.packageJSON.version;
     }
     const response = await axios.get(mirrordBinaryEndpoint, {
-        "params": { "source": 1, "version": globalContext.extension.packageJSON.version },
+        "params": { "source": 1, "version": version },
         timeout: 2000,
     });
 
