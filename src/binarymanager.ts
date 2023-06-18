@@ -70,7 +70,8 @@ async function getLatestSupportedVersion(): Promise<string> {
     }
 
     const response = await axios.get(mirrordBinaryEndpoint, {
-        "params": { "source": 1, "version": globalContext.extension.packageJSON.version }
+        "params": { "source": 1, "version": globalContext.extension.packageJSON.version },
+        timeout: 2000,
     });
 
     globalContext.globalState.update('binaryLastChecked', Date.now());
@@ -112,12 +113,12 @@ async function downloadMirrordBinary(destPath: Uri, version: string): Promise<vo
                 onDownloadProgress: function (progressEvent) {
                     progress.report({ increment: progressEvent.progress, "message": "Downloading mirrord binary..." });
                 },
-                responseType: 'arraybuffer'
+                responseType: 'arraybuffer',
             });
 
         return p;
     }
-    );    
+    );
     fs.writeFileSync(destPath.fsPath, response.data);
     fs.chmodSync(destPath.fsPath, 0o755);
 }
