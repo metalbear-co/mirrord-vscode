@@ -8,7 +8,7 @@ import { Uri, workspace, window, ProgressLocation } from 'vscode';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 const binaryCheckInterval = 1000 * 60 * 3;
-
+const baseDownloadUri = 'https://github.com/metalbear-co/mirrord/releases/download';
 
 function getExtensionMirrordPath(): Uri {
     return Utils.joinPath(globalContext.globalStorageUri, 'mirrord');
@@ -16,9 +16,9 @@ function getExtensionMirrordPath(): Uri {
 
 
 /**
- * Returns path to mirrord binary
+ * Downloads mirrord binary (if needed) and returns its path
  */
-export async function getMirrordBinaryPath(): Promise<string> {
+export async function getMirrordBinary(): Promise<string> {
     const extensionMirrordPath = getExtensionMirrordPath();
 
     const latestVersion = await getLatestSupportedVersion();
@@ -62,32 +62,34 @@ export async function getMirrordBinaryPath(): Promise<string> {
  * @returns The latest supported version of mirrord for current extension version
  */
 async function getLatestSupportedVersion(): Promise<string> {
-    let lastChecked = globalContext.globalState.get('binaryLastChecked', 0);
-    let lastBinaryVersion = globalContext.globalState.get('lastBinaryVersion', '');
+    // commented out logic to avoid checking every X seconds
+    // uncomment if hits performance or too annoying
+    // let lastChecked = globalContext.globalState.get('binaryLastChecked', 0);
+    // let lastBinaryVersion = globalContext.globalState.get('lastBinaryVersion', '');
 
-    if (lastBinaryVersion && lastChecked > Date.now() - binaryCheckInterval) {
-        return lastBinaryVersion;
-    }
+    // if (lastBinaryVersion && lastChecked > Date.now() - binaryCheckInterval) {
+    //     return lastBinaryVersion;
+    // }
 
     const response = await axios.get(mirrordBinaryEndpoint, {
         "params": { "source": 1, "version": globalContext.extension.packageJSON.version },
         timeout: 2000,
     });
 
-    globalContext.globalState.update('binaryLastChecked', Date.now());
-    globalContext.globalState.update('lastBinaryVersion', response.data);
+    // globalContext.globalState.update('binaryLastChecked', Date.now());
+    // globalContext.globalState.update('lastBinaryVersion', response.data);
     return response.data as string;
 }
 
 function getMirrordDownloadUrl(version: string): string {
     if (process.platform === "darwin") {
-        return `https://github.com/metalbear-co/mirrord/releases/download/${version}/mirrord_mac_universal`;
+        return `${baseDownloadUri}/${version}/mirrord_mac_universal`;
     } else if (process.platform === "linux") {
         switch (process.arch) {
             case 'x64':
-                return `https://github.com/metalbear-co/mirrord/releases/download/${version}/mirrord_linux_x86_64`;
+                return `${baseDownloadUri}/${version}/mirrord_linux_x86_64`;
             case 'arm64':
-                return `https://github.com/metalbear-co/mirrord/releases/download/${version}/mirrord_linux_aarch64`;
+                return `${baseDownloadUri}/${version}/mirrord_linux_aarch64`;
             default:
                 break;
         }

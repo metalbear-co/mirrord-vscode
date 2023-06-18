@@ -4,7 +4,7 @@ import { globalContext } from './extension';
 import { configFilePath, isTargetInFile } from './config';
 import { LAST_TARGET_KEY, MirrordAPI, TARGETLESS_TARGET_NAME, mirrordFailure } from './api';
 import { updateTelemetries } from './versionCheck';
-import { getMirrordBinaryPath } from './binarymanager';
+import { getMirrordBinary } from './binaryManager';
 
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type.
 function getExecutableFieldName(config: vscode.DebugConfiguration): keyof vscode.DebugConfiguration {
@@ -63,7 +63,7 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		let cliPath;
 		
 		try {
-			cliPath = await getMirrordBinaryPath();
+			cliPath = await getMirrordBinary();
 		} catch (err) {
 			cliPath = await getLastActiveMirrordPath();
 			if (!cliPath) {
