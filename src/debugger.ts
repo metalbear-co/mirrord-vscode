@@ -110,11 +110,6 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 
 		if (config.type === "go") {
 			config.env["MIRRORD_SKIP_PROCESSES"] = "dlv;debugserver;compile;go;asm;cgo;link;git;gcc";
-			// use our custom delve to fix being loaded into debugserver
-
-			if (process.platform === "darwin") {
-				config.dlvToolPath = path.join(globalContext.extensionPath, "bin", "darwin", "dlv-" + process.arch);
-			}
 		} else if (config.type === "python") {
 			config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "debugpy";
 		}
