@@ -6,7 +6,6 @@ import { LAST_TARGET_KEY, MirrordAPI, TARGETLESS_TARGET_NAME, mirrordFailure } f
 import { updateTelemetries } from './versionCheck';
 import { getMirrordBinaryPath } from './binarymanager';
 
-
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type.
 function getExecutableFieldName(config: vscode.DebugConfiguration): keyof vscode.DebugConfiguration {
 	switch (config.type) {
@@ -29,8 +28,17 @@ function getExecutableFieldName(config: vscode.DebugConfiguration): keyof vscode
 
 }
 
-function getLastActiveMirrordPath(): string | null {
-	return globalContext.globalState.get('binaryPath', null);
+async function getLastActiveMirrordPath(): Promise<string | null> {
+	const binaryPath = globalContext.globalState.get('binaryPath', null);
+	if (!binaryPath) {
+		return null;
+	}
+	try {
+		await vscode.workspace.fs.stat(binaryPath);
+		return binaryPath;
+	} catch (e) {
+		return null;
+	}
 }
 
 function setLastActiveMirrordPath(path: string) {
@@ -57,14 +65,14 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		try {
 			cliPath = await getMirrordBinaryPath();
 		} catch (err) {
-			cliPath = getLastActiveMirrordPath();
+			cliPath = await getLastActiveMirrordPath();
 			if (!cliPath) {
 				mirrordFailure(`Couldn't download mirrord binaries ${err}.`);
 				return null;
 			}
 		}
 		setLastActiveMirrordPath(cliPath);
-		
+
 		let mirrordApi = new MirrordAPI(cliPath);
 
 		config.env ||= {};

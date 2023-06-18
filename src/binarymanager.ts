@@ -1,10 +1,10 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import which from 'which';
 import { globalContext } from './extension';
 import { MirrordAPI } from './api';
 import { Utils } from 'vscode-uri';
 import * as fs from 'node:fs';
-import { Uri, workspace } from 'vscode';
+import { Uri, workspace, window, ProgressLocation } from 'vscode';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 const binaryCheckInterval = 1000 * 60 * 3;
@@ -23,16 +23,16 @@ export async function getMirrordBinaryPath(): Promise<string> {
 
     const latestVersion = await getLatestSupportedVersion();
 
-
     // See if maybe we have it installed already, in correct version.
-    const foundMirrord = await which("mirrord");
-
-    if (foundMirrord) {
-        const api = new MirrordAPI(foundMirrord);
+    try {
+        const mirrordPath = await which("mirrord");
+        const api = new MirrordAPI(mirrordPath);
         const installedVersion = await api.getBinaryVersion();
         if (installedVersion === latestVersion) {
-            return foundMirrord;
+            return mirrordPath;
         }
+    } catch (e) {
+        // don't care
     }
 
     // Check if we previously installed latest version.
@@ -51,9 +51,9 @@ export async function getMirrordBinaryPath(): Promise<string> {
             return extensionMirrordPath.fsPath;
         }
     }
-    
+
     await downloadMirrordBinary(extensionMirrordPath, latestVersion);
-    
+
     return extensionMirrordPath.fsPath;
 }
 
@@ -99,8 +99,25 @@ function getMirrordDownloadUrl(version: string): string {
  * @param destPath Path to download the binary to
  */
 async function downloadMirrordBinary(destPath: Uri, version: string): Promise<void> {
-    const response = await axios.get(
-        getMirrordDownloadUrl(version));
-    await workspace.fs.writeFile(destPath, response.data);
+    fs.mkdirSync(Utils.dirname(destPath).fsPath, { recursive: true });
+    const response: AxiosResponse = await window.withProgress({
+        location: ProgressLocation.Notification,
+        title: "mirrord",
+        cancellable: false
+    }, (progress, _) => {
+        progress.report({ increment: 0, "message": "Downloading mirrord binary..." });
+        const p = axios.get(
+            getMirrordDownloadUrl(version),
+            {
+                onDownloadProgress: function (progressEvent) {
+                    progress.report({ increment: progressEvent.progress, "message": "Downloading mirrord binary..." });
+                },
+                responseType: 'arraybuffer'
+            });
+
+        return p;
+    }
+    );    
+    fs.writeFileSync(destPath.fsPath, response.data);
     fs.chmodSync(destPath.fsPath, 0o755);
 }

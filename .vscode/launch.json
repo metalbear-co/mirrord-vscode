@@ -13,7 +13,8 @@
         "${workspaceFolder}/dist/*.js"
       ],
       "request": "launch",
-      "type": "extensionHost"
+      "type": "extensionHost",
+      "preLaunchTask": "npm: watch"
     },
     {
       "name": "Debug UI Tests",
