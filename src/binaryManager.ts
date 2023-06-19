@@ -18,9 +18,19 @@ function getExtensionMirrordPath(): Uri {
 /**
  * Tries to find local mirrord in path or in extension storage.
  */
-export async function getLocalMirrordBinary(): Promise<string | null> {
+export async function getLocalMirrordBinary(version?: string): Promise<string | null> {
     try {
         const mirrordPath = await which("mirrord");
+        if (version) {
+            const api = new MirrordAPI(mirrordPath);
+            const installedVersion = await api.getBinaryVersion();
+            if (installedVersion === version) {
+                return mirrordPath;
+            }
+        } else {
+            return mirrordPath;
+        }
+
         return mirrordPath;
     } catch (e) {
         console.debug("couldn't find mirrord in path");
@@ -28,7 +38,16 @@ export async function getLocalMirrordBinary(): Promise<string | null> {
     try {
         const mirrordPath = getExtensionMirrordPath();
         await workspace.fs.stat(mirrordPath);
-        return mirrordPath.fsPath;
+        if (version) {
+            const api = new MirrordAPI(mirrordPath.fsPath);
+            const installedVersion = await api.getBinaryVersion();
+            if (installedVersion === version) {
+                return mirrordPath.fsPath;
+            }
+        } else {
+            return mirrordPath.fsPath;
+        }
+
     } catch (e) {
         console.log("couldn't find mirrord in extension storage");
     }
@@ -39,12 +58,13 @@ export async function getLocalMirrordBinary(): Promise<string | null> {
  * Downloads mirrord binary (if needed) and returns its path
  */
 export async function getMirrordBinary(): Promise<string> {
-    const extensionMirrordPath = getExtensionMirrordPath();
-
-    const latestVersion = await getLatestSupportedVersion();
+    let foundLocal = await getLocalMirrordBinary();
+    // timeout is 1s if we have alternative or 10s if we don't
+    let timeout = foundLocal ? 1000 : 10000;
+    const latestVersion = await getLatestSupportedVersion(timeout);
 
     // See if maybe we have it installed already, in correct version.
-    const localMirrord = await getLocalMirrordBinary();
+    const localMirrord = await getLocalMirrordBinary(latestVersion);
     if (localMirrord) {
         const api = new MirrordAPI(localMirrord);
         const installedVersion = await api.getBinaryVersion();
@@ -53,6 +73,7 @@ export async function getMirrordBinary(): Promise<string> {
         }
     }
 
+    const extensionMirrordPath = getExtensionMirrordPath();
     await downloadMirrordBinary(extensionMirrordPath, latestVersion);
 
     return extensionMirrordPath.fsPath;
@@ -62,7 +83,7 @@ export async function getMirrordBinary(): Promise<string> {
  * 
  * @returns The latest supported version of mirrord for current extension version
  */
-async function getLatestSupportedVersion(): Promise<string> {
+async function getLatestSupportedVersion(timeout: number): Promise<string> {
     // commented out logic to avoid checking every X seconds
     // uncomment if hits performance or too annoying
     // let lastChecked = globalContext.globalState.get('binaryLastChecked', 0);
