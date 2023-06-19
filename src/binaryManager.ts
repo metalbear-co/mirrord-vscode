@@ -31,8 +31,6 @@ export async function getLocalMirrordBinary(version?: string): Promise<string | 
         } else {
             return mirrordPath;
         }
-
-        return mirrordPath;
     } catch (e) {
         console.debug("couldn't find mirrord in path");
     }
