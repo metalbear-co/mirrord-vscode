@@ -1,1 +1,0 @@
-Split mirrord vs code extension from rest of the project
