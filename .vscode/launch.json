@@ -14,7 +14,7 @@
       ],
       "request": "launch",
       "type": "extensionHost",
-      "preLaunchTask": "npm: watch"
+      "preLaunchTask": "npm: compile"
     },
     {
       "name": "Debug UI Tests",

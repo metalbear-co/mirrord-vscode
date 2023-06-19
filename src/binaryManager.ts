@@ -4,10 +4,11 @@ import { globalContext } from './extension';
 import { MirrordAPI } from './api';
 import { Utils } from 'vscode-uri';
 import * as fs from 'node:fs';
+import { platform } from 'os';
 import { Uri, workspace, window, ProgressLocation, ExtensionMode } from 'vscode';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
-const binaryCheckInterval = 1000 * 60 * 3;
+// const binaryCheckInterval = 1000 * 60 * 3;
 const baseDownloadUri = 'https://github.com/metalbear-co/mirrord/releases/download';
 
 function getExtensionMirrordPath(): Uri {
@@ -16,42 +17,62 @@ function getExtensionMirrordPath(): Uri {
 
 
 /**
- * Downloads mirrord binary (if needed) and returns its path
+ * Tries to find local mirrord in path or in extension storage.
  */
-export async function getMirrordBinary(): Promise<string> {
-    const extensionMirrordPath = getExtensionMirrordPath();
-
-    const latestVersion = await getLatestSupportedVersion();
-
-    // See if maybe we have it installed already, in correct version.
+export async function getLocalMirrordBinary(version?: string): Promise<string | null> {
     try {
         const mirrordPath = await which("mirrord");
-        const api = new MirrordAPI(mirrordPath);
-        const installedVersion = await api.getBinaryVersion();
-        if (installedVersion === latestVersion) {
+        if (version) {
+            const api = new MirrordAPI(mirrordPath);
+            const installedVersion = await api.getBinaryVersion();
+            if (installedVersion === version) {
+                return mirrordPath;
+            }
+        } else {
             return mirrordPath;
         }
     } catch (e) {
-        // don't care
+        console.debug("couldn't find mirrord in path");
     }
-
-    // Check if we previously installed latest version.
-    let binaryExists = false;
     try {
-        await workspace.fs.stat(extensionMirrordPath);
-        binaryExists = true;
-    } catch (e) {
-        // that's okay
-    }
+        const mirrordPath = getExtensionMirrordPath();
+        await workspace.fs.stat(mirrordPath);
+        if (version) {
+            const api = new MirrordAPI(mirrordPath.fsPath);
+            const installedVersion = await api.getBinaryVersion();
+            if (installedVersion === version) {
+                return mirrordPath.fsPath;
+            }
+        } else {
+            return mirrordPath.fsPath;
+        }
 
-    if (binaryExists) {
-        const api = new MirrordAPI(extensionMirrordPath.fsPath);
+    } catch (e) {
+        console.log("couldn't find mirrord in extension storage");
+    }
+    return null;
+}
+
+/**
+ * Downloads mirrord binary (if needed) and returns its path
+ */
+export async function getMirrordBinary(): Promise<string> {
+    let foundLocal = await getLocalMirrordBinary();
+    // timeout is 1s if we have alternative or 10s if we don't
+    let timeout = foundLocal ? 1000 : 10000;
+    const latestVersion = await getLatestSupportedVersion(timeout);
+
+    // See if maybe we have it installed already, in correct version.
+    const localMirrord = await getLocalMirrordBinary(latestVersion);
+    if (localMirrord) {
+        const api = new MirrordAPI(localMirrord);
         const installedVersion = await api.getBinaryVersion();
         if (installedVersion === latestVersion) {
-            return extensionMirrordPath.fsPath;
+            return localMirrord;
         }
     }
 
+    const extensionMirrordPath = getExtensionMirrordPath();
     await downloadMirrordBinary(extensionMirrordPath, latestVersion);
 
     return extensionMirrordPath.fsPath;
@@ -61,7 +82,7 @@ export async function getMirrordBinary(): Promise<string> {
  * 
  * @returns The latest supported version of mirrord for current extension version
  */
-async function getLatestSupportedVersion(): Promise<string> {
+async function getLatestSupportedVersion(timeout: number): Promise<string> {
     // commented out logic to avoid checking every X seconds
     // uncomment if hits performance or too annoying
     // let lastChecked = globalContext.globalState.get('binaryLastChecked', 0);
@@ -78,7 +99,7 @@ async function getLatestSupportedVersion(): Promise<string> {
         version = globalContext.extension.packageJSON.version;
     }
     const response = await axios.get(mirrordBinaryEndpoint, {
-        "params": { "source": 1, "version": version },
+        "params": { "source": 1, "version": version, "platform": platform() },
         timeout: 2000,
     });
 

@@ -4,7 +4,7 @@ import { globalContext } from './extension';
 import { configFilePath, isTargetInFile } from './config';
 import { LAST_TARGET_KEY, MirrordAPI, TARGETLESS_TARGET_NAME, mirrordFailure } from './api';
 import { updateTelemetries } from './versionCheck';
-import { getMirrordBinary } from './binaryManager';
+import { getLocalMirrordBinary, getMirrordBinary } from './binaryManager';
 
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type.
 function getExecutableFieldName(config: vscode.DebugConfiguration): keyof vscode.DebugConfiguration {
@@ -61,14 +61,20 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 
 		//TODO: add progress bar maybe ?
 		let cliPath;
-		
+
 		try {
 			cliPath = await getMirrordBinary();
 		} catch (err) {
+			// Get last active, that should work?
 			cliPath = await getLastActiveMirrordPath();
+
+			// Well try any mirrord we can try :\
 			if (!cliPath) {
-				mirrordFailure(`Couldn't download mirrord binaries ${err}.`);
-				return null;
+				cliPath = await getLocalMirrordBinary();
+				if (!cliPath) {
+					mirrordFailure(`Couldn't download mirrord binaries or find local one in path ${err}.`);
+					return null;
+				}
 			}
 		}
 		setLastActiveMirrordPath(cliPath);

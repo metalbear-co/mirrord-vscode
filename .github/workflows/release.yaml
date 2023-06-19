@@ -41,7 +41,7 @@ jobs:
           if-no-files-found: error
 
   release_gh:
-    needs: [release_vscode_ext]
+    needs: [release]
     runs-on: ubuntu-latest
     if: github.event_name != 'workflow_dispatch'
     permissions:
@@ -67,7 +67,6 @@ jobs:
           files: /tmp/release/**
 
   update_latest:
-    needs: release_homebrew
     runs-on: ubuntu-latest
     if: github.event_name != 'workflow_dispatch'
     steps:
