@@ -8,7 +8,7 @@ import { platform } from 'os';
 import { Uri, workspace, window, ProgressLocation, ExtensionMode } from 'vscode';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
-const binaryCheckInterval = 1000 * 60 * 3;
+// const binaryCheckInterval = 1000 * 60 * 3;
 const baseDownloadUri = 'https://github.com/metalbear-co/mirrord/releases/download';
 
 function getExtensionMirrordPath(): Uri {
