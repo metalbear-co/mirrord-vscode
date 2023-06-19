@@ -4,9 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the changes for the upcoming release can be found in <https://github.com/metalbear-co/mirrord/tree/main/changelog.d/>.
+This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the changes for the upcoming release can be found in <https://github.com/metalbear-co/mirrord-vscode/tree/main/changelog.d/>.
 
 <!-- towncrier release notes start -->
+
+## [3.47.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.47.0) - 2023-06-19
+
+
+### Added
+
+- mirrord cli is now obtained on demand
+
+
+### Changed
+
+- Split mirrord vs code extension from rest of the project
+
 
 ## [3.46.0](https://github.com/metalbear-co/mirrord/tree/3.46.0) - 2023-06-14
 
