@@ -16,6 +16,26 @@ function getExtensionMirrordPath(): Uri {
 
 
 /**
+ * Tries to find local mirrord in path or in extension storage.
+ */
+export async function getLocalMirrordBinary(): Promise<string | null> {
+    try {
+        const mirrordPath = await which("mirrord");
+        return mirrordPath;
+    } catch (e) {
+        console.debug("couldn't find mirrord in path");
+    }
+    try {
+        const mirrordPath = getExtensionMirrordPath();
+        await workspace.fs.stat(mirrordPath);
+        return mirrordPath.fsPath;
+    } catch (e) {
+        console.log("couldn't find mirrord in extension storage");
+    }
+    return null;
+}
+
+/**
  * Downloads mirrord binary (if needed) and returns its path
  */
 export async function getMirrordBinary(): Promise<string> {
@@ -24,31 +44,12 @@ export async function getMirrordBinary(): Promise<string> {
     const latestVersion = await getLatestSupportedVersion();
 
     // See if maybe we have it installed already, in correct version.
-    try {
-        const mirrordPath = await which("mirrord");
-        const api = new MirrordAPI(mirrordPath);
+    const localMirrord = await getLocalMirrordBinary();
+    if (localMirrord) {
+        const api = new MirrordAPI(localMirrord);
         const installedVersion = await api.getBinaryVersion();
         if (installedVersion === latestVersion) {
-            return mirrordPath;
-        }
-    } catch (e) {
-        // don't care
-    }
-
-    // Check if we previously installed latest version.
-    let binaryExists = false;
-    try {
-        await workspace.fs.stat(extensionMirrordPath);
-        binaryExists = true;
-    } catch (e) {
-        // that's okay
-    }
-
-    if (binaryExists) {
-        const api = new MirrordAPI(extensionMirrordPath.fsPath);
-        const installedVersion = await api.getBinaryVersion();
-        if (installedVersion === latestVersion) {
-            return extensionMirrordPath.fsPath;
+            return localMirrord;
         }
     }
 
