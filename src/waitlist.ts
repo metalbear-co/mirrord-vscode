@@ -6,16 +6,24 @@ interface IWaitlistResult {
     message: string,
 }
 
-export async function waitlistRegisterCommand(email?: string): Promise<IWaitlistResult> {
+export async function waitlistRegisterCommand(email?: string, blockPrompt?: boolean): Promise<IWaitlistResult> {
     if (email && email.length > 0) {
         try {
-            await axios.postForm(`https://waitlist.metalbear.co/v1/waitlist`, { email });
+            let response = await axios.postForm(`https://waitlist.metalbear.co/v1/waitlist`, { email });
+
+            if (response.status == 200) {
+                return {
+                    successful: true,
+                    message: 'Thank you for joining the waitlist! We\'ll be in touch soon.'
+                }
+            }
+            
+            console.error('waitlist waitlist signup bad response', response);
 
             return {
                 successful: true,
-                message: 'Thank you for joining the waitlist! We\'ll be in touch soon.'
+                message: 'Failed to join the waitlist. Please contact us at support@metalbear.co',
             }
-
         } catch (e) {
             console.error(e);
 
@@ -26,23 +34,25 @@ export async function waitlistRegisterCommand(email?: string): Promise<IWaitlist
         }
     }
 
-    let emailInput = vscode.window.createInputBox();
-    emailInput.prompt = 'Email Address';
+    if (!blockPrompt) {
+        let emailInput = vscode.window.createInputBox();
+        emailInput.prompt = 'Email Address';
 
-    emailInput.onDidAccept(() => {
-        emailInput.hide();
+        emailInput.onDidAccept(() => {
+            emailInput.hide();
 
-        vscode.commands.executeCommand<IWaitlistResult>('mirrord.waitlistSignup', emailInput.value).then(({ successful, message }) => {
-            if (successful) {
-                vscode.window.showInformationMessage(message);
-            } else {
-                vscode.window.showErrorMessage(message);   
-                emailInput.show()
-            }
+            vscode.commands.executeCommand<IWaitlistResult>('mirrord.waitlistSignup', emailInput.value, true).then(({ successful, message }) => {
+                if (successful) {
+                    vscode.window.showInformationMessage(message);
+                } else {
+                    vscode.window.showErrorMessage(message);   
+                    emailInput.show()
+                }
+            });
         });
-    });
 
-    emailInput.show();
+        emailInput.show();
+    }
 
-    return { successful: false, message: "User Prompted" };
+    return { successful: false, message: "Please enter your email" };
 }
