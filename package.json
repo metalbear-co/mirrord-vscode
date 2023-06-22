@@ -31,7 +31,8 @@
 	],
 	"icon": "images/icon.png",
 	"activationEvents": [
-		"onStartupFinished"
+		"onStartupFinished",
+		"onCommand:mirrord.waitlistSignup"
 	],
 	"extensionKind": [
 		"workspace"
@@ -42,6 +43,11 @@
 				"command": "mirrord.changeSettings",
 				"category": "mirrord",
 				"title": "Change Settings"
+			},
+			{
+				"command": "mirrord.waitlistSignup",
+				"category": "mirrord",
+				"title": "Register to Teams Waitlist"
 			}
 		],
 		"menus": {
@@ -49,7 +55,11 @@
 				{
 					"command": "mirrord.changeSettings",
 					"when": "mirrord.activated"
-				}
+				},
+				{
+		          	"command": "mirrord.waitlistSignup",
+		          	"when": "true"
+		      	}
 			]
 		},
 		"jsonValidation": [
