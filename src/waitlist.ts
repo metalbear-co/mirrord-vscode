@@ -11,26 +11,26 @@ export async function waitlistRegisterCommand(email?: string, blockPrompt?: bool
         try {
             let response = await axios.postForm(`https://waitlist.metalbear.co/v1/waitlist`, { email });
 
-            if (response.status == 200) {
+            if (response.status === 200) {
                 return {
                     successful: true,
-                    message: 'Thank you for joining the waitlist! We\'ll be in touch soon.'
-                }
+                    message: 'Thank you for joining the waitlist! We\'ll be in touch soon.',
+                };
             }
-            
+
             console.error('waitlist waitlist signup bad response', response);
 
             return {
                 successful: true,
                 message: 'Failed to join the waitlist. Please contact us at support@metalbear.co',
-            }
+            };
         } catch (e) {
             console.error(e);
 
             return {
                 successful: true,
                 message: 'Failed to join the waitlist. Please contact us at support@metalbear.co',
-            }
+            };
         }
     }
 
@@ -46,7 +46,7 @@ export async function waitlistRegisterCommand(email?: string, blockPrompt?: bool
                     vscode.window.showInformationMessage(message);
                 } else {
                     vscode.window.showErrorMessage(message);   
-                    emailInput.show()
+                    emailInput.show();
                 }
             });
         });
