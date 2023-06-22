@@ -47,7 +47,7 @@
 			{
 				"command": "mirrord.waitlistSignup",
 				"category": "mirrord",
-				"title": "Register to Teams Waitlist"
+				"title": "Sign up to mirrord Teams waitlist"
 			}
 		],
 		"menus": {
