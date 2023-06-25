@@ -151,7 +151,7 @@ export class MirrordAPI {
             let targetKey = target.split('/')[0];
 
             if (Array.isArray(acc[targetKey])) {
-                acc[targetKey].push(target)
+                acc[targetKey].push(target);
             } else {
                 acc[targetKey] = [target];
             }

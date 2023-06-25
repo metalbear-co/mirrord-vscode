@@ -51,7 +51,7 @@ export async function waitlistRegisterCommand(email?: string, blockPrompt?: bool
             vscode.commands.executeCommand<IWaitlistResult>('mirrord.waitlistSignup', emailInput.value, true).then(({ successful, message }) => {
                 if (successful) {
                     vscode.window.showInformationMessage(message);
-                    globalContext.globalState.update(WAITLIST_SUPPRESS, 'true')
+                    globalContext.globalState.update(WAITLIST_SUPPRESS, 'true');
                 } else {
                     vscode.window.showErrorMessage(message);   
                     emailInput.show();
@@ -78,7 +78,7 @@ export async function waitlistRegisterCta(message?: string) {
     }
 
     if (popupResult === actions[1]) {
-        globalContext.globalState.update(WAITLIST_SUPPRESS, 'true')
+        globalContext.globalState.update(WAITLIST_SUPPRESS, 'true');
     }
 }
 
@@ -88,9 +88,9 @@ export function tickWaitlistCounter(isDeploymentExec: boolean) {
     if (isDeploymentExec) {
         waitlistRegisterCta('When targeting multi-pod deployments, mirrord impersonates the first pod in the deployment.\n \
                       Support for multi-pod impersonation requires the mirrord operator, which is part of mirrord for Teams.\n \
-                      To try it out, join the waitlist with `mirrord waitlist <email address>`, or at this link: https://metalbear.co/#waitlist-form')
+                      To try it out, join the waitlist with `mirrord waitlist <email address>`, or at this link: https://metalbear.co/#waitlist-form');
     } else if (counter >= WAITLIST_CTA_START) {
-        if (counter === WAITLIST_CTA_START || (counter - WAITLIST_CTA_START) % WAITLIST_CTA_REPEAT == 0) {
+        if (counter === WAITLIST_CTA_START || (counter - WAITLIST_CTA_START) % WAITLIST_CTA_REPEAT === 0) {
             waitlistRegisterCta();
         }
     }
