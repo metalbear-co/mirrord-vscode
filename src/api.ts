@@ -3,6 +3,12 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
+import { tickWaitlistCounter } from './waitlist';
+
+type Targets = Record<'pod' | 'deployment' | string, string[]> & { 
+    lastTarget: string | undefined;
+    length: number;
+};
 
 /// Key used to store the last selected target in the persistent state.
 export const LAST_TARGET_KEY = "mirrord-last-target";
@@ -119,7 +125,7 @@ export class MirrordAPI {
 
     /// Uses `mirrord ls` to get a list of all targets.
     /// Targets are sorted, with an exception of the last used target being the first on the list.
-    async listTargets(configPath: string | null | undefined): Promise<string[]> {
+    async listTargets(configPath: string | null | undefined): Promise<Targets> {
         const args = ['ls'];
         if (configPath) {
             args.push('-f', configPath);
@@ -141,13 +147,25 @@ export class MirrordAPI {
             }
         }
 
-        return targets;
+        return targets.reduce((acc, target) => {
+            let targetKey = target.split('/')[0];
+
+            if (Array.isArray(acc[targetKey])) {
+                acc[targetKey].push(target)
+            } else {
+                acc[targetKey] = [target];
+            }
+
+            return acc;
+        }, {  pod: [], deployment: [], lastTarget, length: targets.length } as unknown as Targets);
     }
 
     // Run the extension execute sequence
     // Creating agent and gathering execution runtime (env vars to set)
     // Has 60 seconds timeout
     async binaryExecute(target: string | null, configFile: string | null, executable: string | null): Promise<MirrordExecution> {
+        tickWaitlistCounter(!!target?.startsWith('deployment/'));
+        
         /// Create a promise that resolves when the mirrord process exits
         return await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,

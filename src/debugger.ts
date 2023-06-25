@@ -89,7 +89,7 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		if (!await isTargetInFile()) {
 			let targets;
 			try {
-				targets = await mirrordApi.listTargets(configPath);
+				targets = (await mirrordApi.listTargets(configPath));
 			} catch (err) {
 				mirrordFailure(`mirrord failed to list targets: ${err}`);
 				return null;
@@ -100,15 +100,31 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 					"You can run targetless, or set a different target namespace or kubeconfig in the mirrord configuration file.",
 				);
 			}
-			targets.push(TARGETLESS_TARGET_NAME);
-			let targetName = await vscode.window.showQuickPick(targets, { placeHolder: 'Select a target path to mirror' });
-			if (targetName) {
-				if (targetName !== TARGETLESS_TARGET_NAME) {
-					target = targetName;
+
+			let selected = false;
+			let searchKey = !!targets.lastTarget?.startsWith('deployment') ? 'deployment' : 'pod';
+
+			while (!selected) {
+				let switchTo = `Show ${searchKey === 'pod' ? 'Deployment' : 'Pod'}s`;
+				let targetName = await vscode.window.showQuickPick([...targets[searchKey], TARGETLESS_TARGET_NAME, switchTo], { placeHolder: 'Select a target path to mirror' });
+				if (targetName) {
+					if (targetName === switchTo) {
+						searchKey = (searchKey === 'pod' ? 'deployment' : 'pod');
+
+						continue;
+					}
+
+					if (targetName !== TARGETLESS_TARGET_NAME) {
+						target = targetName;
+					}
+
+					globalContext.globalState.update(LAST_TARGET_KEY, targetName);
+					globalContext.workspaceState.update(LAST_TARGET_KEY, targetName);
 				}
-				globalContext.globalState.update(LAST_TARGET_KEY, targetName);
-				globalContext.workspaceState.update(LAST_TARGET_KEY, targetName);
+
+				selected = true;
 			}
+
 			if (!target) {
 				vscode.window.showInformationMessage("mirrord running targetless");
 			}
