@@ -30,7 +30,7 @@ export class MirrordStatus {
         statusBar.tooltip = new vscode.MarkdownString("", true);
         statusBar.tooltip.isTrusted = true;
 
-        statusBar.tooltip.appendMarkdown(`mirrord is [${enabled ? 'Enabled' : 'Disabled'}](command:${toggleCommandId})`);
+        statusBar.tooltip.appendMarkdown(`[${enabled ? 'Enabled' : 'Disabled'}](command:${toggleCommandId})`);
         statusBar.tooltip.appendText("\n\n");
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${settingsCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Submit Feedback](command:${submitFeedbackCommandId})`);
