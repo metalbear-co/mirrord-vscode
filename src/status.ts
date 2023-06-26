@@ -49,7 +49,7 @@ export class MirrordStatus {
     }
 
     get enabled(): boolean {
-        return !!globalContext.workspaceState.get('enabled')
+        return !!globalContext.workspaceState.get('enabled');
     }
 
     set enabled(val: boolean) {
@@ -64,10 +64,10 @@ export class MirrordStatus {
 
         this.enabled = !this.enabled;
 
-        this.draw()
+        this.draw();
     }
 
     submitFeedback() {
-
+        vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/feedback'));
     }
 }
