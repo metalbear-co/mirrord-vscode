@@ -42,6 +42,11 @@
 				"command": "mirrord.changeSettings",
 				"category": "mirrord",
 				"title": "Change Settings"
+			},
+			{
+				"command": "mirrord.submitFeedback",
+				"category": "mirrord",
+				"title": "Submit Feedback"
 			}
 		],
 		"menus": {
@@ -49,6 +54,10 @@
 				{
 					"command": "mirrord.changeSettings",
 					"when": "mirrord.activated"
+				},
+				{
+					"command": "mirrord.submitFeedback",
+					"when": "true"
 				}
 			]
 		},

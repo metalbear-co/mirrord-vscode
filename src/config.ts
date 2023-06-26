@@ -29,14 +29,14 @@ const MIRRORD_DIR = function () {
 }();
 
 // Get the file path to the user's mirrord-config file, if it exists. 
-export async function configFilePath() {
+export function configFilePath() {
     let fileUri = vscode.Uri.joinPath(MIRRORD_DIR, '?(*.)mirrord.+(toml|json|y?(a)ml)');
     let files = glob.sync(fileUri.fsPath);
     return files[0] || '';
 }
 
 export async function openConfig() {
-    let path = await configFilePath();
+    let path = configFilePath();
     if (!path) {
         const uriPath = vscode.Uri.joinPath(MIRRORD_DIR, 'mirrord.json');
         await vscode.workspace.fs.writeFile(uriPath, Buffer.from(DEFAULT_CONFIG));
@@ -48,7 +48,7 @@ export async function openConfig() {
 }
 
 async function parseConfigFile() {
-    let filePath: string = await configFilePath();
+    let filePath: string = configFilePath();
     if (filePath) {
         const file = (await vscode.workspace.fs.readFile(vscode.Uri.parse(filePath))).toString();
         if (filePath.endsWith('json')) {
