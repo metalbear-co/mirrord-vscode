@@ -88,7 +88,7 @@ export function tickWaitlistCounter(isDeploymentExec: boolean) {
     if (isDeploymentExec) {
         waitlistRegisterCta('When targeting multi-pod deployments, mirrord impersonates the first pod in the deployment.\n \
                       Support for multi-pod impersonation requires the mirrord operator, which is part of mirrord for Teams.\n \
-                      To try it out, join the waitlist.);
+                      To try it out, join the waitlist. [Read More](https://mirrord.dev/docs/teams/introduction/)');
     } else if (counter >= WAITLIST_CTA_START) {
         if (counter === WAITLIST_CTA_START || (counter - WAITLIST_CTA_START) % WAITLIST_CTA_REPEAT === 0) {
             waitlistRegisterCta();
