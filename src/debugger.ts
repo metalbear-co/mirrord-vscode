@@ -79,7 +79,7 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		}
 		setLastActiveMirrordPath(cliPath);
 
-		let mirrordApi = new MirrordAPI(cliPath);
+		let mirrordApi = new MirrordAPI(cliPath, config.env);
 
 		config.env ||= {};
 		let target = null;

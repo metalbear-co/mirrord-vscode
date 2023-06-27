@@ -44,19 +44,31 @@ class MirrordExecution {
 // API to interact with the mirrord CLI, runs in the "ext" mode
 export class MirrordAPI {
     cliPath: string;
+    mirrordExtEnv: any;
 
-    constructor(cliPath: string) {
+    constructor(cliPath: string, mirrordExtEnv?: any) {
         this.cliPath = cliPath;
+        this.mirrordExtEnv = mirrordExtEnv;
     }
 
     // Return environment for the spawned mirrord cli processes.
-    private static getEnv(): NodeJS.ProcessEnv {
+    private getEnv(): NodeJS.ProcessEnv {
         // clone env vars and add MIRRORD_PROGRESS_MODE
-        return {
+        const env: NodeJS.ProcessEnv = {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             "MIRRORD_PROGRESS_MODE": "json",
             ...process.env,
+            ...this.mirrordExtEnv
         };
+
+        for (const key in this.mirrordExtEnv) {
+            if (key.startsWith('MIRRORD_VSC_')) { 
+                const envKey = key.replace('MIRRORD_VSC_', '');               
+                env[envKey] = this.mirrordExtEnv[key];
+            }
+        }
+
+        return env;
     }
 
     // Execute the mirrord cli with the given arguments, return stdout.
@@ -105,7 +117,7 @@ export class MirrordAPI {
     // Spawn the mirrord cli with the given arguments
     // used for reading/interacting while process still runs.
     private spawn(args: string[]): ChildProcessWithoutNullStreams {
-        return spawn(this.cliPath, args, { env: MirrordAPI.getEnv() });
+        return spawn(this.cliPath, args, { env: this.getEnv() });
     }
 
     /**
