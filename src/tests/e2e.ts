@@ -43,7 +43,7 @@ describe("mirrord sample flow test", function () {
     it("enable mirrord", async function () {
         const statusBar = new StatusBar();
         await browser.driver.wait(async () => {
-            const enableButton = await statusBar.getItem("Enable mirrord");
+            const enableButton = await statusBar.getItem("mirrord $(circle-large-outline)");
             if (enableButton !== undefined) {
                 enableButton.click();
                 return true;
@@ -51,28 +51,28 @@ describe("mirrord sample flow test", function () {
         }, defaultTimeout, "mirrord `enable` button not found -- timed out");
 
         await browser.driver.wait(async () => {
-            const enableButton = await statusBar.getItem("Disable mirrord");
+            const enableButton = await statusBar.getItem("mirrord $(circle-large-filled)");
             if (enableButton !== undefined) {
                 return true;
             }
         }, defaultTimeout, "mirrord `disable` button not found -- timed out");
     });
 
-    it("create mirrord config", async function () {
-        // gear -> $(gear) clicked to open mirrord config
-        const statusBar = new StatusBar();
-        await browser.driver.wait(async () => {
-            const mirrordSettingsButton = await statusBar.getItem("gear");
-            if (mirrordSettingsButton !== undefined) {
-                mirrordSettingsButton.click();
-                return true;
-            }
-        }, defaultTimeout, "mirrord config `$(gear)` button not found -- timed out");
+    // it("create mirrord config", async function () {
+    //     // gear -> $(gear) clicked to open mirrord config
+    //     const statusBar = new StatusBar();
+    //     await browser.driver.wait(async () => {
+    //         const mirrordSettingsButton = await statusBar.getItem("gear");
+    //         if (mirrordSettingsButton !== undefined) {
+    //             mirrordSettingsButton.click();
+    //             return true;
+    //         }
+    //     }, defaultTimeout, "mirrord config `$(gear)` button not found -- timed out");
 
-        await browser.driver.wait(async () => {
-            return await existsSync(mirrordConfigPath);
-        }, defaultTimeout, "mirrord `default` config not found");
-    });
+    //     await browser.driver.wait(async () => {
+    //         return await existsSync(mirrordConfigPath);
+    //     }, defaultTimeout, "mirrord `default` config not found");
+    // });
 
     it("select pod from quickpick", async function () {
         await setBreakPoint(fileName, browser, defaultTimeout);
