@@ -21,11 +21,11 @@ export async function waitlistRegisterCommand(email?: string, blockPrompt?: bool
             if (response.status === 200) {
                 return {
                     successful: true,
-                    message: 'Thank you for joining the waitlist! We\'ll be in touch soon.',
+                    message: 'Thank you for joining the waitlist for mirrord for Teams! We\'ll be in touch soon.',
                 };
             }
 
-            console.error('waitlist waitlist signup bad response', response);
+            console.error('waitlist signup bad response', response);
 
             return {
                 successful: true,
@@ -88,7 +88,7 @@ export function tickWaitlistCounter(isDeploymentExec: boolean) {
     if (isDeploymentExec) {
         waitlistRegisterCta('When targeting multi-pod deployments, mirrord impersonates the first pod in the deployment.\n \
                       Support for multi-pod impersonation requires the mirrord operator, which is part of mirrord for Teams.\n \
-                      To try it out, join the waitlist with `mirrord waitlist <email address>`, or at this link: https://metalbear.co/#waitlist-form');
+                      To try it out, join the waitlist.);
     } else if (counter >= WAITLIST_CTA_START) {
         if (counter === WAITLIST_CTA_START || (counter - WAITLIST_CTA_START) % WAITLIST_CTA_REPEAT === 0) {
             waitlistRegisterCta();
