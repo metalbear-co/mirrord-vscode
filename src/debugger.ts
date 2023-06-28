@@ -115,7 +115,7 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		}
 
 		if (config.type === "go") {
-			config.env["MIRRORD_SKIP_PROCESSES"] = "dlv;debugserver;compile;go;asm;cgo;link;git;gcc";
+			config.env["MIRRORD_SKIP_PROCESSES"] = "dlv;debugserver;compile;go;asm;cgo;link;git;gcc;as;ld;collect2;cc1";
 		} else if (config.type === "python") {
 			config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "debugpy";
 		}
