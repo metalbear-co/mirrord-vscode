@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ConfigurationProvider } from './debugger';
 import { openConfig } from './config';
+import { waitlistRegisterCommand } from './waitlist';
 
 let buttons: { toggle: vscode.StatusBarItem, settings: vscode.StatusBarItem };
 export let globalContext: vscode.ExtensionContext;
@@ -46,4 +47,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		context.subscriptions.push(button);
 		button.show();
 	};
+
+	const waitlistCommandId = 'mirrord.waitlistSignup';
+	context.subscriptions.push(vscode.commands.registerCommand(waitlistCommandId, waitlistRegisterCommand));
 }
