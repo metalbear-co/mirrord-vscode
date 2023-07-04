@@ -38,7 +38,7 @@ export class MirrordStatus {
         statusBar.tooltip.appendText("\n\n");
         const activeConfig = MirrordConfigManager.getInstance().activeConfig();
         if (activeConfig) {
-            statusBar.tooltip.appendMarkdown(`\n\nActive config:[](${activeConfig})`);
+            statusBar.tooltip.appendMarkdown(`\n\n[Active config: ${vscode.workspace.asRelativePath(activeConfig)}](${activeConfig})`);
         }
         statusBar.tooltip.appendMarkdown(`\n\n[Select active config](command:${this.selectActiveConfigId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${settingsCommandId})`);
@@ -52,7 +52,10 @@ export class MirrordStatus {
         const configManager = MirrordConfigManager.getInstance();
         globalContext.subscriptions.push(configManager);
 
-        globalContext.subscriptions.push(vscode.commands.registerCommand(this.selectActiveConfigId, configManager.selectActiveConfig.bind(configManager)));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(this.selectActiveConfigId, async () => {
+            await configManager.selectActiveConfig();
+            this.draw();
+        }));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.settingsCommandId, configManager.changeSettings.bind(configManager)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.toggleCommandId, this.toggle.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.submitFeedbackCommandId, this.submitFeedback.bind(this)));
