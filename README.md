@@ -30,7 +30,7 @@ mirrord main repository can be found [here](https://github.com/metalbear-co/mirr
 
 ## Settings
 
-mirrord allows for rich configuration of the environment it provides. The schema for is documented [here](https://mirrord.dev/docs/overview/configuration/). You can also use `toml` or `yaml` format. However, the extension supports autocomplete only for `json` files.
+mirrord allows for rich configuration of the environment it provides. The schema for it is documented [here](https://mirrord.dev/docs/overview/configuration/). You can also use `toml` or `yaml` format. However, the extension supports autocomplete only for `json` files.
 
 mirrord reads its configuration from following locations:
 
