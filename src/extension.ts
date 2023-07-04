@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ConfigurationProvider } from './debugger';
-import { openConfig } from './config';
+import { MirrordConfigManager } from './config';
 import { waitlistRegisterCommand } from './waitlist';
 
 let buttons: { toggle: vscode.StatusBarItem, settings: vscode.StatusBarItem };
@@ -38,8 +38,14 @@ export async function activate(context: vscode.ExtensionContext) {
 	buttons.toggle.text = 'Enable mirrord';
 	buttons.toggle.command = toggleCommandId;
 
+	let configManager = MirrordConfigManager.getInstance();
+	context.subscriptions.push(configManager);
+
+	const selectConfigCommandId = 'mirrord.selectActiveConfig';
+	context.subscriptions.push(vscode.commands.registerCommand(selectConfigCommandId, () => configManager.selectActiveConfig()));
+
 	const settingsCommandId = 'mirrord.changeSettings';
-	context.subscriptions.push(vscode.commands.registerCommand(settingsCommandId, openConfig));
+	context.subscriptions.push(vscode.commands.registerCommand(settingsCommandId, () => configManager.changeSettings()));
 	buttons.settings.text = '$(gear)';
 	buttons.settings.command = settingsCommandId;
 
