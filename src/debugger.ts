@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'node:path';
 import { globalContext } from './extension';
-import { configFilePath, isTargetInFile } from './config';
+import { MirrordConfigManager } from './config';
 import { LAST_TARGET_KEY, MirrordAPI, TARGETLESS_TARGET_NAME, mirrordFailure } from './api';
 import { updateTelemetries } from './versionCheck';
 import { getLocalMirrordBinary, getMirrordBinary } from './binaryManager';
@@ -84,12 +84,12 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		config.env ||= {};
 		let target = null;
 
-		let configPath = await configFilePath();
+		let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
 		// If target wasn't specified in the config file, let user choose pod from dropdown
-		if (!await isTargetInFile()) {
+		if (!await MirrordConfigManager.isTargetInFile(configPath)) {
 			let targets;
 			try {
-				targets = (await mirrordApi.listTargets(configPath));
+				targets = await mirrordApi.listTargets(configPath.path);
 			} catch (err) {
 				mirrordFailure(`mirrord failed to list targets: ${err}`);
 				return null;
@@ -145,10 +145,10 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		let executionInfo;
 		try {
 			if (executableFieldName in config) {
-				executionInfo = await mirrordApi.binaryExecute(target, configPath, config[executableFieldName]);
+				executionInfo = await mirrordApi.binaryExecute(target, configPath.path, config[executableFieldName]);
 			} else {
 				// Even `program` is not in config, so no idea what's the executable in the end.
-				executionInfo = await mirrordApi.binaryExecute(target, configPath, null);
+				executionInfo = await mirrordApi.binaryExecute(target, configPath.path, null);
 			}
 		} catch (err) {
 			mirrordFailure(`mirrord preparation failed: ${err}`);

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { openConfig } from './config';
+import { MirrordConfigManager } from './config';
 import { globalContext } from './extension';
 import { waitlistRegisterCommand } from './waitlist';
 
@@ -9,6 +9,7 @@ export class MirrordStatus {
     readonly settingsCommandId = 'mirrord.changeSettings';
     readonly submitFeedbackCommandId = 'mirrord.submitFeedback';
     readonly waitlistCommandId = 'mirrord.waitlistSignup';
+    readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
 
     constructor(statusBar: vscode.StatusBarItem) {
         this.statusBar = statusBar;
@@ -35,6 +36,11 @@ export class MirrordStatus {
 
         statusBar.tooltip.appendMarkdown(`[${enabled ? 'Enabled' : 'Disabled'}](command:${toggleCommandId})`);
         statusBar.tooltip.appendText("\n\n");
+        const activeConfig = MirrordConfigManager.getInstance().activeConfig();
+        if (activeConfig) {
+            statusBar.tooltip.appendMarkdown(`\n\n[Active config: ${vscode.workspace.asRelativePath(activeConfig)}](${activeConfig})`);
+        }
+        statusBar.tooltip.appendMarkdown(`\n\n[Select active config](command:${this.selectActiveConfigId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${settingsCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams Waitlist](command:${waitlistCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Submit Feedback](command:${submitFeedbackCommandId})`);
@@ -43,7 +49,14 @@ export class MirrordStatus {
     }
 
     register(): MirrordStatus {
-        globalContext.subscriptions.push(vscode.commands.registerCommand(this.settingsCommandId, openConfig));
+        const configManager = MirrordConfigManager.getInstance();
+        globalContext.subscriptions.push(configManager);
+
+        globalContext.subscriptions.push(vscode.commands.registerCommand(this.selectActiveConfigId, async () => {
+            await configManager.selectActiveConfig();
+            this.draw();
+        }));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(this.settingsCommandId, configManager.changeSettings.bind(configManager)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.toggleCommandId, this.toggle.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.submitFeedbackCommandId, this.submitFeedback.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.waitlistCommandId, waitlistRegisterCommand));
