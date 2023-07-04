@@ -59,6 +59,10 @@ export class MirrordConfigManager {
         return MirrordConfigManager.instance;
     }
 
+    public activeConfig(): vscode.Uri | undefined {
+        return this.active;
+    }
+
     /**
      * Handles `mirrord.selectActiveConfig` command.
      * Allows the user to set an active mirrord config from quick pick.

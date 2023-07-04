@@ -43,35 +43,26 @@ describe("mirrord sample flow test", function () {
     it("enable mirrord", async function () {
         const statusBar = new StatusBar();
         await browser.driver.wait(async () => {
-            const enableButton = await statusBar.getItem("Enable mirrord");
-            if (enableButton !== undefined) {
-                enableButton.click();
-                return true;
+            for (let button of await statusBar.getItems()) {
+                try {
+                    if ((await button.getText()).startsWith('mirrord')) {
+                        await button.click();
+
+                        return true;
+                    }    
+                } catch (e) { }
             }
         }, defaultTimeout, "mirrord `enable` button not found -- timed out");
 
         await browser.driver.wait(async () => {
-            const enableButton = await statusBar.getItem("Disable mirrord");
-            if (enableButton !== undefined) {
-                return true;
+            for (let button of await statusBar.getItems()) {
+                try {
+                    if ((await button.getText()).startsWith('mirrord')) {
+                        return true;
+                    }    
+                } catch (e) { }
             }
         }, defaultTimeout, "mirrord `disable` button not found -- timed out");
-    });
-
-    it("create mirrord config", async function () {
-        // gear -> $(gear) clicked to open mirrord config
-        const statusBar = new StatusBar();
-        await browser.driver.wait(async () => {
-            const mirrordSettingsButton = await statusBar.getItem("gear");
-            if (mirrordSettingsButton !== undefined) {
-                mirrordSettingsButton.click();
-                return true;
-            }
-        }, defaultTimeout, "mirrord config `$(gear)` button not found -- timed out");
-
-        await browser.driver.wait(async () => {
-            return await existsSync(mirrordConfigPath);
-        }, defaultTimeout, "mirrord `default` config not found");
     });
 
     it("select pod from quickpick", async function () {

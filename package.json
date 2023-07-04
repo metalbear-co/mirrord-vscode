@@ -42,7 +42,7 @@
 			{
 				"command": "mirrord.changeSettings",
 				"category": "mirrord",
-				"title": "Change Settings"
+				"title": "Change settings"
 			},
 			{
 				"command": "mirrord.waitlistSignup",
@@ -53,6 +53,11 @@
 				"command": "mirrord.selectActiveConfig",
 				"category": "mirrord",
 				"title": "Select active configuration"
+			},
+			{
+				"command": "mirrord.submitFeedback",
+				"category": "mirrord",
+				"title": "Submit feedback"
 			}
 		],
 		"menus": {
@@ -67,6 +72,10 @@
 		      	},
 				{
 					"command": "mirrord.selectActiveConfig",
+					"when": "true"
+				},
+				{
+					"command": "mirrord.submitFeedback",
 					"when": "true"
 				}
 			]
