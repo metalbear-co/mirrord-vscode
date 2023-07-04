@@ -36,7 +36,7 @@ export class MirrordStatus {
         statusBar.tooltip.appendMarkdown(`[${enabled ? 'Enabled' : 'Disabled'}](command:${toggleCommandId})`);
         statusBar.tooltip.appendText("\n\n");
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${settingsCommandId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[Teams Waitlist](command:${waitlistCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams Waitlist](command:${waitlistCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Submit Feedback](command:${submitFeedbackCommandId})`);
 
         statusBar.show();
