@@ -69,24 +69,6 @@ describe("mirrord sample flow test", function () {
             }
         }, defaultTimeout, "mirrord config `$(gear)` button not found -- timed out");
 
-        const inputBot = await InputBox.create();
-        await browser.driver.wait(async () => {
-            return await inputBot.isDisplayed();
-        }, defaultTimeout, "quickPick not found -- timed out");
-
-        const options = await inputBot.getQuickPicks();
-        let createOption: string | undefined;
-        for (const option of options) {
-            const label = await option.getLabel();
-            if (label.startsWith("(create default)")) {
-                createOption = label;
-                break;
-            }
-        }
-
-        expect(createOption).to.not.be.undefined;
-        await inputBot.selectQuickPick(createOption!!);
-
         await browser.driver.wait(async () => {
             return await existsSync(mirrordConfigPath);
         }, defaultTimeout, "mirrord `default` config not found");

@@ -92,15 +92,7 @@ export class MirrordConfigManager {
     private static async getDefaultConfig(folder: vscode.WorkspaceFolder): Promise<vscode.Uri | undefined> {
         let pattern = new vscode.RelativePattern(folder, ".mirrord/*mirrord.{toml,json,yml,yaml}");
         let files = await vscode.workspace.findFiles(pattern);
-        files.sort((f1, f2) => {
-            if (f1.path > f1.path) {
-                return 1;
-            } else if (f1.path < f2.path) {
-                return -1;
-            } else {
-                return 0;
-            }
-        });
+        files.sort((f1, f2) => f1.path.localeCompare(f2.path));
         return files[0];
     }
 
@@ -170,7 +162,9 @@ export class MirrordConfigManager {
         }
 
         let quickPickOptions = [...options.keys()];
-        let selected = await vscode.window.showQuickPick(quickPickOptions, {placeHolder: "Select mirrord config to open"});
+        let selected = quickPickOptions.length > 1
+            ? await vscode.window.showQuickPick(quickPickOptions, {placeHolder: "Select mirrord config to open"})
+            : quickPickOptions[0];
 
         if (!selected) {
             return;
