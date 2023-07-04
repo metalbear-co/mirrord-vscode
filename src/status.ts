@@ -1,12 +1,14 @@
 import * as vscode from 'vscode';
 import { openConfig } from './config';
 import { globalContext } from './extension';
+import { waitlistRegisterCommand } from './waitlist';
 
 export class MirrordStatus {
     readonly statusBar: vscode.StatusBarItem;
     readonly toggleCommandId = 'mirrord.toggleMirroring';
     readonly settingsCommandId = 'mirrord.changeSettings';
     readonly submitFeedbackCommandId = 'mirrord.submitFeedback';
+    readonly waitlistCommandId = 'mirrord.waitlistSignup';
 
     constructor(statusBar: vscode.StatusBarItem) {
         this.statusBar = statusBar;
@@ -19,6 +21,7 @@ export class MirrordStatus {
             toggleCommandId,
             settingsCommandId,
             submitFeedbackCommandId,
+            waitlistCommandId,
         } = this;
 
         statusBar.text = `mirrord $(${enabled ? 'circle-large-filled' : 'circle-large-outline'})`;
@@ -33,6 +36,7 @@ export class MirrordStatus {
         statusBar.tooltip.appendMarkdown(`[${enabled ? 'Enabled' : 'Disabled'}](command:${toggleCommandId})`);
         statusBar.tooltip.appendText("\n\n");
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${settingsCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[Teams Waitlist](command:${waitlistCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Submit Feedback](command:${submitFeedbackCommandId})`);
 
         statusBar.show();
@@ -42,6 +46,7 @@ export class MirrordStatus {
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.settingsCommandId, openConfig));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.toggleCommandId, this.toggle.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.submitFeedbackCommandId, this.submitFeedback.bind(this)));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(this.waitlistCommandId, waitlistRegisterCommand));
 
         globalContext.subscriptions.push(this.statusBar);
 
