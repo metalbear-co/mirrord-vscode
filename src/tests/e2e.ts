@@ -75,7 +75,7 @@ describe("mirrord sample flow test", function () {
         }, defaultTimeout, "quickPick not found -- timed out");
 
         const options = await inputBot.getQuickPicks();
-        let createOption;
+        let createOption: string | undefined;
         for (const option of options) {
             const label = await option.getLabel();
             if (label.startsWith("(create default)")) {
