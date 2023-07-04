@@ -175,7 +175,7 @@ export class MirrordAPI {
             return new Promise<MirrordExecution>((resolve, reject) => {
                 setTimeout(() => {
                     reject("timeout");
-                }, 600 * 1000);
+                }, 120 * 1000);
 
                 const args = ["ext"];
                 if (target) {
