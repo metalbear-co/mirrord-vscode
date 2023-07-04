@@ -32,7 +32,7 @@ mirrord main repository can be found [here](https://github.com/metalbear-co/mirr
 
 mirrord allows for rich configuration of the environment it provides. The schema for it is documented [here](https://mirrord.dev/docs/overview/configuration/). You can also use `toml` or `yaml` format. However, the extension supports autocomplete only for `json` files.
 
-mirrord reads its configuration from following locations:
+mirrord reads its configuration from the following locations:
 
 1. Active config can be set for the whole workspace using the `selectActiveConfig` command or the link in the dropdown menu. If active config is set, mirrord always uses it.
 2. If active config is not set, mirrord searches process environment (specified in launch configuration) for `MIRRORD_CONFIG_FILE` variable. This can be an absolute path or path relative to the project root.
