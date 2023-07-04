@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { openConfig } from './config';
 import { ConfigurationProvider } from './debugger';
 import { MirrordStatus } from './status';
 
