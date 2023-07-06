@@ -5,56 +5,57 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
 import { tickWaitlistCounter } from './waitlist';
 
-const TARGET_DISPLAY: Record<string, string> = {
+const TARGET_TYPE_DISPLAY: Record<string, string> = {
     pod: 'Pod',
     deployment: 'Deployment',
     rollout: 'Rollout',
 };
 
-type TargetsInner = Record<string, string[] | undefined>;
+type TypeTargets = Record<string, string[] | undefined>;
 
 export class Targets {
-    private _activeIndex: number;
     private _pageSwitchOptions: [string, number][] = [];
+    private activeIndex: number;
 
-    readonly keys: string[];
-    readonly inner: TargetsInner;
+    private readonly types: string[];
+    private readonly inner: TypeTargets;
+    
     readonly length: number;
 
     constructor(targets: string[], lastTarget?: string) {
         this.length = targets.length;
 
         this.inner = targets.reduce((acc, target) => {
-            const targetKey = target.split('/')[0];
+            const targetType = target.split('/')[0];
 
-            if (Array.isArray(acc[targetKey])) {
-                acc[targetKey]!.push(target);
+            if (Array.isArray(acc[targetType])) {
+                acc[targetType]!.push(target);
             } else {
-                acc[targetKey] = [target];
+                acc[targetType] = [target];
             }
 
             return acc;
-        }, {} as TargetsInner);
+        }, {} as TypeTargets);
 
-        this.keys = Object.keys(this.inner);
+        this.types = Object.keys(this.inner);
 
         if (!!lastTarget) {
-            this._activeIndex = Math.max(0, this.keys.findIndex((key) => lastTarget.startsWith(key)));
+            this.activeIndex = Math.max(0, this.types.findIndex((type) => lastTarget.split("/")[0] === type));
         } else {
-            this._activeIndex = Math.max(0, this.keys.indexOf('pod'));
+            this.activeIndex = Math.max(0, this.types.indexOf('pod'));
         }
 
         this.updatePageSwitchOptions();
     }
 
     private updatePageSwitchOptions() {
-        this._pageSwitchOptions = this.keys
-            .map((nextTarget, index) => [`Show ${TARGET_DISPLAY[nextTarget] ?? nextTarget}s`, index] as [string, number])
-            .filter(([_, index]) => index !== this._activeIndex);
+        this._pageSwitchOptions = this.types
+            .map((nextTarget, index) => [`Show ${TARGET_TYPE_DISPLAY[nextTarget] ?? nextTarget}s`, index] as [string, number])
+            .filter(([_, index]) => index !== this.activeIndex);
     }
 
     getPage(): string[] {
-        const key = this.keys[this._activeIndex];
+        const key = this.types[this.activeIndex];
 
         if (!key) {
             return [];
@@ -68,7 +69,7 @@ export class Targets {
     }
 
     switchPage(switchIndex: number) {
-        this._activeIndex = this._pageSwitchOptions[switchIndex][1];
+        this.activeIndex = this._pageSwitchOptions[switchIndex][1];
         this.updatePageSwitchOptions();
     }
 }
