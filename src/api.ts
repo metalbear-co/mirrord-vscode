@@ -50,7 +50,7 @@ export class Targets {
     private updatePageSwitchOptions() {
         this._pageSwitchOptions = this.keys
             .map((nextTarget, index) => [`Show ${TARGET_DISPLAY[nextTarget] ?? nextTarget}s`, index] as [string, number])
-            .filter(([_, index]) => index != this._activeIndex);
+            .filter(([_, index]) => index !== this._activeIndex);
     }
 
     getPage(): string[] {
