@@ -3,7 +3,7 @@
 	"displayName": "mirrord",
 	"description": "Run your local process in the context of your cloud cluster",
 	"publisher": "MetalBear",
-	"version": "3.47.0",
+	"version": "3.48.0",
 	"engines": {
 		"vscode": "^1.63.0"
 	},
@@ -42,24 +42,42 @@
 			{
 				"command": "mirrord.changeSettings",
 				"category": "mirrord",
-				"title": "Change Settings"
+				"title": "Change settings"
 			},
 			{
 				"command": "mirrord.waitlistSignup",
 				"category": "mirrord",
 				"title": "Sign up to the waitlist for mirrord for Teams"
+			},
+			{
+				"command": "mirrord.selectActiveConfig",
+				"category": "mirrord",
+				"title": "Select active configuration"
+			},
+			{
+				"command": "mirrord.submitFeedback",
+				"category": "mirrord",
+				"title": "Submit feedback"
 			}
 		],
 		"menus": {
 			"commandPalette": [
 				{
 					"command": "mirrord.changeSettings",
-					"when": "mirrord.activated"
+					"when": "true"
 				},
 				{
 		          	"command": "mirrord.waitlistSignup",
 		          	"when": "true"
-		      	}
+		      	},
+				{
+					"command": "mirrord.selectActiveConfig",
+					"when": "true"
+				},
+				{
+					"command": "mirrord.submitFeedback",
+					"when": "true"
+				}
 			]
 		},
 		"jsonValidation": [
@@ -86,7 +104,6 @@
 	},
 	"devDependencies": {
 		"@types/chai": "^4.3.5",
-		"@types/glob": "^7.2.0",
 		"@types/mocha": "^10.0.1",
 		"@types/node": "14.x",
 		"@types/vscode": "^1.63.0",
@@ -97,7 +114,6 @@
 		"chai": "^4.3.7",
 		"esbuild": "^0.14.23",
 		"eslint": "^8.6.0",
-		"glob": "^7.2.3",
 		"mocha": "^9.1.3",
 		"ts-loader": "^9.4.2",
 		"typescript": "^4.5.4",
