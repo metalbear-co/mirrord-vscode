@@ -41,7 +41,7 @@ export class Targets {
         if (!!lastTarget) {
             this._activeIndex = Math.max(0, this.keys.findIndex((key) => lastTarget.startsWith(key)));
         } else {
-            this._activeIndex = 0;
+            this._activeIndex = Math.max(0, this.keys.indexOf('pod'));
         }
 
         this.updatePageSwitchOptions();
