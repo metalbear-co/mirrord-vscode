@@ -5,10 +5,73 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
 import { tickWaitlistCounter } from './waitlist';
 
-type Targets = Record<'pod' | 'deployment' | string, string[]> & { 
-    lastTarget: string | undefined;
-    length: number;
+const TARGET_DISPLAY: Record<string, string> = {
+    pod: 'Pod',
+    deployment: 'Deployment',
+    rollout: 'Rollout',
 };
+
+type TargetsInner = Record<string, string[] | undefined>;
+
+export class Targets {
+    private _activeIndex: number;
+    private _pageSwitchOptions: [string, number][] = [];
+
+    readonly keys: string[];
+    readonly inner: TargetsInner;
+    readonly length: number;
+
+    constructor(targets: string[], lastTarget?: string) {
+        this.length = targets.length;
+
+        this.inner = targets.reduce((acc, target) => {
+            const targetKey = target.split('/')[0];
+
+            if (Array.isArray(acc[targetKey])) {
+                acc[targetKey]!.push(target);
+            } else {
+                acc[targetKey] = [target];
+            }
+
+            return acc;
+        }, {} as TargetsInner);
+
+        this.keys = Object.keys(this.inner);
+
+        if (!!lastTarget) {
+            this._activeIndex = Math.max(0, this.keys.findIndex((key) => lastTarget.startsWith(key)));
+        } else {
+            this._activeIndex = 0;
+        }
+
+        this.updatePageSwitchOptions();
+    }
+
+    private updatePageSwitchOptions() {
+        this._pageSwitchOptions = this.keys
+            .map((nextTarget, index) => [`Show ${TARGET_DISPLAY[nextTarget] ?? nextTarget}s`, index] as [string, number])
+            .filter(([_, index]) => index != this._activeIndex);
+    }
+
+    getPage(): string[] {
+        const key = this.keys[this._activeIndex];
+
+        if (!key) {
+            return [];
+        }
+
+        return this.inner[key] ?? [];
+    }
+
+    pageSwitchOptions(): string[] {
+        return this._pageSwitchOptions.map(([nextTarget]) => nextTarget);
+    }
+
+    switchPage(switchIndex: number) {
+        this._activeIndex = this._pageSwitchOptions[switchIndex][1];
+        this.updatePageSwitchOptions();
+    }
+}
 
 /// Key used to store the last selected target in the persistent state.
 export const LAST_TARGET_KEY = "mirrord-last-target";
@@ -147,17 +210,7 @@ export class MirrordAPI {
             }
         }
 
-        return targets.reduce((acc, target) => {
-            let targetKey = target.split('/')[0];
-
-            if (Array.isArray(acc[targetKey])) {
-                acc[targetKey].push(target);
-            } else {
-                acc[targetKey] = [target];
-            }
-
-            return acc;
-        }, {  pod: [], deployment: [], lastTarget, length: targets.length } as unknown as Targets);
+        return new Targets(targets, lastTarget);
     }
 
     // Run the extension execute sequence

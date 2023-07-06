@@ -102,14 +102,21 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 			}
 
 			let selected = false;
-			let searchKey = !!targets.lastTarget?.startsWith('deployment') ? 'deployment' : 'pod';
 
 			while (!selected) {
-				let switchTo = `Show ${searchKey === 'pod' ? 'Deployment' : 'Pod'}s`;
-				let targetName = await vscode.window.showQuickPick([...targets[searchKey], TARGETLESS_TARGET_NAME, switchTo], { placeHolder: 'Select a target path to mirror' });
+				let pageSwitchOptions = targets.pageSwitchOptions();
+
+				let targetName = await vscode.window.showQuickPick([
+					...targets.getPage(),
+					TARGETLESS_TARGET_NAME,
+					...pageSwitchOptions
+				], { 
+					placeHolder: 'Select a target path to mirror' 
+				})
+				;
 				if (targetName) {
-					if (targetName === switchTo) {
-						searchKey = (searchKey === 'pod' ? 'deployment' : 'pod');
+					if (pageSwitchOptions.includes(targetName)) {
+						targets.switchPage(pageSwitchOptions.indexOf(targetName));
 
 						continue;
 					}
