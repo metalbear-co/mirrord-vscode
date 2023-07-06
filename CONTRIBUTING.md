@@ -10,10 +10,7 @@ issue.
 
 To build the VS Code extension, follow these steps:
 
-First, if you haven't built the mirrord binary yet, [do it now](https://github.com/metalbear-co/mirrord/blob/main/CONTRIBUTING.md#build-and-run-mirrord). Then copy the binary into the
-mirrord-vscode directory. 
-
-Then run
+Run:
 ```bash
 cd mirrord-vscode
 npm install
@@ -27,7 +24,7 @@ npm run package
 
 You should see something like
 ```text
-DONE  Packaged: /Users/you/Documents/projects/mirrord/vscode-ext/mirrord-3.34.0.vsix (11 files, 92.14MB)
+DONE  Packaged: /Users/you/Documents/projects/mirrord/vscode-ext/mirrord-<version>.vsix (11 files, 92.14MB)
 ```
 
 Note that packaging isn't necessary for debugging the extension.
