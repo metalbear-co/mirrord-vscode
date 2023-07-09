@@ -12,9 +12,15 @@ const TARGET_TYPE_DISPLAY: Record<string, string> = {
 };
 
 // Option in the target selector that represents no target.
-const TARGETLESS_TARGET: TargetQuickPick = { label: "No Target (\"targetless\")", type: 'targetless' };
+const TARGETLESS_TARGET: TargetQuickPick = { 
+    label: "No Target (\"targetless\")", 
+    type: 'targetless'
+};
 
-type TargetQuickPick = vscode.QuickPickItem & ({ type: 'target' | 'page', value: string } | { type: 'targetless' });
+type TargetQuickPick = vscode.QuickPickItem & (
+    { type: 'targetless' } |
+    { type: 'target' | 'page', value: string }
+);
 
 export class Targets {
     private activePage: string;
@@ -27,11 +33,16 @@ export class Targets {
 
         this.inner = targets.reduce((acc, value) => {
             const targetType = value.split('/')[0];
+            const target = { 
+                label: value, 
+                type: 'target',
+                value
+            };
 
             if (Array.isArray(acc[targetType])) {
-                acc[targetType]!.push({ label: value, value, type: 'target' });
+                acc[targetType]!.push(target);
             } else {
-                acc[targetType] = [{ label: value, value, type: 'target' }];
+                acc[targetType] = [target];
             }
 
             return acc;
@@ -51,7 +62,11 @@ export class Targets {
     private quickPickSelects(): TargetQuickPick[] {
         return Object.keys(this.inner)
             .filter((value) => value !== this.activePage)
-            .map((value) => ({ label: `Show ${TARGET_TYPE_DISPLAY[value] ?? value}s`, type: 'page', value }));
+            .map((value) => ({ 
+                label: `Show ${TARGET_TYPE_DISPLAY[value] ?? value}s`,
+                type: 'page',
+                value
+            }));
     }
 
 
