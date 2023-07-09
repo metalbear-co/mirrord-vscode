@@ -104,19 +104,17 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 			let selected = false;
 
 			while (!selected) {
-				let pageSwitchOptions = targets.pageSwitchOptions();
-
 				let targetName = await vscode.window.showQuickPick([
 					...targets.getPage(),
 					TARGETLESS_TARGET_NAME,
-					...pageSwitchOptions
+					...targets.pageSwitchOptions
 				], { 
 					placeHolder: 'Select a target path to mirror' 
 				})
 				;
 				if (targetName) {
-					if (pageSwitchOptions.includes(targetName)) {
-						targets.switchPage(pageSwitchOptions.indexOf(targetName));
+					if (targets.pageSwitchOptions.includes(targetName)) {
+						targets.switchPage(targets.pageSwitchOptions.indexOf(targetName));
 
 						continue;
 					}

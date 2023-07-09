@@ -74,6 +74,17 @@ describe("mirrord sample flow test", function () {
         await browser.driver.wait(async () => {
             return await inputBox.isDisplayed();
         }, defaultTimeout, "quickPick not found -- timed out");
+
+        for (const pick of await inputBox.getQuickPicks()) {
+            if ("Show Pods" === await pick.getLabel()) {
+                await pick.select();
+            }
+        }
+        
+        await browser.driver.wait(async () => {
+            return await inputBox.isDisplayed();
+        }, defaultTimeout, "quickPick not found -- timed out");
+
         await inputBox.selectQuickPick(podToSelect!);
     });
 

@@ -14,12 +14,13 @@ const TARGET_TYPE_DISPLAY: Record<string, string> = {
 type TypeTargets = Record<string, string[] | undefined>;
 
 export class Targets {
-    private _pageSwitchOptions: [string, number][] = [];
     private activeIndex: number;
-
-    private readonly types: string[];
     private readonly inner: TypeTargets;
-    
+    private readonly types: string[];
+
+    private pageSwitchIndexes: number[] = [];
+    pageSwitchOptions: string[] = [];
+
     readonly length: number;
 
     constructor(targets: string[], lastTarget?: string) {
@@ -42,16 +43,23 @@ export class Targets {
         if (!!lastTarget) {
             this.activeIndex = Math.max(0, this.types.findIndex((type) => lastTarget.split("/")[0] === type));
         } else {
-            this.activeIndex = Math.max(0, this.types.indexOf('pod'));
+            this.activeIndex = 0;
         }
 
         this.updatePageSwitchOptions();
     }
 
     private updatePageSwitchOptions() {
-        this._pageSwitchOptions = this.types
+        this.pageSwitchOptions = [];
+        this.pageSwitchIndexes = [];
+
+        this.types
             .map((nextTarget, index) => [`Show ${TARGET_TYPE_DISPLAY[nextTarget] ?? nextTarget}s`, index] as [string, number])
-            .filter(([_, index]) => index !== this.activeIndex);
+            .filter(([_, index]) => index !== this.activeIndex)
+            .forEach(([nextTarget, index]) => {
+                this.pageSwitchOptions.push(nextTarget);
+                this.pageSwitchIndexes.push(index);
+            });
     }
 
     getPage(): string[] {
@@ -64,12 +72,9 @@ export class Targets {
         return this.inner[key] ?? [];
     }
 
-    pageSwitchOptions(): string[] {
-        return this._pageSwitchOptions.map(([nextTarget]) => nextTarget);
-    }
 
     switchPage(switchIndex: number) {
-        this.activeIndex = this._pageSwitchOptions[switchIndex][1];
+        this.activeIndex = this.pageSwitchIndexes[switchIndex];
         this.updatePageSwitchOptions();
     }
 }
