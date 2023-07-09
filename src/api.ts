@@ -51,7 +51,7 @@ export class Targets {
     private quickPickSelects(): TargetQuickPick[] {
         return Object.keys(this.inner)
             .filter((value) => value !== this.activePage)
-            .map((value) => ({ label: `Show ${TARGET_TYPE_DISPLAY[value] ?? value}s`, type: 'page', value }))
+            .map((value) => ({ label: `Show ${TARGET_TYPE_DISPLAY[value] ?? value}s`, type: 'page', value }));
     }
 
 
