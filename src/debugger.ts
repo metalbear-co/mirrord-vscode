@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'node:path';
 import { globalContext } from './extension';
 import { MirrordConfigManager } from './config';
-import { LAST_TARGET_KEY, MirrordAPI, TARGETLESS_TARGET_NAME, mirrordFailure } from './api';
+import { LAST_TARGET_KEY, MirrordAPI, mirrordFailure } from './api';
 import { updateTelemetries } from './versionCheck';
 import { getLocalMirrordBinary, getMirrordBinary } from './binaryManager';
 
@@ -104,27 +104,23 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 			let selected = false;
 
 			while (!selected) {
-				let targetName = await vscode.window.showQuickPick([
-					...targets.getPage(),
-					TARGETLESS_TARGET_NAME,
-					...targets.pageSwitchOptions
-				], { 
+				let targetPick = await vscode.window.showQuickPick(targets.quickPickItems(), { 
 					placeHolder: 'Select a target path to mirror' 
-				})
-				;
-				if (targetName) {
-					if (targets.pageSwitchOptions.includes(targetName)) {
-						targets.switchPage(targetName);
+				});
+
+				if (targetPick) {
+					if (targetPick.type === 'page') {
+						targets.switchPage(targetPick);
 
 						continue;
 					}
 
-					if (targetName !== TARGETLESS_TARGET_NAME) {
-						target = targetName;
+					if (targetPick.type !== 'targetless') {
+						target = targetPick.value;
 					}
 
-					globalContext.globalState.update(LAST_TARGET_KEY, targetName);
-					globalContext.workspaceState.update(LAST_TARGET_KEY, targetName);
+					globalContext.globalState.update(LAST_TARGET_KEY, target);
+					globalContext.workspaceState.update(LAST_TARGET_KEY, target);
 				}
 
 				selected = true;

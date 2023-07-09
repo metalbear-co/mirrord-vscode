@@ -11,73 +11,67 @@ const TARGET_TYPE_DISPLAY: Record<string, string> = {
     rollout: 'Rollout',
 };
 
-type TypeTargets = Record<string, string[] | undefined>;
+// Option in the target selector that represents no target.
+const TARGETLESS_TARGET: TargetQuickPick = { label: "No Target (\"targetless\")", type: 'targetless' };
+
+type TargetQuickPick = vscode.QuickPickItem & ({ type: 'target' | 'page', value: string } | { type: 'targetless' });
 
 export class Targets {
     private activePage: string;
 
-    private pageTypes: string[];
-    private pageSwitchDisplay: Record<string, string> = {};
-    private pageSwitchDisplayReverse: Record<string, string> = {};
-
-    private readonly pages: TypeTargets;
-
+    private readonly inner: Record<string, TargetQuickPick[] | undefined>;
     readonly length: number;
 
     constructor(targets: string[], lastTarget?: string) {
         this.length = targets.length;
 
-        this.pages = targets.reduce((acc, target) => {
-            const targetType = target.split('/')[0];
+        this.inner = targets.reduce((acc, value) => {
+            const targetType = value.split('/')[0];
 
             if (Array.isArray(acc[targetType])) {
-                acc[targetType]!.push(target);
+                acc[targetType]!.push({ label: value, value, type: 'target' });
             } else {
-                acc[targetType] = [target];
+                acc[targetType] = [{ label: value, value, type: 'target' }];
             }
 
             return acc;
-        }, {} as TypeTargets);
+        }, {} as Targets['inner']);
 
-        this.pageTypes = Object.keys(this.pages);
 
-        for (const type of this.pageTypes) {
-            let display = `Show ${TARGET_TYPE_DISPLAY[type] ?? type}s`;
+        const types = Object.keys(this.inner);
+        const lastPage = lastTarget?.split("/")?.[0] ?? '';
 
-            this.pageSwitchDisplay[type] = display;
-            this.pageSwitchDisplayReverse[display] = type;
-        }
-
-        let lastPage = lastTarget?.split("/")?.[0] ?? '';
-
-        if (this.pageTypes.includes(lastPage)) {
+        if (types.includes(lastPage)) {
             this.activePage = lastPage;
         } else {
-            this.activePage = this.pageTypes[0] ?? '';
+            this.activePage = types[0] ?? '';
         }
     }
 
-
-    getPage(): string[] {
-        return this.pages[this.activePage] ?? [];
+    private quickPickSelects(): TargetQuickPick[] {
+        return Object.keys(this.inner)
+            .filter((value) => value !== this.activePage)
+            .map((value) => ({ label: `Show ${TARGET_TYPE_DISPLAY[value] ?? value}s`, type: 'page', value }))
     }
 
-    get pageSwitchOptions(): string[] {
-        return this.pageTypes
-            .filter(pageType => pageType !== this.activePage)
-            .map(pageType => this.pageSwitchDisplay[pageType]);
+
+    quickPickItems(): TargetQuickPick[] {
+        return [
+            ...(this.inner[this.activePage] ?? []),
+            TARGETLESS_TARGET,
+            ...this.quickPickSelects()
+        ];
     }
 
-    switchPage(nextPageOption: string) {
-        this.activePage = this.pageSwitchDisplayReverse[nextPageOption];
+    switchPage(nextPage: TargetQuickPick) {
+        if (nextPage.type === 'page') {
+            this.activePage = nextPage.value;    
+        }
     }
 }
 
 /// Key used to store the last selected target in the persistent state.
 export const LAST_TARGET_KEY = "mirrord-last-target";
-
-// Option in the target selector that represents no target.
-export const TARGETLESS_TARGET_NAME = "No Target (\"targetless\")";
 
 // Display error message with help
 export function mirrordFailure(error: string) {
