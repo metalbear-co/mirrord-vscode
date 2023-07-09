@@ -114,7 +114,7 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 				;
 				if (targetName) {
 					if (targets.pageSwitchOptions.includes(targetName)) {
-						targets.switchPage(targets.pageSwitchOptions.indexOf(targetName));
+						targets.switchPage(targetName);
 
 						continue;
 					}

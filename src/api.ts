@@ -14,19 +14,20 @@ const TARGET_TYPE_DISPLAY: Record<string, string> = {
 type TypeTargets = Record<string, string[] | undefined>;
 
 export class Targets {
-    private activeIndex: number;
-    private readonly inner: TypeTargets;
-    private readonly types: string[];
+    private activePage: string;
 
-    private pageSwitchIndexes: number[] = [];
-    pageSwitchOptions: string[] = [];
+    private pageTypes: string[];
+    private pageSwitchDisplay: Record<string, string> = {};
+    private pageSwitchDisplayReverse: Record<string, string> = {};
+
+    private readonly pages: TypeTargets;
 
     readonly length: number;
 
     constructor(targets: string[], lastTarget?: string) {
         this.length = targets.length;
 
-        this.inner = targets.reduce((acc, target) => {
+        this.pages = targets.reduce((acc, target) => {
             const targetType = target.split('/')[0];
 
             if (Array.isArray(acc[targetType])) {
@@ -38,44 +39,37 @@ export class Targets {
             return acc;
         }, {} as TypeTargets);
 
-        this.types = Object.keys(this.inner);
+        this.pageTypes = Object.keys(this.pages);
 
-        if (!!lastTarget) {
-            this.activeIndex = Math.max(0, this.types.findIndex((type) => lastTarget.split("/")[0] === type));
-        } else {
-            this.activeIndex = 0;
+        for (const type of this.pageTypes) {
+            let display = `Show ${TARGET_TYPE_DISPLAY[type] ?? type}s`;
+
+            this.pageSwitchDisplay[type] = display;
+            this.pageSwitchDisplayReverse[display] = type;
         }
 
-        this.updatePageSwitchOptions();
+        let lastPage = lastTarget?.split("/")?.[0] ?? '';
+
+        if (this.pageTypes.includes(lastPage)) {
+            this.activePage = lastPage;
+        } else {
+            this.activePage = this.pageTypes[0] ?? '';
+        }
     }
 
-    private updatePageSwitchOptions() {
-        this.pageSwitchOptions = [];
-        this.pageSwitchIndexes = [];
-
-        this.types
-            .map((nextTarget, index) => [`Show ${TARGET_TYPE_DISPLAY[nextTarget] ?? nextTarget}s`, index] as [string, number])
-            .filter(([_, index]) => index !== this.activeIndex)
-            .forEach(([nextTarget, index]) => {
-                this.pageSwitchOptions.push(nextTarget);
-                this.pageSwitchIndexes.push(index);
-            });
-    }
 
     getPage(): string[] {
-        const key = this.types[this.activeIndex];
-
-        if (!key) {
-            return [];
-        }
-
-        return this.inner[key] ?? [];
+        return this.pages[this.activePage] ?? [];
     }
 
+    get pageSwitchOptions(): string[] {
+        return this.pageTypes
+            .filter(pageType => pageType !== this.activePage)
+            .map(pageType => this.pageSwitchDisplay[pageType]);
+    }
 
-    switchPage(switchIndex: number) {
-        this.activeIndex = this.pageSwitchIndexes[switchIndex];
-        this.updatePageSwitchOptions();
+    switchPage(nextPageOption: string) {
+        this.activePage = this.pageSwitchDisplayReverse[nextPageOption];
     }
 }
 
