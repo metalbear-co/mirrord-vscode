@@ -5,16 +5,88 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
 import { tickWaitlistCounter } from './waitlist';
 
-type Targets = Record<'pod' | 'deployment' | string, string[]> & { 
-    lastTarget: string | undefined;
-    length: number;
+const TARGET_TYPE_DISPLAY: Record<string, string> = {
+    pod: 'Pod',
+    deployment: 'Deployment',
+    rollout: 'Rollout',
 };
+
+// Option in the target selector that represents no target.
+const TARGETLESS_TARGET: TargetQuickPick = { 
+    label: "No Target (\"targetless\")", 
+    type: 'targetless'
+};
+
+type TargetQuickPick = vscode.QuickPickItem & (
+    { type: 'targetless' } |
+    { type: 'target' | 'page', value: string }
+);
+
+export class Targets {
+    private activePage: string;
+
+    private readonly inner: Record<string, TargetQuickPick[] | undefined>;
+    readonly length: number;
+
+    constructor(targets: string[], lastTarget?: string) {
+        this.length = targets.length;
+
+        this.inner = targets.reduce((acc, value) => {
+            const targetType = value.split('/')[0];
+            const target: TargetQuickPick = { 
+                label: value, 
+                type: 'target',
+                value
+            };
+
+            if (Array.isArray(acc[targetType])) {
+                acc[targetType]!.push(target);
+            } else {
+                acc[targetType] = [target];
+            }
+
+            return acc;
+        }, {} as Targets['inner']);
+
+
+        const types = Object.keys(this.inner);
+        const lastPage = lastTarget?.split("/")?.[0] ?? '';
+
+        if (types.includes(lastPage)) {
+            this.activePage = lastPage;
+        } else {
+            this.activePage = types[0] ?? '';
+        }
+    }
+
+    private quickPickSelects(): TargetQuickPick[] {
+        return Object.keys(this.inner)
+            .filter((value) => value !== this.activePage)
+            .map((value) => ({ 
+                label: `Show ${TARGET_TYPE_DISPLAY[value] ?? value}s`,
+                type: 'page',
+                value
+            }));
+    }
+
+
+    quickPickItems(): TargetQuickPick[] {
+        return [
+            ...(this.inner[this.activePage] ?? []),
+            TARGETLESS_TARGET,
+            ...this.quickPickSelects()
+        ];
+    }
+
+    switchPage(nextPage: TargetQuickPick) {
+        if (nextPage.type === 'page') {
+            this.activePage = nextPage.value;    
+        }
+    }
+}
 
 /// Key used to store the last selected target in the persistent state.
 export const LAST_TARGET_KEY = "mirrord-last-target";
-
-// Option in the target selector that represents no target.
-export const TARGETLESS_TARGET_NAME = "No Target (\"targetless\")";
 
 // Display error message with help
 export function mirrordFailure(error: string) {
@@ -147,17 +219,7 @@ export class MirrordAPI {
             }
         }
 
-        return targets.reduce((acc, target) => {
-            let targetKey = target.split('/')[0];
-
-            if (Array.isArray(acc[targetKey])) {
-                acc[targetKey].push(target);
-            } else {
-                acc[targetKey] = [target];
-            }
-
-            return acc;
-        }, {  pod: [], deployment: [], lastTarget, length: targets.length } as unknown as Targets);
+        return new Targets(targets, lastTarget);
     }
 
     // Run the extension execute sequence
