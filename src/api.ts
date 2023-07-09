@@ -33,7 +33,7 @@ export class Targets {
 
         this.inner = targets.reduce((acc, value) => {
             const targetType = value.split('/')[0];
-            const target = { 
+            const target: TargetQuickPick = { 
                 label: value, 
                 type: 'target',
                 value
