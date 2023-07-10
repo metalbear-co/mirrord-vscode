@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import * as path from 'node:path';
 import { globalContext } from './extension';
 import { MirrordConfigManager } from './config';
 import { LAST_TARGET_KEY, MirrordAPI, mirrordFailure, MirrordExecution } from './api';
 import { updateTelemetries } from './versionCheck';
 import { getLocalMirrordBinary, getMirrordBinary } from './binaryManager';
 import { platform } from 'node:os';
+import { NotificationBuilder } from './notification';
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
@@ -132,10 +132,12 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 				return null;
 			}
 			if (targets.length === 0) {
-				vscode.window.showInformationMessage(
-					"No mirrord target available in the configured namespace. " +
-					"You can run targetless, or set a different target namespace or kubeconfig in the mirrord configuration file.",
-				);
+				new NotificationBuilder()	
+					.withMessage(
+						"No mirrord target available in the configured namespace. " +
+						"You can run targetless, or set a different target namespace or kubeconfig in the mirrord configuration file.",	
+					)
+					.info();
 			}
 
 			let selected = false;
@@ -164,7 +166,10 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 			}
 
 			if (!target) {
-				vscode.window.showInformationMessage("mirrord running targetless");
+				new NotificationBuilder()
+					.withMessage("mirrord running targetless")
+					.withDisableAction("promptTargetless")
+					.info();
 			}
 		}
 

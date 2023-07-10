@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
-import * as path from 'node:path';
-import * as fs from 'node:fs';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
 import { tickWaitlistCounter } from './waitlist';
+import { NotificationBuilder } from './notification';
 
 const TARGET_TYPE_DISPLAY: Record<string, string> = {
     pod: 'Pod',
@@ -90,15 +89,18 @@ export const LAST_TARGET_KEY = "mirrord-last-target";
 
 // Display error message with help
 export function mirrordFailure(error: string) {
-    vscode.window.showErrorMessage(`${error}. Please check the logs/errors.`, "Get help on Discord", "Open an issue on GitHub", "Send us an email").then(value => {
-        if (value === "Get help on Discord") {
-            vscode.env.openExternal(vscode.Uri.parse('https://discord.gg/metalbear'));
-        } else if (value === "Open an issue on GitHub") {
-            vscode.env.openExternal(vscode.Uri.parse('https://github.com/metalbear-co/mirrord/issues/new/choose'));
-        } else if (value === "Send us an email") {
+    new NotificationBuilder()
+        .withMessage(`${error}. Please check the logs/errors.`)
+        .withGenericAction("Get help on Discord", async () => {
+            await vscode.env.openExternal(vscode.Uri.parse('https://discord.gg/metalbear'));
+        })
+        .withGenericAction("Open an issue on GitHub", async () => {
+            await vscode.env.openExternal(vscode.Uri.parse('https://github.com/metalbear-co/mirrord/issues/new/choose'));
+        })
+        .withGenericAction("Send us an email", async () => {
             vscode.env.openExternal(vscode.Uri.parse('mailto:hi@metalbear.co'));
-        }
-    });
+        })
+        .error();
 }
 
 // Like the Rust MirrordExecution struct.
@@ -157,13 +159,14 @@ export class MirrordAPI {
                 const match = stderrData.match(/Error: (.*)/)?.[1];
                 if (match) {
                     const error = JSON.parse(match);
-                    vscode.window
-                        .showErrorMessage(`mirrord error: ${error["message"]}`)
-                        .then(() => {
-                            if (error["help"]) {
-                                vscode.window.showInformationMessage(error["help"]);
-                            }
+                    const notification = new NotificationBuilder()
+                        .withMessage(`mirrord error: ${error["message"]}`);
+                    if (error["help"]) {
+                        notification.withGenericAction("Help", async () => {
+                            vscode.window.showInformationMessage(error["help"]);
                         });
+                    }
+                    notification.error();
                     return reject(error["message"]);
                 }
 
@@ -264,13 +267,14 @@ export class MirrordAPI {
                     const match = stderrData.match(/Error: (.*)/)?.[1];
                     if (match) {
                         const error = JSON.parse(match);
-                        vscode.window
-                            .showErrorMessage(`mirrord error: ${error["message"]}`)
-                            .then(() => {
-                                if (error["help"]) {
-                                    vscode.window.showInformationMessage(error["help"]);
-                                }
+                        const notification = new NotificationBuilder()
+                            .withMessage(`mirrord error: ${error["message"]}`);
+                        if (error["help"]) {
+                            notification.withGenericAction("Help", async () => {
+                                vscode.window.showInformationMessage(error["help"]);
                             });
+                        }
+                        notification.error();
                         return reject(error["message"]);
                     }
 
@@ -313,7 +317,9 @@ export class MirrordAPI {
                         }
 
                         if (message["type"] === "Warning") {
-                            vscode.window.showWarningMessage(message["message"]);
+                            new NotificationBuilder()
+                                .withMessage(message["message"])
+                                .warning();
                         } else {
                             // If it is not last message, it is progress
                             let formattedMessage = message["name"];

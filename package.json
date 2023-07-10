@@ -60,6 +60,46 @@
 				"title": "Submit feedback"
 			}
 		],
+		"configuration": {
+			"title": "mirrord",
+			"properties": {
+				"mirrord.promptWaitlistSignup": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show notifications about waitlist signup."
+				},
+				"mirrord.promptActiveConfigRemoved": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when active configuration file is removed."
+				},
+				"mirrord.promptUsingActiveConfig": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when mirrord uses active configuration."
+				},
+				"mirrord.promptUsingDefaultConfig": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when mirrord uses default configuration."
+				},
+				"mirrord.promptCreatedDefaultConfig": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when mirrord creates default configuration."
+				},
+				"mirrord.promptTargetless": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when mirrord runs in targetless mode."
+				},
+				"mirrord.promptOutdated": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when a new version of mirrord is available."
+				}
+			}
+		},
 		"menus": {
 			"commandPalette": [
 				{
@@ -67,9 +107,9 @@
 					"when": "true"
 				},
 				{
-		          	"command": "mirrord.waitlistSignup",
-		          	"when": "true"
-		      	},
+					"command": "mirrord.waitlistSignup",
+					"when": "true"
+				},
 				{
 					"command": "mirrord.selectActiveConfig",
 					"when": "true"

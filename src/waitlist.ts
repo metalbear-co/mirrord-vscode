@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as vscode from 'vscode';
 import { globalContext } from './extension';
+import { NotificationBuilder } from './notification';
 
 interface IWaitlistResult {
     successful: boolean,
@@ -50,10 +51,14 @@ export async function waitlistRegisterCommand(email?: string, blockPrompt?: bool
 
             vscode.commands.executeCommand<IWaitlistResult>('mirrord.waitlistSignup', emailInput.value, true).then(({ successful, message }) => {
                 if (successful) {
-                    vscode.window.showInformationMessage(message);
+                    new NotificationBuilder()
+                        .withMessage(message)
+                        .info();
                     globalContext.globalState.update(WAITLIST_SUPPRESS, 'true');
                 } else {
-                    vscode.window.showErrorMessage(message);   
+                    new NotificationBuilder()
+                        .withMessage(message)
+                        .error();
                     emailInput.show();
                 }
             });
@@ -70,16 +75,13 @@ export async function waitlistRegisterCta(message?: string) {
         return;
     }
 
-    let actions = ['Join the waitlist', 'Don\'t show again'];
-    let popupResult = await vscode.window.showInformationMessage(message ?? 'Hey you should join mirrord-teams', ...actions);
-
-    if (popupResult === actions[0]) {
-        vscode.commands.executeCommand<IWaitlistResult>('mirrord.waitlistSignup');
-    }
-
-    if (popupResult === actions[1]) {
-        globalContext.globalState.update(WAITLIST_SUPPRESS, 'true');
-    }
+    new NotificationBuilder()
+        .withMessage(message ?? "Hey, you should join mirrord-teams")
+        .withGenericAction("Join the waitlist", async () => {
+            await vscode.commands.executeCommand<IWaitlistResult>('mirrord.waitlistSignup');
+        })
+        .withDisableAction("promptWaitlistSignup")
+        .info();
 }
 
 export function tickWaitlistCounter(isDeploymentExec: boolean) {
