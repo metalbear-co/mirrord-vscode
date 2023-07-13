@@ -7,26 +7,50 @@ import { updateTelemetries } from './versionCheck';
 import { getLocalMirrordBinary, getMirrordBinary } from './binaryManager';
 
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type.
-function getExecutableFieldName(config: vscode.DebugConfiguration): keyof vscode.DebugConfiguration {
+function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode.DebugConfiguration, string | null] {
 	switch (config.type) {
 		case "pwa-node":
 		case "node": {
-			return "runtimeExecutable";
+			return ["runtimeExecutable", config["runtimeExecutable"]];
+		}
+		case "node-terminal": {
+			return ["command", config["command"]?.split(' ')[0]];
 		}
 		case "python": {
 			if ("python" in config) {
-				return "python";
+				return ["python", config["python"]];
 			}
 			// Official documentation states the relevant field name is "python" (https://code.visualstudio.com/docs/python/debugging#_python), 
 			// but when debugging we see the field is called "pythonPath".
-			return "pythonPath";
+			return ["pythonPath", config["python"]];
 		}
 		default: {
-			return "program";
+			return ["program", config["program"]];
 		}
 	}
-
 }
+
+function replaceWithSipExecutable(config: vscode.DebugConfiguration, executableFieldName: string, possiblePatchedPath: string | null) {
+	if (possiblePatchedPath === null) {
+		return;
+	}
+	let patchedPath = possiblePatchedPath!;
+	if (config.type === "node-terminal") {
+		let command = config[executableFieldName];
+		if (command === null) {
+			return;
+		}
+		// replace the first word of a command line.
+		let words = command.split(' ');
+		words[0] = patchedPath
+		config[executableFieldName] = words.join(' ')
+	} else {
+		// replace a field containing only the executable's name.
+		config[executableFieldName] = patchedPath
+	}
+}
+
+
 
 async function getLastActiveMirrordPath(): Promise<string | null> {
 	const binaryPath = globalContext.globalState.get('binaryPath', null);
@@ -141,16 +165,11 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		// TODO: find a way to use MIRRORD_DETECT_DEBUGGER_PORT for other debuggers.
 		config.env["MIRRORD_IGNORE_DEBUGGER_PORTS"] = "45000-65535";
 
-		let executableFieldName = getExecutableFieldName(config);
+		let [executableFieldName, executable] = getFieldAndExecutable(config);
 
 		let executionInfo;
 		try {
-			if (executableFieldName in config) {
-				executionInfo = await mirrordApi.binaryExecute(target, configPath.path, config[executableFieldName]);
-			} else {
-				// Even `program` is not in config, so no idea what's the executable in the end.
-				executionInfo = await mirrordApi.binaryExecute(target, configPath.path, null);
-			}
+			executionInfo = await mirrordApi.binaryExecute(target, configPath.path, executable);
 		} catch (err) {
 			mirrordFailure(`mirrord preparation failed: ${err}`);
 			return null;
@@ -158,9 +177,7 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 
 		// For sidestepping SIP on macOS. If we didn't patch, we don't change that config value.
 		let patchedPath = executionInfo?.patchedPath;
-		if (patchedPath) {
-			config[executableFieldName] = patchedPath;
-		}
+		replaceWithSipExecutable(config, executableFieldName as string, patchedPath)
 
 		let env = executionInfo?.env;
 		config.env = Object.assign({}, config.env, env);
