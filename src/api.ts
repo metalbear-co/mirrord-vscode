@@ -102,7 +102,7 @@ export function mirrordFailure(error: string) {
 }
 
 // Like the Rust MirrordExecution struct.
-class MirrordExecution {
+export class MirrordExecution {
 
     env: Map<string, string>;
     patchedPath: string | null;
@@ -114,7 +114,7 @@ class MirrordExecution {
 
     static mirrordExecutionFromJson(data: string): MirrordExecution {
         const parsed = JSON.parse(data);
-        return new MirrordExecution(parsed["environment"], parsed["patched_path"]);
+        return new MirrordExecution(new Map(Object.entries(parsed["environment"])), parsed["patched_path"]);
     }
 
 }
