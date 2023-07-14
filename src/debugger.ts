@@ -28,7 +28,7 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 			}
 			// Official documentation states the relevant field name is "python" (https://code.visualstudio.com/docs/python/debugging#_python), 
 			// but when debugging we see the field is called "pythonPath".
-			return ["pythonPath", config["python"]];
+			return ["pythonPath", config["pythonPath"]];
 		}
 		default: {
 			return ["program", config["program"]];
