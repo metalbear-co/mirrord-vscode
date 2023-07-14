@@ -17,6 +17,7 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 	switch (config.type) {
 		case "pwa-node":
 		case "node": {
+			// https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_launch-configuration-attributes
 			return ["runtimeExecutable", config["runtimeExecutable"]];
 		}
 		case "node-terminal": {
