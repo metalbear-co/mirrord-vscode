@@ -57,10 +57,8 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
 		// which is SIP protected, so our DYLD env var is silently removed. So in order to bypass
 		// that, we set that variable in the command line.
 		config[executableFieldName] = `${DYLD_ENV_VAR_NAME}=${libraryPath} ${command}`;
-	} else {
-		if (executionInfo.patchedPath !== null) {
-			config[executableFieldName] = executionInfo.patchedPath!;
-		}
+	} else if (executionInfo.patchedPath !== null) {
+		config[executableFieldName] = executionInfo.patchedPath!;
 	}
 }
 
