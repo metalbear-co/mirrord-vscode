@@ -9,7 +9,10 @@ import { platform } from 'node:os';
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
-/// Get the name of the field that holds the exectuable in a debug configuration of the given type.
+/// Get the name of the field that holds the exectuable in a debug configuration of the given type,
+/// and the executable. Returning the field name for replacing the value with the patched path later.
+/// Also returning the executable because in some configuration types there is some extra logic to
+/// be done for retrieving the executable out of its field (see the `node-terminal` case).
 function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode.DebugConfiguration, string | null] {
 	switch (config.type) {
 		case "pwa-node":
@@ -33,6 +36,9 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 	}
 }
 
+/// Edit the launch configuration in order to sidestep SIP on macOS, and allow the layer to be
+/// loaded into the process. This includes replacing the executable with the path to a patched
+/// executable if the original executable is SIP protected, and some other special workarounds.
 function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldName: string, executionInfo: MirrordExecution) {
 	if (config.type === "node-terminal") {
 		let command = config[executableFieldName];
