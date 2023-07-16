@@ -8,6 +8,22 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.49.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.49.0) - 2023-07-16
+
+
+### Added
+
+- Support for launch configuration with type `node-terminal`.
+  [#26](https://github.com/metalbear-co/mirrord-vscode/issues/26)
+- Add support for argo Rollout & other future target types.
+
+
+### Internal
+
+- Bump dependencies
+- Update CONTRIBUTING.md
+
+
 ## [3.48.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.48.0) - 2023-07-04
 
 
