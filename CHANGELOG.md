@@ -8,6 +8,15 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.49.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.49.1) - 2023-07-19
+
+
+### Fixed
+
+- Fixed Debug launch failing on Java applications
+  [#32](https://github.com/metalbear-co/mirrord-vscode/issues/32)
+
+
 ## [3.49.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.49.0) - 2023-07-16
 
 
