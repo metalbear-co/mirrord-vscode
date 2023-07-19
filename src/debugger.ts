@@ -172,6 +172,8 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 			config.env["MIRRORD_SKIP_PROCESSES"] = "dlv;debugserver;compile;go;asm;cgo;link;git;gcc;as;ld;collect2;cc1";
 		} else if (config.type === "python") {
 			config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "debugpy";
+		} else if (config.type === "java") {
+			config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "javaagent";
 		}
 
 		// Add a fixed range of ports that VS Code uses for debugging.
