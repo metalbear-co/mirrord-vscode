@@ -92,10 +92,10 @@ export function mirrordFailure(error: string) {
     new NotificationBuilder()
         .withMessage(`${error}. Please check the logs/errors.`)
         .withGenericAction("Get help on Discord", async () => {
-            await vscode.env.openExternal(vscode.Uri.parse('https://discord.gg/metalbear'));
+            vscode.env.openExternal(vscode.Uri.parse('https://discord.gg/metalbear'));
         })
         .withGenericAction("Open an issue on GitHub", async () => {
-            await vscode.env.openExternal(vscode.Uri.parse('https://github.com/metalbear-co/mirrord/issues/new/choose'));
+            vscode.env.openExternal(vscode.Uri.parse('https://github.com/metalbear-co/mirrord/issues/new/choose'));
         })
         .withGenericAction("Send us an email", async () => {
             vscode.env.openExternal(vscode.Uri.parse('mailto:hi@metalbear.co'));

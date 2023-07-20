@@ -18,7 +18,7 @@ export async function checkVersion(version: string) {
 				new NotificationBuilder()
 					.withMessage("New version of mirrord is available!")
 					.withGenericAction("Update", async () => {
-						await vscode.env.openExternal(vscode.Uri.parse('vscode:extension/MetalBear.mirrord'));
+						vscode.env.openExternal(vscode.Uri.parse('vscode:extension/MetalBear.mirrord'));
 					})
 					.withDisableAction("promptOutdated")
 					.info();
