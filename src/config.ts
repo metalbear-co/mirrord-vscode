@@ -73,10 +73,12 @@ export class MirrordConfigManager {
             if (activeConfigMoved) {
                 new NotificationBuilder()
                     .withMessage(`moved active mirrord configuration to ${vscode.workspace.asRelativePath(activeConfigMoved.newUri)}`)
-                    .withDisableAction("promptActiveConfigRemoved")
+                    .withDisableAction("promptActiveConfigMoved")
                     .warning();
 
-                this.setActiveConfig(undefined);
+                this.setActiveConfig(activeConfigMoved.newUri);
+
+                return;
             }
 
             if (this.active) {
@@ -84,7 +86,7 @@ export class MirrordConfigManager {
                     await vscode.workspace.fs.stat(this.active);
                 } catch (e) {
                     new NotificationBuilder()
-                        .withMessage("moved folder containing active mirrord configuration")
+                        .withMessage("removed active mirrord configuration")
                         .withDisableAction("promptActiveConfigRemoved")
                         .warning();
 
