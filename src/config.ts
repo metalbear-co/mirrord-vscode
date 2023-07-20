@@ -41,32 +41,56 @@ export class MirrordConfigManager {
     private constructor() {
         this.fileListeners = [];
 
-        this.fileListeners.push(vscode.workspace.onDidDeleteFiles(event => {
+        this.fileListeners.push(vscode.workspace.onDidDeleteFiles(async event => {
             const activeConfigDeleted = event.files.find(file => file.path === this.active?.path) !== undefined;
-            if (!activeConfigDeleted) {
+            if (activeConfigDeleted) {
+                new NotificationBuilder()
+                    .withMessage("removed active mirrord configuration")
+                    .withDisableAction("promptActiveConfigRemoved")
+                    .warning();
+
+                this.setActiveConfig(undefined);
+
                 return;
             }
 
-            new NotificationBuilder()
-                .withMessage("removed active mirrord configuration")
-                .withDisableAction("promptActiveConfigRemoved")
-                .warning();
+            if (this.active) {
+                try {
+                    await vscode.workspace.fs.stat(this.active);
+                } catch (e) {
+                    new NotificationBuilder()
+                        .withMessage("removed folder containing active mirrord configuration")
+                        .withDisableAction("promptActiveConfigRemoved")
+                        .warning();
 
-            this.setActiveConfig(undefined);
+                    this.setActiveConfig(undefined);
+                }
+            }
         }));
 
-        this.fileListeners.push(vscode.workspace.onDidRenameFiles(event => {
+        this.fileListeners.push(vscode.workspace.onDidRenameFiles(async event => {
             const activeConfigMoved = event.files.find(file => file.oldUri.path === this.active?.path);
-            if (!activeConfigMoved) {
-                return;
+            if (activeConfigMoved) {
+                new NotificationBuilder()
+                    .withMessage(`moved active mirrord configuration to ${vscode.workspace.asRelativePath(activeConfigMoved.newUri)}`)
+                    .withDisableAction("promptActiveConfigRemoved")
+                    .warning();
+
+                this.setActiveConfig(undefined);
             }
 
-            new NotificationBuilder()
-                .withMessage("removed active mirrord configuration")
-                .withDisableAction("promptActiveConfigRemoved")
-                .warning();
+            if (this.active) {
+                try {
+                    await vscode.workspace.fs.stat(this.active);
+                } catch (e) {
+                    new NotificationBuilder()
+                        .withMessage("moved folder containing active mirrord configuration")
+                        .withDisableAction("promptActiveConfigRemoved")
+                        .warning();
 
-            this.setActiveConfig(undefined);
+                    this.setActiveConfig(undefined);
+                }
+            }
         }));
 
         this.activeConfigListeners = [];

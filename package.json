@@ -71,7 +71,7 @@
 				"mirrord.promptActiveConfigRemoved": {
 					"type": "boolean",
 					"default": true,
-					"description": "Show a notification when active configuration file is removed."
+					"description": "Show a notification when active configuration file is removed or moved under a different path."
 				},
 				"mirrord.promptUsingActiveConfig": {
 					"type": "boolean",
