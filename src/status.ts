@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { MirrordConfigManager } from './config';
 import { globalContext } from './extension';
 import { waitlistRegisterCommand } from './waitlist';
+import { NotificationBuilder } from './notification';
 
 export class MirrordStatus {
     readonly statusBar: vscode.StatusBarItem;
@@ -52,9 +53,10 @@ export class MirrordStatus {
         const configManager = MirrordConfigManager.getInstance();
         globalContext.subscriptions.push(configManager);
 
+        configManager.onActiveConfigChange(async () => this.draw());
+
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.selectActiveConfigId, async () => {
             await configManager.selectActiveConfig();
-            this.draw();
         }));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.settingsCommandId, configManager.changeSettings.bind(configManager)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.toggleCommandId, this.toggle.bind(this)));
@@ -76,7 +78,9 @@ export class MirrordStatus {
 
     toggle() {
         if (process.platform === "win32") {
-            vscode.window.showErrorMessage('mirrord is not supported on Windows. You can use it via remote development or WSL.');
+            new NotificationBuilder()
+                .withMessage("mirrord is not supported on Windows. You can use it via remote development or WSL.")
+                .error();
             return;
         }
 

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import YAML from 'yaml';
 import TOML from 'toml';
+import { NotificationBuilder } from './notification';
 
 /**
  * Default mirrord configuration.
@@ -31,21 +32,70 @@ export class MirrordConfigManager {
      * Active config. User can set this for the whole workspace.
      */
     private active?: vscode.Uri;
-    private fileListener: vscode.Disposable;
+    private fileListeners: vscode.Disposable[];
+    /**
+     * All will be called when the active config changes.
+     */
+    private activeConfigListeners: ((active?: vscode.Uri) => Thenable<any>)[];
 
     private constructor() {
-        this.fileListener = vscode.workspace.onDidDeleteFiles(event => {
-            event.files.find(file => {
-                if (file.path === this.active?.path) {
-                    vscode.window.showWarningMessage("removed active mirrord configuration");
-                    this.active = undefined;
-                }
-            });
-        });
+        this.fileListeners = [];
+
+        this.fileListeners.push(vscode.workspace.onDidDeleteFiles(async event => {
+            const activePath = this.active?.path;
+            if (!activePath) {
+                return;
+            }
+
+            const deleted = event.files.find(file => activePath.startsWith(file.path));
+
+            if (deleted) {
+                new NotificationBuilder()
+                    .withMessage("removed active mirrord configuration")
+                    .withDisableAction("promptActiveConfigRemoved")
+                    .warning();
+
+                this.setActiveConfig(undefined);
+
+                return;
+            }
+        }));
+
+        this.fileListeners.push(vscode.workspace.onDidRenameFiles(async event => {
+            const activePath = this.active?.path;
+            if (!activePath) {
+                return;
+            }
+
+            const moved = event.files.find(file => activePath.startsWith(file.oldUri.path));
+            if (moved) {
+                const newPath = activePath.replace(moved.oldUri.path, moved.newUri.path);
+                const newUri = vscode.Uri.parse(`file://${newPath}`);
+                new NotificationBuilder()
+                    .withMessage(`moved active mirrord configuration to ${vscode.workspace.asRelativePath(newUri)}`)
+                    .withDisableAction("promptActiveConfigMoved")
+                    .warning();
+
+                this.setActiveConfig(newUri);
+
+                return;
+            }
+        }));
+
+        this.activeConfigListeners = [];
+    }
+
+    private setActiveConfig(newConfig?: vscode.Uri) {
+        this.active = newConfig;
+        this.activeConfigListeners.forEach(l => l(newConfig));
     }
 
     public dispose() {
-        this.fileListener.dispose();
+        this.fileListeners.forEach(fl => fl.dispose());
+    }
+
+    public onActiveConfigChange(listener: (active?: vscode.Uri) => Thenable<any>) {
+        this.activeConfigListeners.push(listener);
     }
 
     /**
@@ -79,10 +129,10 @@ export class MirrordConfigManager {
             : "Select active mirrord config from the workspace";
         const selected = await vscode.window.showQuickPick(displayed, {placeHolder});
         if (selected === "<none>") {
-            this.active = undefined;
+            this.setActiveConfig(undefined);
         } else if (selected) {
             let path = options.get(selected)!!;
-            this.active = path;
+            this.setActiveConfig(path);
         }
     }
 
@@ -191,7 +241,11 @@ export class MirrordConfigManager {
      */
     public async resolveMirrordConfig(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.Uri> {
         if (this.active) {
-            MirrordConfigManager.showConfigSelectedNotification(false, "using active mirrord configuration", this.active);
+            new NotificationBuilder()
+                .withMessage("using active mirrord configuration")
+                .withOpenFileAction(this.active)
+                .withDisableAction("promptUsingActiveConfig")
+                .info();
             return this.active;
         }
 
@@ -203,12 +257,20 @@ export class MirrordConfigManager {
         if (folder) {
             let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
             if (predefinedConfig) {
-                MirrordConfigManager.showConfigSelectedNotification(true, "using a default mirrord config", predefinedConfig);
+                new NotificationBuilder()
+                    .withMessage("using a default mirrord config")
+                    .withOpenFileAction(predefinedConfig)
+                    .withDisableAction("promptUsingDefaultConfig")
+                    .warning();
                 return predefinedConfig;
             }
     
             let defaultConfig = await MirrordConfigManager.createDefaultConfig(folder);
-            MirrordConfigManager.showConfigSelectedNotification(true, "created a default mirrord config", defaultConfig);
+            new NotificationBuilder()
+                .withMessage("created a default mirrord config")
+                .withOpenFileAction(defaultConfig)
+                .withDisableAction("promptCreatedDefaultConfig")
+                .warning();
             return defaultConfig;
         }
 
@@ -219,31 +281,22 @@ export class MirrordConfigManager {
 
         let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
         if (predefinedConfig) {
-            MirrordConfigManager.showConfigSelectedNotification(true, `using a default mirrord config from folder ${folder.name}`, predefinedConfig);
+            new NotificationBuilder()
+                .withMessage(`using a default mirrord config from folder ${folder.name}`)
+                .withOpenFileAction(predefinedConfig)
+                .withDisableAction("promptUsingDefaultConfig")
+                .warning();
             return predefinedConfig;
         }
 
         let defaultConfig = await MirrordConfigManager.createDefaultConfig(folder);
-        MirrordConfigManager.showConfigSelectedNotification(true, `created a default mirrord config in folder ${folder.name}`, defaultConfig);
+        new NotificationBuilder()
+            .withMessage(`created a default mirrord config in folder ${folder.name}`)
+            .withOpenFileAction(defaultConfig)
+            .withDisableAction("promptCreatedDefaultConfig")
+            .info();
 
         return defaultConfig;
-    }
-
-    /**
-     * Shows a notification about config being selected.
-     * The notification is enriched with an `Open` button which allows the user to open the config.
-     * @param warning whether the notification is a warning
-     * @param message message to display in the notification
-     * @param path path to the config
-     */
-    private static async showConfigSelectedNotification(warning: boolean, message: string, path: vscode.Uri) {
-        const func = warning ? vscode.window.showWarningMessage : vscode.window.showInformationMessage;
-        let selected = await func(message, "Open");
-        if (!selected) {
-            return;
-        }
-        let doc = await vscode.workspace.openTextDocument(path);
-        vscode.window.showTextDocument(doc);
     }
 
     /**
