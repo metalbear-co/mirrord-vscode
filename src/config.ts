@@ -42,8 +42,14 @@ export class MirrordConfigManager {
         this.fileListeners = [];
 
         this.fileListeners.push(vscode.workspace.onDidDeleteFiles(async event => {
-            const activeConfigDeleted = event.files.find(file => file.path === this.active?.path) !== undefined;
-            if (activeConfigDeleted) {
+            const activePath = this.active?.path;
+            if (!activePath) {
+                return;
+            }
+
+            const deleted = event.files.find(file => activePath.startsWith(file.path));
+
+            if (deleted) {
                 new NotificationBuilder()
                     .withMessage("removed active mirrord configuration")
                     .withDisableAction("promptActiveConfigRemoved")
@@ -53,45 +59,26 @@ export class MirrordConfigManager {
 
                 return;
             }
-
-            if (this.active) {
-                try {
-                    await vscode.workspace.fs.stat(this.active);
-                } catch (e) {
-                    new NotificationBuilder()
-                        .withMessage("removed folder containing active mirrord configuration")
-                        .withDisableAction("promptActiveConfigRemoved")
-                        .warning();
-
-                    this.setActiveConfig(undefined);
-                }
-            }
         }));
 
         this.fileListeners.push(vscode.workspace.onDidRenameFiles(async event => {
-            const activeConfigMoved = event.files.find(file => file.oldUri.path === this.active?.path);
-            if (activeConfigMoved) {
-                new NotificationBuilder()
-                    .withMessage(`moved active mirrord configuration to ${vscode.workspace.asRelativePath(activeConfigMoved.newUri)}`)
-                    .withDisableAction("promptActiveConfigMoved")
-                    .warning();
-
-                this.setActiveConfig(activeConfigMoved.newUri);
-
+            const activePath = this.active?.path;
+            if (!activePath) {
                 return;
             }
 
-            if (this.active) {
-                try {
-                    await vscode.workspace.fs.stat(this.active);
-                } catch (e) {
-                    new NotificationBuilder()
-                        .withMessage("removed active mirrord configuration")
-                        .withDisableAction("promptActiveConfigRemoved")
-                        .warning();
+            const moved = event.files.find(file => activePath.startsWith(file.oldUri.path));
+            if (moved) {
+                const newPath = activePath.replace(moved.oldUri.path, moved.newUri.path);
+                const newUri = vscode.Uri.parse(`file://${newPath}`);
+                new NotificationBuilder()
+                    .withMessage(`moved active mirrord configuration to ${vscode.workspace.asRelativePath(newUri)}`)
+                    .withDisableAction("promptActiveConfigMoved")
+                    .warning();
 
-                    this.setActiveConfig(undefined);
-                }
+                this.setActiveConfig(newUri);
+
+                return;
             }
         }));
 
