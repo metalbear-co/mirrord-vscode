@@ -21,7 +21,7 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 			return ["runtimeExecutable", config["runtimeExecutable"]];
 		}
 		case "node-terminal": {
-			return ["command", "zsh"];
+			return ["command", vscode.env.shell];
 		}
 		case "python": {
 			if ("python" in config) {
@@ -47,7 +47,7 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
 			return;
 		}
 		const escapedCommand = command.replaceAll('"', '\\"');
-		const sh = executionInfo.patchedPath ?? "zsh";
+		const sh = executionInfo.patchedPath ?? vscode.env.shell;
 
 		const libraryPath = executionInfo.env.get(DYLD_ENV_VAR_NAME);
 
