@@ -21,6 +21,9 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 			return ["runtimeExecutable", config["runtimeExecutable"]];
 		}
 		case "node-terminal": {
+			// Command could contain multiple commands like "command1 arg1; command2 arg2", so we execute that command
+			// in a shell, to which we inject the layer. In order to inject the layer to the shell, we have to patch it
+			// for SIP, so we pass the shell to the mirrod CLI.
 			return ["command", vscode.env.shell];
 		}
 		case "python": {
