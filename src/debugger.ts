@@ -57,9 +57,8 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
 
 		const libraryPath = executionInfo.env.get(DYLD_ENV_VAR_NAME);
 
-		// vscode passes the command to something like `sh`, which we cannot patch or change, and
-		// which is SIP protected, so our DYLD env var is silently removed. So in order to bypass
-		// that, we set that variable in the command line.
+		// Run the command in a SIP-patched shell, that way everything that runs in the original command will be SIP-patched
+		// on runtime.
 		config[executableFieldName] = `echo '${escapedCommand}' | ${DYLD_ENV_VAR_NAME}=${libraryPath} ${sh} -is`;
 	} else if (executionInfo.patchedPath !== null) {
 		config[executableFieldName] = executionInfo.patchedPath!;
