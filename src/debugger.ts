@@ -49,6 +49,9 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
 		if (command === null) {
 			return;
 		}
+
+		// The command could have single quotes, and we are putting the whole command in single quotes in the changed command.
+		// So we replace each `'` with `'\''` (closes the string, concats an escaped single quote, opens the string)
 		const escapedCommand = command.replaceAll("'", "'\\''");
 		const sh = executionInfo.patchedPath ?? vscode.env.shell;
 
