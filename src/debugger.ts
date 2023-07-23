@@ -21,7 +21,7 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 			return ["runtimeExecutable", config["runtimeExecutable"]];
 		}
 		case "node-terminal": {
-			return ["command", "sh"];
+			return ["command", "zsh"];
 		}
 		case "python": {
 			if ("python" in config) {
@@ -46,14 +46,14 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
 		if (command === null) {
 			return;
 		}
-		const sh = executionInfo.patchedPath ?? "sh";
+		const sh = executionInfo.patchedPath ?? "zsh";
 
 		let libraryPath = executionInfo.env.get(DYLD_ENV_VAR_NAME);
 
 		// vscode passes the command to something like `sh`, which we cannot patch or change, and
 		// which is SIP protected, so our DYLD env var is silently removed. So in order to bypass
 		// that, we set that variable in the command line.
-		config[executableFieldName] = `${DYLD_ENV_VAR_NAME}=${libraryPath} ${sh} --login -c "${command}"`;
+		config[executableFieldName] = `echo "${command}" | ${DYLD_ENV_VAR_NAME}=${libraryPath} ${sh} -is`;
 	} else if (executionInfo.patchedPath !== null) {
 		config[executableFieldName] = executionInfo.patchedPath!;
 	}
