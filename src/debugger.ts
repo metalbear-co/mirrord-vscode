@@ -21,10 +21,7 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 			return ["runtimeExecutable", config["runtimeExecutable"]];
 		}
 		case "node-terminal": {
-			// Command could contain multiple commands like "command1 arg1; command2 arg2", so we execute that command
-			// in a shell, to which we inject the layer. In order to inject the layer to the shell, we have to patch it
-			// for SIP, so we pass the shell to the mirrod CLI.
-			return ["command", vscode.env.shell];
+			return ["command", config["command"]?.split(' ')[0]];
 		}
 		case "python": {
 			if ("python" in config) {
@@ -45,21 +42,22 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 /// executable if the original executable is SIP protected, and some other special workarounds.
 function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldName: string, executionInfo: MirrordExecution) {
 	if (config.type === "node-terminal") {
-		const command = config[executableFieldName];
+		let command = config[executableFieldName];
 		if (command === null) {
 			return;
 		}
+		if (executionInfo.patchedPath !== null) {
+			// replace the first word of the command line with a patched version of the executable.
+			let words = command.split(' ');
+			words[0] = executionInfo.patchedPath;
+			command = words.join(' ');
+		}
+		let libraryPath = executionInfo.env.get(DYLD_ENV_VAR_NAME);
 
-		// The command could have single quotes, and we are putting the whole command in single quotes in the changed command.
-		// So we replace each `'` with `'\''` (closes the string, concats an escaped single quote, opens the string)
-		const escapedCommand = command.replaceAll("'", "'\\''");
-		const sh = executionInfo.patchedPath ?? vscode.env.shell;
-
-		const libraryPath = executionInfo.env.get(DYLD_ENV_VAR_NAME);
-
-		// Run the command in a SIP-patched shell, that way everything that runs in the original command will be SIP-patched
-		// on runtime.
-		config[executableFieldName] = `echo '${escapedCommand}' | ${DYLD_ENV_VAR_NAME}=${libraryPath} ${sh} -is`;
+		// vscode passes the command to something like `sh`, which we cannot patch or change, and
+		// which is SIP protected, so our DYLD env var is silently removed. So in order to bypass
+		// that, we set that variable in the command line.
+		config[executableFieldName] = `${DYLD_ENV_VAR_NAME}=${libraryPath} ${command}`;
 	} else if (executionInfo.patchedPath !== null) {
 		config[executableFieldName] = executionInfo.patchedPath!;
 	}
