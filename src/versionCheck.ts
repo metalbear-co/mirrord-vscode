@@ -3,6 +3,7 @@ import * as semver from 'semver';
 import * as https from 'https';
 import { platform } from 'os';
 import { globalContext } from './extension';
+import { NotificationBuilder } from './notification';
 
 const CI_BUILD_PLUGIN = process.env.CI_BUILD_PLUGIN === 'true';
 const versionCheckEndpoint = 'https://version.mirrord.dev/get-latest-version';
@@ -13,17 +14,14 @@ export async function checkVersion(version: string) {
 	let versionUrl = versionCheckEndpoint + '?source=1&version=' + version + '&platform=' + platform();
 	https.get(versionUrl, (res: any) => {
 		res.on('data', (d: any) => {
-			const config = vscode.workspace.getConfiguration();
-			if (config.get('mirrord.promptOutdated') !== false) {
-				if (semver.lt(version, d.toString())) {
-					vscode.window.showInformationMessage('New version of mirrord is available!', 'Update', "Don't show again").then(item => {
-						if (item === 'Update') {
-							vscode.env.openExternal(vscode.Uri.parse('vscode:extension/MetalBear.mirrord'));
-						} else if (item === "Don't show again") {
-							config.update('mirrord.promptOutdated', false);
-						}
-					});
-				}
+			if (semver.lt(version, d.toString())) {
+				new NotificationBuilder()
+					.withMessage("New version of mirrord is available!")
+					.withGenericAction("Update", async () => {
+						vscode.env.openExternal(vscode.Uri.parse('vscode:extension/MetalBear.mirrord'));
+					})
+					.withDisableAction("promptOutdated")
+					.info();
 			}
 		});
 

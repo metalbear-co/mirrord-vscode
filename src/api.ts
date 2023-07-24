@@ -1,30 +1,110 @@
 import * as vscode from 'vscode';
-import * as path from 'node:path';
-import * as fs from 'node:fs';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
+import { tickWaitlistCounter } from './waitlist';
+import { NotificationBuilder } from './notification';
+
+const TARGET_TYPE_DISPLAY: Record<string, string> = {
+    pod: 'Pod',
+    deployment: 'Deployment',
+    rollout: 'Rollout',
+};
+
+// Option in the target selector that represents no target.
+const TARGETLESS_TARGET: TargetQuickPick = { 
+    label: "No Target (\"targetless\")", 
+    type: 'targetless'
+};
+
+type TargetQuickPick = vscode.QuickPickItem & (
+    { type: 'targetless' } |
+    { type: 'target' | 'page', value: string }
+);
+
+export class Targets {
+    private activePage: string;
+
+    private readonly inner: Record<string, TargetQuickPick[] | undefined>;
+    readonly length: number;
+
+    constructor(targets: string[], lastTarget?: string) {
+        this.length = targets.length;
+
+        this.inner = targets.reduce((acc, value) => {
+            const targetType = value.split('/')[0];
+            const target: TargetQuickPick = { 
+                label: value, 
+                type: 'target',
+                value
+            };
+
+            if (Array.isArray(acc[targetType])) {
+                acc[targetType]!.push(target);
+            } else {
+                acc[targetType] = [target];
+            }
+
+            return acc;
+        }, {} as Targets['inner']);
+
+
+        const types = Object.keys(this.inner);
+        const lastPage = lastTarget?.split("/")?.[0] ?? '';
+
+        if (types.includes(lastPage)) {
+            this.activePage = lastPage;
+        } else {
+            this.activePage = types[0] ?? '';
+        }
+    }
+
+    private quickPickSelects(): TargetQuickPick[] {
+        return Object.keys(this.inner)
+            .filter((value) => value !== this.activePage)
+            .map((value) => ({ 
+                label: `Show ${TARGET_TYPE_DISPLAY[value] ?? value}s`,
+                type: 'page',
+                value
+            }));
+    }
+
+
+    quickPickItems(): TargetQuickPick[] {
+        return [
+            ...(this.inner[this.activePage] ?? []),
+            TARGETLESS_TARGET,
+            ...this.quickPickSelects()
+        ];
+    }
+
+    switchPage(nextPage: TargetQuickPick) {
+        if (nextPage.type === 'page') {
+            this.activePage = nextPage.value;    
+        }
+    }
+}
 
 /// Key used to store the last selected target in the persistent state.
 export const LAST_TARGET_KEY = "mirrord-last-target";
 
-// Option in the target selector that represents no target.
-export const TARGETLESS_TARGET_NAME = "No Target (\"targetless\")";
-
 // Display error message with help
 export function mirrordFailure(error: string) {
-    vscode.window.showErrorMessage(`${error}. Please check the logs/errors.`, "Get help on Discord", "Open an issue on GitHub", "Send us an email").then(value => {
-        if (value === "Get help on Discord") {
+    new NotificationBuilder()
+        .withMessage(`${error}. Please check the logs/errors.`)
+        .withGenericAction("Get help on Discord", async () => {
             vscode.env.openExternal(vscode.Uri.parse('https://discord.gg/metalbear'));
-        } else if (value === "Open an issue on GitHub") {
+        })
+        .withGenericAction("Open an issue on GitHub", async () => {
             vscode.env.openExternal(vscode.Uri.parse('https://github.com/metalbear-co/mirrord/issues/new/choose'));
-        } else if (value === "Send us an email") {
+        })
+        .withGenericAction("Send us an email", async () => {
             vscode.env.openExternal(vscode.Uri.parse('mailto:hi@metalbear.co'));
-        }
-    });
+        })
+        .error();
 }
 
 // Like the Rust MirrordExecution struct.
-class MirrordExecution {
+export class MirrordExecution {
 
     env: Map<string, string>;
     patchedPath: string | null;
@@ -36,7 +116,7 @@ class MirrordExecution {
 
     static mirrordExecutionFromJson(data: string): MirrordExecution {
         const parsed = JSON.parse(data);
-        return new MirrordExecution(parsed["environment"], parsed["patched_path"]);
+        return new MirrordExecution(new Map(Object.entries(parsed["environment"])), parsed["patched_path"]);
     }
 
 }
@@ -79,13 +159,14 @@ export class MirrordAPI {
                 const match = stderrData.match(/Error: (.*)/)?.[1];
                 if (match) {
                     const error = JSON.parse(match);
-                    vscode.window
-                        .showErrorMessage(`mirrord error: ${error["message"]}`)
-                        .then(() => {
-                            if (error["help"]) {
-                                vscode.window.showInformationMessage(error["help"]);
-                            }
+                    const notification = new NotificationBuilder()
+                        .withMessage(`mirrord error: ${error["message"]}`);
+                    if (error["help"]) {
+                        notification.withGenericAction("Help", async () => {
+                            vscode.window.showInformationMessage(error["help"]);
                         });
+                    }
+                    notification.error();
                     return reject(error["message"]);
                 }
 
@@ -119,7 +200,7 @@ export class MirrordAPI {
 
     /// Uses `mirrord ls` to get a list of all targets.
     /// Targets are sorted, with an exception of the last used target being the first on the list.
-    async listTargets(configPath: string | null | undefined): Promise<string[]> {
+    async listTargets(configPath: string | null | undefined): Promise<Targets> {
         const args = ['ls'];
         if (configPath) {
             args.push('-f', configPath);
@@ -141,13 +222,15 @@ export class MirrordAPI {
             }
         }
 
-        return targets;
+        return new Targets(targets, lastTarget);
     }
 
     // Run the extension execute sequence
     // Creating agent and gathering execution runtime (env vars to set)
     // Has 60 seconds timeout
     async binaryExecute(target: string | null, configFile: string | null, executable: string | null): Promise<MirrordExecution> {
+        tickWaitlistCounter(!!target?.startsWith('deployment/'));
+        
         /// Create a promise that resolves when the mirrord process exits
         return await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -157,7 +240,7 @@ export class MirrordAPI {
             return new Promise<MirrordExecution>((resolve, reject) => {
                 setTimeout(() => {
                     reject("timeout");
-                }, 60 * 1000);
+                }, 120 * 1000);
 
                 const args = ["ext"];
                 if (target) {
@@ -184,13 +267,14 @@ export class MirrordAPI {
                     const match = stderrData.match(/Error: (.*)/)?.[1];
                     if (match) {
                         const error = JSON.parse(match);
-                        vscode.window
-                            .showErrorMessage(`mirrord error: ${error["message"]}`)
-                            .then(() => {
-                                if (error["help"]) {
-                                    vscode.window.showInformationMessage(error["help"]);
-                                }
+                        const notification = new NotificationBuilder()
+                            .withMessage(`mirrord error: ${error["message"]}`);
+                        if (error["help"]) {
+                            notification.withGenericAction("Help", async () => {
+                                vscode.window.showInformationMessage(error["help"]);
                             });
+                        }
+                        notification.error();
                         return reject(error["message"]);
                     }
 
@@ -233,7 +317,9 @@ export class MirrordAPI {
                         }
 
                         if (message["type"] === "Warning") {
-                            vscode.window.showWarningMessage(message["message"]);
+                            new NotificationBuilder()
+                                .withMessage(message["message"])
+                                .warning();
                         } else {
                             // If it is not last message, it is progress
                             let formattedMessage = message["name"];

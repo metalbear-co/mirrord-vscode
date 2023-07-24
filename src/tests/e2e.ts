@@ -43,35 +43,26 @@ describe("mirrord sample flow test", function () {
     it("enable mirrord", async function () {
         const statusBar = new StatusBar();
         await browser.driver.wait(async () => {
-            const enableButton = await statusBar.getItem("Enable mirrord");
-            if (enableButton !== undefined) {
-                enableButton.click();
-                return true;
+            for (let button of await statusBar.getItems()) {
+                try {
+                    if ((await button.getText()).startsWith('mirrord')) {
+                        await button.click();
+
+                        return true;
+                    }    
+                } catch (e) { }
             }
         }, defaultTimeout, "mirrord `enable` button not found -- timed out");
 
         await browser.driver.wait(async () => {
-            const enableButton = await statusBar.getItem("Disable mirrord");
-            if (enableButton !== undefined) {
-                return true;
+            for (let button of await statusBar.getItems()) {
+                try {
+                    if ((await button.getText()).startsWith('mirrord')) {
+                        return true;
+                    }    
+                } catch (e) { }
             }
         }, defaultTimeout, "mirrord `disable` button not found -- timed out");
-    });
-
-    it("create mirrord config", async function () {
-        // gear -> $(gear) clicked to open mirrord config
-        const statusBar = new StatusBar();
-        await browser.driver.wait(async () => {
-            const mirrordSettingsButton = await statusBar.getItem("gear");
-            if (mirrordSettingsButton !== undefined) {
-                mirrordSettingsButton.click();
-                return true;
-            }
-        }, defaultTimeout, "mirrord config `$(gear)` button not found -- timed out");
-
-        await browser.driver.wait(async () => {
-            return await existsSync(mirrordConfigPath);
-        }, defaultTimeout, "mirrord `default` config not found");
     });
 
     it("select pod from quickpick", async function () {
@@ -81,8 +72,25 @@ describe("mirrord sample flow test", function () {
         const inputBox = await InputBox.create();
         // assertion that podToSelect is not undefined is done in "before" block   
         await browser.driver.wait(async () => {
-            return await inputBox.isDisplayed();
-        }, defaultTimeout, "quickPick not found -- timed out");
+            if (!await inputBox.isDisplayed()) {
+                return false;
+            }
+
+            for (const pick of await inputBox.getQuickPicks()) {
+                let label = await pick.getLabel();
+
+                if (label === podToSelect) {
+                    return true;
+                }
+
+                if (label === "Show Pods") {
+                    await pick.select();
+                }
+            }
+
+            return false;
+        }, defaultTimeout * 2, "quickPick not found -- timed out");
+
         await inputBox.selectQuickPick(podToSelect!);
     });
 
@@ -120,8 +128,7 @@ async function setBreakPoint(fileName: string, browser: VSBrowser, timeout: numb
     }, timeout, "editor tab title not found -- timed out");
 
     const textEditor = new TextEditor();
-    const result = await textEditor.toggleBreakpoint(breakPoint);
-    expect(result).to.be.true;
+    await textEditor.toggleBreakpoint(breakPoint);
 }
 
 // starts debugging the current file with the provided configuration

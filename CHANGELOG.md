@@ -8,6 +8,79 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.50.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.50.0) - 2023-07-24
+
+
+### Added
+
+- Added options to disable most notifications. Fixed status bar menu not
+  updating. [#24](https://github.com/metalbear-co/mirrord-vscode/issues/24)
+
+
+### Fixed
+
+- Support multi-command "node-terminal" commands.
+  [#34](https://github.com/metalbear-co/mirrord-vscode/issues/34)
+
+
+## [3.49.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.49.1) - 2023-07-19
+
+
+### Fixed
+
+- Fixed Debug launch failing on Java applications
+  [#32](https://github.com/metalbear-co/mirrord-vscode/issues/32)
+
+
+## [3.49.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.49.0) - 2023-07-16
+
+
+### Added
+
+- Support for launch configuration with type `node-terminal`.
+  [#26](https://github.com/metalbear-co/mirrord-vscode/issues/26)
+- Add support for argo Rollout & other future target types.
+
+
+### Internal
+
+- Bump dependencies
+- Update CONTRIBUTING.md
+
+
+## [3.48.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.48.0) - 2023-07-04
+
+
+### Added
+
+- Extension now handles mirrord configs differently. Mirrord config used to run
+  the process is expected to be specified in the launch configuration via
+  environment variable `MIRRORD_CONFIG_FILE`. Use can temporarily override the
+  config for the whole workspace via `selectActiveConfig` command. If the
+  configuration is not specified, a default config is taken from the `.mirrord`
+  directory. [#4](https://github.com/metalbear-co/mirrord-vscode/issues/4)
+- Change status bar buttons to allow more functions in less space with added
+  command to open feedback form.
+  [#14](https://github.com/metalbear-co/mirrord-vscode/issues/14)
+
+
+### Changed
+
+- Increase the timeout for agent creation
+
+
+### Fixed
+
+- Fixed the issue with Go build failures in specific environments.
+
+
+### Internal
+
+- Add "Sign up to mirrord Teams waitlist" user command.
+- Add CONTRIBUTING.md
+- Fix release workflow
+
+
 ## [3.47.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.47.0) - 2023-06-19
 
 
