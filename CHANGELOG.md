@@ -8,6 +8,21 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.50.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.50.0) - 2023-07-24
+
+
+### Added
+
+- Added options to disable most notifications. Fixed status bar menu not
+  updating. [#24](https://github.com/metalbear-co/mirrord-vscode/issues/24)
+
+
+### Fixed
+
+- Support multi-command "node-terminal" commands.
+  [#34](https://github.com/metalbear-co/mirrord-vscode/issues/34)
+
+
 ## [3.49.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.49.1) - 2023-07-19
 
 
