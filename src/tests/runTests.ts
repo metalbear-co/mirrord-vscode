@@ -1,6 +1,10 @@
 import * as path from 'path';
 import { ExTester, ReleaseQuality } from 'vscode-extension-tester';
 
+// Note: we are using our fork https://github.com/infiniteregrets/vscode-extension-tester/tree/input-box 
+// which allows to increase timeout for InputBox.create(), to be removed when
+// https://github.com/redhat-developer/vscode-extension-tester/issues/485#issuecomment-1648050797 is fixed
+
 async function main(): Promise<void> {
     const version = "latest";
     const testPath = path.join(__dirname, 'e2e.js');
