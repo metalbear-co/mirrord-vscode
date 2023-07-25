@@ -1,4 +1,3 @@
-import { existsSync } from "fs";
 import { expect } from "chai";
 import { join } from "path";
 import { VSBrowser, StatusBar, TextEditor, EditorView, ActivityBar, DebugView, InputBox, DebugToolbar } from "vscode-extension-tester";
@@ -69,7 +68,7 @@ describe("mirrord sample flow test", function () {
         await setBreakPoint(fileName, browser, defaultTimeout);
         await startDebugging();
 
-        const inputBox = await InputBox.create();
+        const inputBox = await InputBox.create(defaultTimeout);
         // assertion that podToSelect is not undefined is done in "before" block   
         await browser.driver.wait(async () => {
             if (!await inputBox.isDisplayed()) {
