@@ -54,23 +54,23 @@ export async function getLocalMirrordBinary(version?: string): Promise<string | 
     return null;
 }
 
-async function getConfiguredMirrordBinary(): Promise<string | undefined> {
+async function getConfiguredMirrordBinary(): Promise<string | null> {
     const configured = workspace.getConfiguration().get<string | null>("mirrord.binaryPath");
     if (!configured) {
-        return undefined;
+        return null;
     }
 
     let version;
     try {
         version = await new MirrordAPI(configured).getBinaryVersion();
-        if (version === undefined) {
+        if (!version) {
             throw new Error("version command returned malformed output");
         }
     } catch (err) {
         new NotificationBuilder()
             .withMessage(`failed to used mirrord binary specified in settings due to failed version check: ${err}`)
             .warning();
-        return undefined;
+        return null;
     }
 
     let latestVersion;
