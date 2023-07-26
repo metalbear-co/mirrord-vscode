@@ -54,21 +54,51 @@ export async function getLocalMirrordBinary(version?: string): Promise<string | 
     return null;
 }
 
+async function getConfiguredMirrordBinary(): Promise<string | undefined> {
+    const configured = workspace.getConfiguration().get<string | null>("mirrord.binaryPath");
+    if (!configured) {
+        return undefined;
+    }
+
+    let version;
+    try {
+        version = await new MirrordAPI(configured).getBinaryVersion();
+        if (version === undefined) {
+            throw new Error("version command returned malformed output");
+        }
+    } catch (err) {
+        new NotificationBuilder()
+            .withMessage(`failed to used mirrord binary specified in settings due to failed version check: ${err}`)
+            .warning();
+        return undefined;
+    }
+
+    let latestVersion;
+    try {
+        latestVersion = await getLatestSupportedVersion(1000);
+    } catch (err) {
+        new NotificationBuilder()
+            .withMessage(`failed to check latest supported version of mirrord binary, binary specified in settings may be outdated: ${err}`)
+            .warning();
+        return configured;
+    }
+
+    if (version !== latestVersion) {
+        new NotificationBuilder()
+            .withMessage(`mirrord binary specified in settings has outdated version ${version}, latest supported version is ${latestVersion}`)
+            .warning();
+    }
+
+    return configured;
+}
+
 /**
  * Downloads mirrord binary (if needed) and returns its path
  */
 export async function getMirrordBinary(): Promise<string> {
-    const configured = workspace.getConfiguration().get<string | null>("mirrord.binaryPath");
+    const configured = await getConfiguredMirrordBinary();
     if (configured) {
-        try {
-            const uri = Uri.file(configured);
-            await workspace.fs.stat(uri);
-            return configured;
-        } catch (err) {
-            new NotificationBuilder()
-                .withMessage(`cannot access mirrord binary '${configured}' specified in settings: ${err}`)
-                .warning();
-        }
+        return configured;
     }
 
     let foundLocal = await getLocalMirrordBinary();
