@@ -6,6 +6,7 @@ import { Utils } from 'vscode-uri';
 import * as fs from 'node:fs';
 import { platform } from 'os';
 import { Uri, workspace, window, ProgressLocation, ExtensionMode } from 'vscode';
+import { NotificationBuilder } from './notification';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 // const binaryCheckInterval = 1000 * 60 * 3;
@@ -53,10 +54,53 @@ export async function getLocalMirrordBinary(version?: string): Promise<string | 
     return null;
 }
 
+async function getConfiguredMirrordBinary(): Promise<string | null> {
+    const configured = workspace.getConfiguration().get<string | null>("mirrord.binaryPath");
+    if (!configured) {
+        return null;
+    }
+
+    let version;
+    try {
+        version = await new MirrordAPI(configured).getBinaryVersion();
+        if (!version) {
+            throw new Error("version command returned malformed output");
+        }
+    } catch (err) {
+        new NotificationBuilder()
+            .withMessage(`failed to used mirrord binary specified in settings due to failed version check: ${err}`)
+            .warning();
+        return null;
+    }
+
+    let latestVersion;
+    try {
+        latestVersion = await getLatestSupportedVersion(1000);
+    } catch (err) {
+        new NotificationBuilder()
+            .withMessage(`failed to check latest supported version of mirrord binary, binary specified in settings may be outdated: ${err}`)
+            .warning();
+        return configured;
+    }
+
+    if (version !== latestVersion) {
+        new NotificationBuilder()
+            .withMessage(`mirrord binary specified in settings has outdated version ${version}, latest supported version is ${latestVersion}`)
+            .warning();
+    }
+
+    return configured;
+}
+
 /**
  * Downloads mirrord binary (if needed) and returns its path
  */
 export async function getMirrordBinary(): Promise<string> {
+    const configured = await getConfiguredMirrordBinary();
+    if (configured) {
+        return configured;
+    }
+
     let foundLocal = await getLocalMirrordBinary();
     // timeout is 1s if we have alternative or 10s if we don't
     let timeout = foundLocal ? 1000 : 10000;

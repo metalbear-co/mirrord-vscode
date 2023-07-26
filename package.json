@@ -102,6 +102,11 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Show a notification when a new version of mirrord is available."
+				},
+				"mirrord.binaryPath": {
+					"type": ["string", "null"],
+					"default": null,
+					"description": "Path to local mirrord installation."
 				}
 			}
 		},
