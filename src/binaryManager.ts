@@ -6,6 +6,7 @@ import { Utils } from 'vscode-uri';
 import * as fs from 'node:fs';
 import { platform } from 'os';
 import { Uri, workspace, window, ProgressLocation, ExtensionMode } from 'vscode';
+import { NotificationBuilder } from './notification';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 // const binaryCheckInterval = 1000 * 60 * 3;
@@ -57,6 +58,19 @@ export async function getLocalMirrordBinary(version?: string): Promise<string | 
  * Downloads mirrord binary (if needed) and returns its path
  */
 export async function getMirrordBinary(): Promise<string> {
+    const configured = workspace.getConfiguration().get<string | null>("mirrord.binaryPath");
+    if (configured) {
+        try {
+            const uri = Uri.file(configured);
+            await workspace.fs.stat(uri);
+            return configured;
+        } catch (err) {
+            new NotificationBuilder()
+                .withMessage(`cannot access mirrord binary '${configured}' specified in settings: ${err}`)
+                .warning();
+        }
+    }
+
     let foundLocal = await getLocalMirrordBinary();
     // timeout is 1s if we have alternative or 10s if we don't
     let timeout = foundLocal ? 1000 : 10000;
