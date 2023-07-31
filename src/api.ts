@@ -4,6 +4,9 @@ import { globalContext } from './extension';
 import { tickWaitlistCounter } from './waitlist';
 import { NotificationBuilder } from './notification';
 
+export const FEEDBACK_COUNTER = 'mirrord-feedback-counter';
+export const FEEDBACK_COUNTER_REVIEW_AFTER = 100;
+
 const TARGET_TYPE_DISPLAY: Record<string, string> = {
     pod: 'Pod',
     deployment: 'Deployment',
@@ -230,6 +233,7 @@ export class MirrordAPI {
     // Has 60 seconds timeout
     async binaryExecute(target: string | null, configFile: string | null, executable: string | null): Promise<MirrordExecution> {
         tickWaitlistCounter(!!target?.startsWith('deployment/'));
+        tickFeedbackCounter();
         
         /// Create a promise that resolves when the mirrord process exits
         return await vscode.window.withProgress({
@@ -334,3 +338,22 @@ export class MirrordAPI {
         });
     }
 }
+
+
+/** 
+* Updates the global feedback counter. When it hits 100 mirrord runs, displays a message asking
+* the user to like mirrord.
+*/ 
+function tickFeedbackCounter() {
+    const counter = parseInt(globalContext.globalState.get(FEEDBACK_COUNTER) ?? '0') || 0;
+    globalContext.globalState.update(FEEDBACK_COUNTER, `${counter + 1}`);
+
+    if (counter >= FEEDBACK_COUNTER_REVIEW_AFTER) {
+		    new NotificationBuilder()
+	        .withMessage("Enjoying mirrord? Don't forget to like and subscribe!")
+	        .info();
+
+		    globalContext.globalState.update(FEEDBACK_COUNTER, `${0}`);
+    }
+}
+
