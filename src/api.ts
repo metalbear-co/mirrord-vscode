@@ -366,7 +366,7 @@ function tickFeedbackCounter() {
             })
             .info();
 
-		    globalContext.globalState.update(FEEDBACK_COUNTER, `${0}`);
+        globalContext.globalState.update(FEEDBACK_COUNTER, `${0}`);
     }
 }
 
