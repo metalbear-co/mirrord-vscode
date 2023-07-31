@@ -8,6 +8,21 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.51.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.51.0) - 2023-07-31
+
+
+### Added
+
+- Mirrord binary can now be specified in settings.
+  [#6](https://github.com/metalbear-co/mirrord-vscode/issues/6)
+
+
+### Internal
+
+- Fix vscode e2e flakes by adding a timeout of 10s on inputbox
+  [#1](https://github.com/metalbear-co/mirrord-vscode/issues/1)
+
+
 ## [3.50.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.50.0) - 2023-07-24
 
 
