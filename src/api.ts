@@ -4,7 +4,14 @@ import { globalContext } from './extension';
 import { tickWaitlistCounter } from './waitlist';
 import { NotificationBuilder } from './notification';
 
+/**
+* Key to access the feedback counter (see `tickFeedbackCounter`) from the global user config.
+*/
 export const FEEDBACK_COUNTER = 'mirrord-feedback-counter';
+
+/**
+* Amount of times we run mirrord before prompting for user feedback.
+*/
 export const FEEDBACK_COUNTER_REVIEW_AFTER = 100;
 
 const TARGET_TYPE_DISPLAY: Record<string, string> = {
@@ -341,8 +348,8 @@ export class MirrordAPI {
 
 
 /** 
-* Updates the global feedback counter. When it hits 100 mirrord runs, displays a message asking
-* the user to like mirrord.
+* Updates the global feedback counter. When it hits `FEDBACK_COUNTER_REVIEW_AFTER` mirrord runs, 
+* displays a message asking the user to like mirrord.
 */ 
 function tickFeedbackCounter() {
     const counter = parseInt(globalContext.globalState.get(FEEDBACK_COUNTER) ?? '0') || 0;
