@@ -357,7 +357,13 @@ function tickFeedbackCounter() {
 
     if (counter >= FEEDBACK_COUNTER_REVIEW_AFTER) {
 		    new NotificationBuilder()
-	        .withMessage("Enjoying mirrord? Don't forget to like and subscribe!")
+	        .withMessage(`Enjoying mirrord? Don't forget to leave a review! Also consider giving us some feedback, we highly appreciate it!`)
+            .withGenericAction("Review", async () => {
+                vscode.env.openExternal(vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord&ssr=false#review-details'));
+            })
+            .withGenericAction("Feedback", async () => {
+                vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/feedback'));
+            })
 	        .info();
 
 		    globalContext.globalState.update(FEEDBACK_COUNTER, `${0}`);
