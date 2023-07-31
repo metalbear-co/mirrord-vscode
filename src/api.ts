@@ -365,8 +365,6 @@ function tickFeedbackCounter() {
                 vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/feedback'));
             })
             .info();
-
-        globalContext.globalState.update(FEEDBACK_COUNTER, `${0}`);
     }
 }
 
