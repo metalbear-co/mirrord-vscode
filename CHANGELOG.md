@@ -13,7 +13,7 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 ### Added
 
-- Mirrord binary can now be specified in settings.
+- mirrord binary can now be specified in settings.
   [#6](https://github.com/metalbear-co/mirrord-vscode/issues/6)
 
 
