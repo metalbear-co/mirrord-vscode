@@ -348,7 +348,7 @@ export class MirrordAPI {
 
 
 /** 
-* Updates the global feedback counter. When it hits `FEDBACK_COUNTER_REVIEW_AFTER` mirrord runs, 
+* Updates the global feedback counter. When it hits `FEEDBACK_COUNTER_REVIEW_AFTER` mirrord runs, 
 * displays a message asking the user to like mirrord.
 */ 
 function tickFeedbackCounter() {
