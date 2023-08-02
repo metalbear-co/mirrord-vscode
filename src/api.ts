@@ -12,7 +12,7 @@ const FEEDBACK_COUNTER = 'mirrord-feedback-counter';
 /**
 * Amount of times we run mirrord before prompting for user feedback.
 */
-const FEEDBACK_COUNTER_REVIEW_AFTER = 1;
+const FEEDBACK_COUNTER_REVIEW_AFTER = 100;
 
 const TARGET_TYPE_DISPLAY: Record<string, string> = {
   pod: 'Pod',
