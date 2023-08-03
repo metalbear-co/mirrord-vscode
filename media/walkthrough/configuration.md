@@ -44,6 +44,6 @@ You can specify configuration file to use for specific the launch configuration.
 
 # Active config feature
 
-You can also temporarily override the configuration file used in mirroring by setting the active config.
+You can also temporarily override the configuration file used by setting the active config.
 
 ![active config](./active_config.png)
