@@ -1,4 +1,4 @@
-# Enable mirroring
+# Enable mirrord
 
 ![status bar icon](./status_bar_button.png)
 
