@@ -152,7 +152,7 @@
 			{
 				"id": "mirrord.welcome",
 				"title": "Get Started with Development using mirrord",
-				"description": "Run your application in the context of a remote kubernetes cluster with just one click.",
+				"description": "Run your application in the context of a remote Kubernetes cluster with just one click.",
 				"steps": [
 					{
 						"id": "enablemirroring",
