@@ -58,6 +58,11 @@
 				"command": "mirrord.submitFeedback",
 				"category": "mirrord",
 				"title": "Submit feedback"
+			},
+			{
+				"command": "mirrord.help",
+				"category": "mirrord",
+				"title": "Show mirrord walkthrough"
 			}
 		],
 		"configuration": {
@@ -127,6 +132,10 @@
 				{
 					"command": "mirrord.submitFeedback",
 					"when": "true"
+				},
+				{
+					"command": "mirrord.help",
+					"when": "true"
 				}
 			]
 		},
@@ -138,7 +147,7 @@
 		],
 		"walkthroughs": [
 			{
-				"id": "mirrord",
+				"id": "mirrord.welcome",
 				"title": "Get Started with Development using mirrord",
 				"description": "Run your application in the context of a remote kubernetes cluster with just one click.",
 				"steps": [
