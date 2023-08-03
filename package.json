@@ -135,6 +135,42 @@
 				"fileMatch": "*mirrord.json",
 				"url": "https://raw.githubusercontent.com/metalbear-co/mirrord/main/mirrord-schema.json"
 			}
+		],
+		"walkthroughs": [
+			{
+				"id": "mirrord",
+				"title": "Get Started with Development using mirrord",
+				"description": "Run your application in the context of a remote kubernetes cluster with just one click.",
+				"steps": [
+					{
+						"id": "enablemirroring",
+						"title": "Enable mirroring",
+						"description": "Click on the status bar button to enable mirroring.",
+						"media": {
+							"markdown": "media/walkthrough/enablemirroring.md"
+						},
+						"completionEvents": [
+							"onCommand:mirrord.toggleMirroring"
+						]
+					},
+					{
+						"id": "debugapplication",
+						"title": "Debug your application",
+						"description": "Start debugging your application and pick a target to impersonate.",
+						"media": {
+							"markdown": "media/walkthrough/debugapplication.md"
+						}
+					},
+					{
+						"id": "defaultconfiguration",
+						"title": "mirrord configuration",
+						"description": "Learn about managing mirrord configuration.",
+						"media": {
+							"markdown": "media/walkthrough/configuration.md"
+						}
+					}
+				]
+			}
 		]
 	},
 	"main": "./dist/extension.js",
