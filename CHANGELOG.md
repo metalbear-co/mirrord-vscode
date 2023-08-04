@@ -8,6 +8,17 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.52.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.52.0) - 2023-08-04
+
+
+### Added
+
+- Added a walkthrough and a help action.
+  [#42](https://github.com/metalbear-co/mirrord-vscode/issues/42)
+- Add review request after 100 runs of mirrord.
+  [#62](https://github.com/metalbear-co/mirrord-vscode/issues/62)
+
+
 ## [3.51.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.51.0) - 2023-07-31
 
 
