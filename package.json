@@ -58,6 +58,11 @@
 				"command": "mirrord.submitFeedback",
 				"category": "mirrord",
 				"title": "Submit feedback"
+			},
+			{
+				"command": "mirrord.help",
+				"category": "mirrord",
+				"title": "Show mirrord walkthrough"
 			}
 		],
 		"configuration": {
@@ -130,6 +135,10 @@
 				{
 					"command": "mirrord.submitFeedback",
 					"when": "true"
+				},
+				{
+					"command": "mirrord.help",
+					"when": "true"
 				}
 			]
 		},
@@ -137,6 +146,42 @@
 			{
 				"fileMatch": "*mirrord.json",
 				"url": "https://raw.githubusercontent.com/metalbear-co/mirrord/main/mirrord-schema.json"
+			}
+		],
+		"walkthroughs": [
+			{
+				"id": "mirrord.welcome",
+				"title": "Get Started with Development using mirrord",
+				"description": "Run your application in the context of a remote Kubernetes cluster with just one click.",
+				"steps": [
+					{
+						"id": "enablemirroring",
+						"title": "Enable mirroring",
+						"description": "Click on the status bar button to enable mirroring.",
+						"media": {
+							"markdown": "media/walkthrough/enablemirroring.md"
+						},
+						"completionEvents": [
+							"onCommand:mirrord.toggleMirroring"
+						]
+					},
+					{
+						"id": "debugapplication",
+						"title": "Debug your application",
+						"description": "Start debugging your application and pick a target to impersonate.",
+						"media": {
+							"markdown": "media/walkthrough/debugapplication.md"
+						}
+					},
+					{
+						"id": "defaultconfiguration",
+						"title": "mirrord configuration",
+						"description": "Learn about managing mirrord configuration.",
+						"media": {
+							"markdown": "media/walkthrough/configuration.md"
+						}
+					}
+				]
 			}
 		]
 	},

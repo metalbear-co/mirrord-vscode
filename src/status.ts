@@ -11,6 +11,7 @@ export class MirrordStatus {
     readonly submitFeedbackCommandId = 'mirrord.submitFeedback';
     readonly waitlistCommandId = 'mirrord.waitlistSignup';
     readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
+    readonly helpCommandId = 'mirrord.help';
 
     constructor(statusBar: vscode.StatusBarItem) {
         this.statusBar = statusBar;
@@ -45,6 +46,7 @@ export class MirrordStatus {
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${settingsCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams Waitlist](command:${waitlistCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Submit Feedback](command:${submitFeedbackCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[Help](command:${this.helpCommandId})`);
 
         statusBar.show();
     }
@@ -62,6 +64,9 @@ export class MirrordStatus {
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.toggleCommandId, this.toggle.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.submitFeedbackCommandId, this.submitFeedback.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(this.waitlistCommandId, waitlistRegisterCommand));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(this.helpCommandId, async () => {
+            vscode.commands.executeCommand(`workbench.action.openWalkthrough`, `MetalBear.mirrord#mirrord.welcome`, false);
+        }));
 
         globalContext.subscriptions.push(this.statusBar);
 
