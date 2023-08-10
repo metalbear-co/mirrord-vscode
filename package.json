@@ -108,6 +108,11 @@
 					"default": true,
 					"description": "Show a notification when a new version of mirrord is available."
 				},
+				"mirrord.promptAgentVersionMismatch": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when agent version does not match version of the local mirrord installation."
+				},
 				"mirrord.binaryPath": {
 					"type": [
 						"string",
