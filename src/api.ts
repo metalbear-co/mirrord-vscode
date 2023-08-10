@@ -3,6 +3,7 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
 import { tickWaitlistCounter } from './waitlist';
 import { NotificationBuilder } from './notification';
+import { MirrordStatus } from './status';
 
 /**
 * Key to access the feedback counter (see `tickFeedbackCounter`) from the global user config.
@@ -359,11 +360,14 @@ function tickFeedbackCounter() {
 
   if ((currentRuns % FEEDBACK_COUNTER_REVIEW_AFTER) === 0) {
     new NotificationBuilder()
-      .withMessage(`Enjoying mirrord? Don't forget to leave a review!`)
+      .withMessage(`Enjoying mirrord? Don't forget to leave a review! Also consider giving us some feedback, we'd highly appreciate it!`)
       .withGenericAction("Review", async () => {
         vscode.env.openExternal(
           vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord&ssr=false#review-details')
         );
+      })
+      .withGenericAction("Feedback", async () => {
+        vscode.commands.executeCommand(MirrordStatus.submitFeedbackCommandId);
       })
       .withDisableAction('promptReview')
       .info();
