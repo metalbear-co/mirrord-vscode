@@ -108,6 +108,11 @@
 					"default": true,
 					"description": "Show a notification when a new version of mirrord is available."
 				},
+				"mirrord.promptReview": {
+					"type": "boolean",
+					"default": true,
+					"description": "Occasionally show a notification asking for plugin review"
+				},
 				"mirrord.promptAgentVersionMismatch": {
 					"type": "boolean",
 					"default": true,

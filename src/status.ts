@@ -6,12 +6,12 @@ import { NotificationBuilder } from './notification';
 
 export class MirrordStatus {
     readonly statusBar: vscode.StatusBarItem;
-    readonly toggleCommandId = 'mirrord.toggleMirroring';
-    readonly settingsCommandId = 'mirrord.changeSettings';
-    readonly submitFeedbackCommandId = 'mirrord.submitFeedback';
-    readonly waitlistCommandId = 'mirrord.waitlistSignup';
-    readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
-    readonly helpCommandId = 'mirrord.help';
+    static readonly toggleCommandId = 'mirrord.toggleMirroring';
+    static readonly settingsCommandId = 'mirrord.changeSettings';
+    static readonly submitFeedbackCommandId = 'mirrord.submitFeedback';
+    static readonly waitlistCommandId = 'mirrord.waitlistSignup';
+    static readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
+    static readonly helpCommandId = 'mirrord.help';
 
     constructor(statusBar: vscode.StatusBarItem) {
         this.statusBar = statusBar;
@@ -21,32 +21,28 @@ export class MirrordStatus {
         const {
             enabled,
             statusBar,
-            toggleCommandId,
-            settingsCommandId,
-            submitFeedbackCommandId,
-            waitlistCommandId,
         } = this;
 
         statusBar.text = `mirrord $(${enabled ? 'circle-large-filled' : 'circle-large-outline'})`;
         statusBar.color = undefined;
         statusBar.backgroundColor = undefined;
 
-        statusBar.command = toggleCommandId;
+        statusBar.command = MirrordStatus.toggleCommandId;
 
         statusBar.tooltip = new vscode.MarkdownString("", true);
         statusBar.tooltip.isTrusted = true;
 
-        statusBar.tooltip.appendMarkdown(`[${enabled ? 'Enabled' : 'Disabled'}](command:${toggleCommandId})`);
+        statusBar.tooltip.appendMarkdown(`[${enabled ? 'Enabled' : 'Disabled'}](command:${MirrordStatus.toggleCommandId})`);
         statusBar.tooltip.appendText("\n\n");
         const activeConfig = MirrordConfigManager.getInstance().activeConfig();
         if (activeConfig) {
             statusBar.tooltip.appendMarkdown(`\n\n[Active config: ${vscode.workspace.asRelativePath(activeConfig)}](${activeConfig})`);
         }
-        statusBar.tooltip.appendMarkdown(`\n\n[Select active config](command:${this.selectActiveConfigId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${settingsCommandId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams Waitlist](command:${waitlistCommandId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[Submit Feedback](command:${submitFeedbackCommandId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[Help](command:${this.helpCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[Select active config](command:${MirrordStatus.selectActiveConfigId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${MirrordStatus.settingsCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams Waitlist](command:${MirrordStatus.waitlistCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[Submit Feedback](command:${MirrordStatus.submitFeedbackCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[Help](command:${MirrordStatus.helpCommandId})`);
 
         statusBar.show();
     }
@@ -57,14 +53,14 @@ export class MirrordStatus {
 
         configManager.onActiveConfigChange(async () => this.draw());
 
-        globalContext.subscriptions.push(vscode.commands.registerCommand(this.selectActiveConfigId, async () => {
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.selectActiveConfigId, async () => {
             await configManager.selectActiveConfig();
         }));
-        globalContext.subscriptions.push(vscode.commands.registerCommand(this.settingsCommandId, configManager.changeSettings.bind(configManager)));
-        globalContext.subscriptions.push(vscode.commands.registerCommand(this.toggleCommandId, this.toggle.bind(this)));
-        globalContext.subscriptions.push(vscode.commands.registerCommand(this.submitFeedbackCommandId, this.submitFeedback.bind(this)));
-        globalContext.subscriptions.push(vscode.commands.registerCommand(this.waitlistCommandId, waitlistRegisterCommand));
-        globalContext.subscriptions.push(vscode.commands.registerCommand(this.helpCommandId, async () => {
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.settingsCommandId, configManager.changeSettings.bind(configManager)));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.toggleCommandId, this.toggle.bind(this)));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.submitFeedbackCommandId, this.submitFeedback.bind(this)));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.waitlistCommandId, waitlistRegisterCommand));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.helpCommandId, async () => {
             vscode.commands.executeCommand(`workbench.action.openWalkthrough`, `MetalBear.mirrord#mirrord.welcome`, false);
         }));
 
