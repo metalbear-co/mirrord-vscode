@@ -361,8 +361,11 @@ function tickFeedbackCounter() {
     new NotificationBuilder()
       .withMessage(`Enjoying mirrord? Don't forget to leave a review!`)
       .withGenericAction("Review", async () => {
-        vscode.env.openExternal(vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord&ssr=false#review-details'));
+        vscode.env.openExternal(
+          vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord&ssr=false#review-details')
+        );
       })
+      .withDisableAction('promptReview')
       .info();
   }
 }
