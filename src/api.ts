@@ -299,6 +299,8 @@ export class MirrordAPI {
           }
         });
 
+        const warningHandler = new MirrordWarningHandler();
+
         let buffer = "";
         child.stdout.on("data", (data) => {
           console.log(`mirrord: ${data}`);
@@ -329,9 +331,7 @@ export class MirrordAPI {
             }
 
             if (message["type"] === "Warning") {
-              new NotificationBuilder()
-                .withMessage(message["message"])
-                .warning();
+              warningHandler.handle(message["message"]);
             } else {
               // If it is not last message, it is progress
               let formattedMessage = message["name"];
@@ -347,6 +347,30 @@ export class MirrordAPI {
   }
 }
 
+class MirrordWarningHandler {
+  private filters: [(message: string) => boolean, string][];
+
+  constructor() {
+    this.filters = [
+      [
+        (message: string) => message.includes("Agent version") && message.includes("does not match the local mirrord version"),
+        "promptAgentVersionMismatch",
+      ]
+    ];
+  }
+
+  handle(warningMessage: string) {
+    const builder = new NotificationBuilder()
+      .withMessage(warningMessage);
+
+    const filter = this.filters.find(filter => filter[0](warningMessage));
+    if (filter !== undefined) {
+      builder.withDisableAction(filter[1]);
+    }
+
+    builder.warning();
+  }
+}
 
 /** 
 * Updates the global feedback counter.
