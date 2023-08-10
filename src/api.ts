@@ -348,23 +348,21 @@ export class MirrordAPI {
 
 
 /** 
-* Updates the global feedback counter. When it hits `FEEDBACK_COUNTER_REVIEW_AFTER` mirrord runs, 
-* displays a message asking the user to like mirrord.
+* Updates the global feedback counter.
+* After each `FEEDBACK_COUNTER_REVIEW_AFTER` mirrord runs, displays a message asking the user to leave a review in the marketplace.
 */
 function tickFeedbackCounter() {
-  const counter = parseInt(globalContext.globalState.get(FEEDBACK_COUNTER) ?? '0');
-  globalContext.globalState.update(FEEDBACK_COUNTER, counter + 1);
+  const previousRuns = parseInt(globalContext.globalState.get(FEEDBACK_COUNTER) ?? '0');
+  const currentRuns = previousRuns + 1;
 
-  if (counter >= FEEDBACK_COUNTER_REVIEW_AFTER) {
+  globalContext.globalState.update(FEEDBACK_COUNTER, currentRuns);
+
+  if ((currentRuns % FEEDBACK_COUNTER_REVIEW_AFTER) === 0) {
     new NotificationBuilder()
-      .withMessage(`Enjoying mirrord? Don't forget to leave a review! Also consider giving us some feedback, we'd highly appreciate it!`)
+      .withMessage(`Enjoying mirrord? Don't forget to leave a review!`)
       .withGenericAction("Review", async () => {
         vscode.env.openExternal(vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord&ssr=false#review-details'));
-      })
-      .withGenericAction("Feedback", async () => {
-        vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/feedback'));
       })
       .info();
   }
 }
-
