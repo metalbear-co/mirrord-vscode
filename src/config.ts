@@ -121,14 +121,14 @@ export class MirrordConfigManager {
     public async selectActiveConfig() {
         const options: Map<string, vscode.Uri> = new Map();
         const files = await vscode.workspace.findFiles("**/*mirrord.{json,toml,yml,yaml}");
-        files.forEach(f => options.set(`use ${vscode.workspace.asRelativePath(f)}`, f));
+        files.forEach(f => options.set(vscode.workspace.asRelativePath(f), f));
 
-        const displayed = ["<none>", ...options.keys()];
+        const displayed = this.active ? ["<unset active config>", ...options.keys()] : [...options.keys()];
         const placeHolder = this.active
             ? `Select active mirrord config from the workspace (currently ${vscode.workspace.asRelativePath(this.active)})`
             : "Select active mirrord config from the workspace";
         const selected = await vscode.window.showQuickPick(displayed, {placeHolder});
-        if (selected === "<none>") {
+        if (selected === "<unset active config>") {
             this.setActiveConfig(undefined);
         } else if (selected) {
             let path = options.get(selected)!!;
