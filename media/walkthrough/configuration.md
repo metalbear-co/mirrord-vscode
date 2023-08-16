@@ -34,12 +34,32 @@ You can specify configuration file to use for specific the launch configuration.
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                "MIRRORD_CONFIG_FILE": ".mirrord/sample_mirrord.json"
+                "MIRRORD_CONFIG_FILE": "/path/to/workspace/.mirrord/sample_mirrord.json"
             }
         }
     ]
 }
+```
 
+You can also use the `workspaceFolder` variable:
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "MIRRORD_CONFIG_FILE": "${workspaceFolder}/.mirrord/sample_mirrord.json"
+            }
+        }
+    ]
+}
 ```
 
 # Active config feature

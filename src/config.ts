@@ -234,6 +234,20 @@ export class MirrordConfigManager {
     }
 
     /**
+     * Resolves config file path specified in the launch config.
+     * @param folder workspace folder of the launch config
+     * @param path taken from the `MIRRORD_CONFIG_FILE` environment variable in launch config
+     * @returns config file Uri
+     */
+    private static processPathFromLaunchConfig(folder: vscode.WorkspaceFolder | undefined, path: string): vscode.Uri {
+        if (folder) {
+            path = path.replace(/\$\{workspaceFolder\}/g, folder.uri.fsPath);
+        }
+
+        return vscode.Uri.file(path);
+    }
+
+    /**
      * Used when preparing mirrord environment for the process.
      * @param folder optional origin of the launch config
      * @param config debug configuration used
@@ -250,8 +264,8 @@ export class MirrordConfigManager {
         }
 
         let launchConfig = config.env?.["MIRRORD_CONFIG_FILE"];
-        if (launchConfig) {
-            return vscode.Uri.file(launchConfig);
+        if (typeof launchConfig === "string") {
+            return MirrordConfigManager.processPathFromLaunchConfig(folder, launchConfig);
         }
 
         if (folder) {
