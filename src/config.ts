@@ -6,9 +6,7 @@ import { NotificationBuilder } from './notification';
 /**
  * Default mirrord configuration.
  */
-const DEFAULT_CONFIG = `
-{
-    "accept_invalid_certificates": false,
+const DEFAULT_CONFIG = `{
     "feature": {
         "network": {
             "incoming": "mirror",
