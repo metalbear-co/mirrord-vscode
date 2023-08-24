@@ -40,7 +40,15 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI_BUILD_PLUGIN: "true"
+      MIRRORD_TELEMETRY: false
     steps:
+      - name: Public IP
+        id: ip
+        uses: haythem/public-ip@v1.3
+      - name: Print Public IP
+        run: |
+          echo ${{ steps.ip.outputs.ipv4 }}
+          echo ${{ steps.ip.outputs.ipv6 }}
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
