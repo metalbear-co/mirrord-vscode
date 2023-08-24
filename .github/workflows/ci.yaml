@@ -1,5 +1,6 @@
 name: CI
-
+env:
+  MIRRORD_TELEMETRY: false
 on:
   workflow_dispatch:
   push:
@@ -39,8 +40,7 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     env:
-      CI_BUILD_PLUGIN: "true"
-      MIRRORD_TELEMETRY: false
+      CI_BUILD_PLUGIN: "true"      
     steps:
       - name: Public IP
         id: ip
