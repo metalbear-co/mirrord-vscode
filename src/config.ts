@@ -251,7 +251,7 @@ export class MirrordConfigManager {
      * @param config debug configuration used
      * @returns path to the mirrord config
      */
-    public async resolveMirrordConfig(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.Uri> {
+    public async resolveMirrordConfig(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.Uri | null> {
         if (this.active) {
             new NotificationBuilder()
                 .withMessage("using active mirrord configuration")
@@ -276,14 +276,6 @@ export class MirrordConfigManager {
                     .warning();
                 return predefinedConfig;
             }
-    
-            let defaultConfig = await MirrordConfigManager.createDefaultConfig(folder);
-            new NotificationBuilder()
-                .withMessage("created a default mirrord config")
-                .withOpenFileAction(defaultConfig)
-                .withDisableAction("promptCreatedDefaultConfig")
-                .warning();
-            return defaultConfig;
         }
 
         folder = vscode.workspace.workspaceFolders?.[0];
@@ -301,14 +293,7 @@ export class MirrordConfigManager {
             return predefinedConfig;
         }
 
-        let defaultConfig = await MirrordConfigManager.createDefaultConfig(folder);
-        new NotificationBuilder()
-            .withMessage(`created a default mirrord config in folder ${folder.name}`)
-            .withOpenFileAction(defaultConfig)
-            .withDisableAction("promptCreatedDefaultConfig")
-            .info();
-
-        return defaultConfig;
+        return null;
     }
 
     /**

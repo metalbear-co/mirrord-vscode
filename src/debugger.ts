@@ -124,11 +124,11 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		let target = null;
 
 		let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
-		// If target wasn't specified in the config file, let user choose pod from dropdown
-		if (!await MirrordConfigManager.isTargetInFile(configPath)) {
+		// If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
+		if (!configPath || !await MirrordConfigManager.isTargetInFile(configPath)) {
 			let targets;
 			try {
-				targets = await mirrordApi.listTargets(configPath.path);
+				targets = await mirrordApi.listTargets(configPath?.path);
 			} catch (err) {
 				mirrordFailure(`mirrord failed to list targets: ${err}`);
 				return null;
@@ -193,7 +193,7 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 
 		let executionInfo;
 		try {
-			executionInfo = await mirrordApi.binaryExecute(target, configPath.path, executable);
+			executionInfo = await mirrordApi.binaryExecute(target, configPath?.path || null, executable);
 		} catch (err) {
 			mirrordFailure(`mirrord preparation failed: ${err}`);
 			return null;
