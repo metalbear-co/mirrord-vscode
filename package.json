@@ -93,11 +93,6 @@
 					"default": true,
 					"description": "Show a notification when mirrord uses default configuration."
 				},
-				"mirrord.promptCreatedDefaultConfig": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when mirrord creates default configuration."
-				},
 				"mirrord.promptTargetless": {
 					"type": "boolean",
 					"default": true,
