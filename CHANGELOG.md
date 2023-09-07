@@ -8,6 +8,38 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.53.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.53.0) - 2023-09-07
+
+
+### Added
+
+- Path to the mirrord config specified in launch configuration can now use the
+  `workspaceFolder` variable.
+  [#30](https://github.com/metalbear-co/mirrord-vscode/issues/30)
+- Warning about agent version mismatch can now be disabled.
+  [#50](https://github.com/metalbear-co/mirrord-vscode/issues/50)
+
+
+### Changed
+
+- Change default generated config to not include accept_invalid_certificate
+  setting
+- Support empty configuration (don't create a new config file when it doesn't
+  exist)
+
+
+### Fixed
+
+- Review prompt is now displayed after each 100 mirrord runs and can be
+  disabled. [#52](https://github.com/metalbear-co/mirrord-vscode/issues/52)
+- Active config selection is now more intuitive.
+
+
+### Internal
+
+- Disable telemetry in CI
+
+
 ## [3.52.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.52.0) - 2023-08-04
 
 
