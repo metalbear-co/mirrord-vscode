@@ -1,1 +1,0 @@
-Active config selection is now more intuitive.
