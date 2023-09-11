@@ -38,49 +38,10 @@ jobs:
           npm run lint
 
   e2e:
-    runs-on: ubuntu-latest
-    env:
-      CI_BUILD_PLUGIN: "true"      
-    steps:
-      - name: Public IP
-        id: ip
-        uses: haythem/public-ip@v1.3
-      - name: Print Public IP
-        run: |
-          echo ${{ steps.ip.outputs.ipv4 }}
-          echo ${{ steps.ip.outputs.ipv6 }}
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-      - name: Install dependencies
-        run: |
-          npm install
-      # this is to avoid timeout on download
-      - name: get mirrord latest
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh | bash
-      - name: Start minikube
-        uses: medyagh/setup-minikube@master
-        with:
-          container-runtime: docker
-      - run: |
-          minikube image load /tmp/test.tar                    
-          kubectl apply -f sample/kubernetes/app.yaml          
-          echo "POD_TO_SELECT=$(kubectl get pods -o=name | head -n 1)" >> "$GITHUB_ENV"
-          kubectl wait --for=condition=ready --timeout=30s $(kubectl get pods -o=name | head -n 1)          
-          KUBE_SERVICE=$(minikube service list --output=json | jq -r '.[] | select(.Name == "py-serv") | .URLs[0]')
-          echo "$KUBE_SERVICE"
-          echo "KUBE_SERVICE=$KUBE_SERVICE" >> "$GITHUB_ENV"
-      # we can't run chrome like apps in the CI, we use a virtual frame buffer:
-      # refer: http://elementalselenium.com/tips/38-headless
-      - name: Run vscode e2e in headless state
-        uses: coactions/setup-xvfb@v1
-        env:
-          POD_TO_SELECT: ${{ env.POD_TO_SELECT }}
-          KUBE_SERVICE: ${{ env.KUBE_SERVICE }}
-        with:
-          run: npm run test
+    uses: ./.github/workflows/reusable_e2e.yaml
+    with:
+      mirrord_release_branch: false
+      
   # We need some "accummulation" job here because bors fails (timeouts) to
   # listen on matrix builds.
   # Hence, we have some kind of dummy here that bors can listen on
