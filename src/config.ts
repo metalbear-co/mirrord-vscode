@@ -347,22 +347,4 @@ export class MirrordConfigManager {
 
     return null;
   }
-
-  /**
-   * Checks whether mirrord target is specified in the given config.
-   * @param path config path
-   */
-  public static async isTargetInFile(path: vscode.Uri): Promise<boolean> {
-    const contents = (await vscode.workspace.fs.readFile(path)).toString();
-    let parsed;
-    if (path.path.endsWith('json')) {
-      parsed = JSON.parse(contents);
-    } else if (path.path.endsWith('yaml') || path.path.endsWith('yml')) {
-      parsed = YAML.parse(contents);
-    } else if (path.path.endsWith('toml')) {
-      parsed = TOML.parse(contents);
-    }
-
-    return (parsed && (typeof (parsed['target']) === 'string' || parsed['target']?.['path']));
-  }
 }
