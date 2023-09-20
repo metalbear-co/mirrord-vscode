@@ -23,20 +23,43 @@ interface LaunchConfig {
   env?: { [key: string]: string };
 }
 
+/**
+* Output from `mirrord verify-config`.
+*/
 export type VerifiedConfig = ConfigSuccess | ConfigFail;
+
+/**
+* When `mirrord verify-config` results in a `"Success"`.
+*/
 type ConfigSuccess = { 'type': 'Success', config: Config, warnings: string[] }
+
+/**
+* When `mirrord verify-config` results in a `"Fail"`.
+*/
 type ConfigFail = { 'type': 'Fail', errors: string[] }
 
+
+/**
+* When `mirrord verify-config` results in a `"Success"`, this is the config within.
+*/
 export interface Config {
   path: Path | undefined
   namespace: string | undefined
 }
 
+/**
+* Pod/deployment used to detect if `Target` was set in the config.
+*/
 export interface Path {
   deployment: string | undefined
   container: string | undefined
 }
 
+/**
+* Looks into the `verifiedConfig` to see if it has a `Target` set (by checking `Config.path`).
+*
+* Also displays warnings/errors if there are any.
+*/
 export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
   switch (verifiedConfig.type) {
     case 'Success':
@@ -46,7 +69,8 @@ export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
       verifiedConfig.errors.forEach((fail) => new NotificationBuilder().withMessage(fail).error())
       return false;
     default:
-      throw undefined;
+      let _guard: never = verifiedConfig;
+      return _guard;
   }
 
 }

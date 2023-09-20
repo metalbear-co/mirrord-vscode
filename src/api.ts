@@ -243,12 +243,16 @@ export class MirrordAPI {
     return new Targets(targets, lastTarget);
   }
 
-  // TODO(alex): This is how we execute `mirrord verify-config {path}`
+  /**
+  * Executes the `mirrord verify-config {configPath}` command, parsing its output into a
+  * `VerifiedConfig`.
+  */
   async verifyConfig(configPath: vscode.Uri | null): Promise<VerifiedConfig | undefined> {
     const args = ['verify-config'];
     if (configPath) {
-      args.push('${configPath}');
+      args.push(configPath.path);
       const stdout = await this.exec(args);
+
       const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
       return verifiedConfig;
     } else {

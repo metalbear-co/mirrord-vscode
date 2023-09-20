@@ -124,7 +124,6 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		let target = null;
 
 		let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
-
 		const verifiedConfig = await mirrordApi.verifyConfig(configPath);
 
 		// If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
