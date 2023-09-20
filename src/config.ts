@@ -31,12 +31,12 @@ export type VerifiedConfig = ConfigSuccess | ConfigFail;
 /**
 * When `mirrord verify-config` results in a `"Success"`.
 */
-type ConfigSuccess = { 'type': 'Success', config: Config, warnings: string[] }
+type ConfigSuccess = { 'type': 'Success', config: Config, warnings: string[] };
 
 /**
 * When `mirrord verify-config` results in a `"Fail"`.
 */
-type ConfigFail = { 'type': 'Fail', errors: string[] }
+type ConfigFail = { 'type': 'Fail', errors: string[] };
 
 
 /**
@@ -63,10 +63,10 @@ export interface Path {
 export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
   switch (verifiedConfig.type) {
     case 'Success':
-      verifiedConfig.warnings.forEach((warn) => new NotificationBuilder().withMessage(warn).warning())
+      verifiedConfig.warnings.forEach((warn) => new NotificationBuilder().withMessage(warn).warning());
       return verifiedConfig.config.path !== undefined;
     case 'Fail':
-      verifiedConfig.errors.forEach((fail) => new NotificationBuilder().withMessage(fail).error())
+      verifiedConfig.errors.forEach((fail) => new NotificationBuilder().withMessage(fail).error());
       return false;
     default:
       let _guard: never = verifiedConfig;
