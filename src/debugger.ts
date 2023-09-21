@@ -85,7 +85,10 @@ function setLastActiveMirrordPath(path: string) {
 }
 
 export class ConfigurationProvider implements vscode.DebugConfigurationProvider {
-	async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
+	async resolveDebugConfigurationWithSubstitutedVariables(
+		folder: vscode.WorkspaceFolder | undefined,
+		config: vscode.DebugConfiguration,
+		token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
 
 		if (!globalContext.workspaceState.get('enabled')) {
 			return config;
@@ -123,7 +126,7 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		config.env ||= {};
 		let target = null;
 
-		let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
+		let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder);
 		// If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
 		if (!configPath || !await MirrordConfigManager.isTargetInFile(configPath)) {
 			let targets;
@@ -134,10 +137,10 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 				return null;
 			}
 			if (targets.length === 0) {
-				new NotificationBuilder()	
+				new NotificationBuilder()
 					.withMessage(
 						"No mirrord target available in the configured namespace. " +
-						"You can run targetless, or set a different target namespace or kubeconfig in the mirrord configuration file.",	
+						"You can run targetless, or set a different target namespace or kubeconfig in the mirrord configuration file.",
 					)
 					.info();
 			}
@@ -145,8 +148,8 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 			let selected = false;
 
 			while (!selected) {
-				let targetPick = await vscode.window.showQuickPick(targets.quickPickItems(), { 
-					placeHolder: 'Select a target path to mirror' 
+				let targetPick = await vscode.window.showQuickPick(targets.quickPickItems(), {
+					placeHolder: 'Select a target path to mirror'
 				});
 
 				if (targetPick) {
