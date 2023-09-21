@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import YAML from 'yaml';
 import TOML from 'toml';
 import { NotificationBuilder } from './notification';
+import { mirrordFailure } from './api';
 
 /**
  * Default mirrord configuration.
@@ -59,6 +60,10 @@ export interface Path {
 * Looks into the `verifiedConfig` to see if it has a `Target` set (by checking `Config.path`).
 *
 * Also displays warnings/errors if there are any.
+*
+* When `Fail` is detected, we throw an exception after displaying the errors to the user to stop
+* execution, if you `try/catch` this function call, normal mirrord execution will continue until it
+* hits the normal mirrord-config handler.
 */
 export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
   switch (verifiedConfig.type) {
@@ -67,12 +72,11 @@ export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
       return verifiedConfig.config.path !== undefined;
     case 'Fail':
       verifiedConfig.errors.forEach((fail) => new NotificationBuilder().withMessage(fail).error());
-      return false;
+      throw new Error('mirrord verify-config detected an invalid configuration!');
     default:
       let _guard: never = verifiedConfig;
       return _guard;
   }
-
 }
 
 export class MirrordConfigManager {
