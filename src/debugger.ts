@@ -84,6 +84,9 @@ function setLastActiveMirrordPath(path: string) {
 	globalContext.globalState.update('binaryPath', path);
 }
 
+/**
+* We implement the `resolveDebugConfiguration` that comes with vscode variables resolved already.
+*/
 export class ConfigurationProvider implements vscode.DebugConfigurationProvider {
 	async resolveDebugConfigurationWithSubstitutedVariables(
 		folder: vscode.WorkspaceFolder | undefined,
@@ -126,7 +129,7 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		config.env ||= {};
 		let target = null;
 
-		let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder);
+		let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
 		// If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
 		if (!configPath || !await MirrordConfigManager.isTargetInFile(configPath)) {
 			let targets;

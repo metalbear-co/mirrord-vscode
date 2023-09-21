@@ -237,7 +237,7 @@ export class MirrordConfigManager {
    * @param config debug configuration used
    * @returns path to the mirrord config
    */
-  public async resolveMirrordConfig(folder: vscode.WorkspaceFolder | undefined): Promise<vscode.Uri | null> {
+  public async resolveMirrordConfig(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.Uri | null> {
 
     if (this.active) {
       new NotificationBuilder()
@@ -246,6 +246,14 @@ export class MirrordConfigManager {
         .withDisableAction("promptUsingActiveConfig")
         .info();
       return this.active;
+    }
+
+    // User set config path with a vscode variable, in either `launch.json` or `settings.json`, 
+    // e.g.: `${workspaceFolder}/mirrord/config.json`.
+    let launchConfig = config.env?.["MIRRORD_CONFIG_FILE"];
+    if (typeof launchConfig === "string") {
+      // Path here is already resolved, e.g.: `/home/bear/mirrord/config.json`.
+      return vscode.Uri.file(launchConfig);
     }
 
     if (folder) {
