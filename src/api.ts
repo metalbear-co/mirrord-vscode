@@ -4,6 +4,7 @@ import { globalContext } from './extension';
 import { tickWaitlistCounter } from './waitlist';
 import { NotificationBuilder } from './notification';
 import { MirrordStatus } from './status';
+import { VerifiedConfig } from './config';
 
 /**
 * Key to access the feedback counter (see `tickFeedbackCounter`) from the global user config.
@@ -132,7 +133,9 @@ export class MirrordExecution {
 
 }
 
-// API to interact with the mirrord CLI, runs in the "ext" mode
+/**
+* API to interact with the mirrord CLI, runs in the "ext" mode.
+*/
 export class MirrordAPI {
   cliPath: string;
 
@@ -194,8 +197,10 @@ export class MirrordAPI {
     });
   }
 
-  // Spawn the mirrord cli with the given arguments
-  // used for reading/interacting while process still runs.
+  /** 
+  * Spawn the mirrord cli with the given arguments.
+  * Used for reading/interacting while process still runs.
+  */
   private spawn(args: string[]): ChildProcessWithoutNullStreams {
     return spawn(this.cliPath, args, { env: MirrordAPI.getEnv() });
   }
@@ -209,8 +214,10 @@ export class MirrordAPI {
     return stdout.split(" ")[1].trim();
   }
 
-  /// Uses `mirrord ls` to get a list of all targets.
-  /// Targets are sorted, with an exception of the last used target being the first on the list.
+  /**
+  * Uses `mirrord ls` to get a list of all targets.
+  * Targets are sorted, with an exception of the last used target being the first on the list.
+  */
   async listTargets(configPath: string | null | undefined): Promise<Targets> {
     const args = ['ls'];
     if (configPath) {
@@ -234,6 +241,23 @@ export class MirrordAPI {
     }
 
     return new Targets(targets, lastTarget);
+  }
+
+  /**
+  * Executes the `mirrord verify-config {configPath}` command, parsing its output into a
+  * `VerifiedConfig`.
+  */
+  async verifyConfig(configPath: vscode.Uri | null): Promise<VerifiedConfig | undefined> {
+    const args = ['verify-config'];
+    if (configPath) {
+      args.push(configPath.path);
+      const stdout = await this.exec(args);
+
+      const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
+      return verifiedConfig;
+    } else {
+      return undefined;
+    }
   }
 
   // Run the extension execute sequence
