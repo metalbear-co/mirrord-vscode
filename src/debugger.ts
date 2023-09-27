@@ -84,8 +84,14 @@ function setLastActiveMirrordPath(path: string) {
 	globalContext.globalState.update('binaryPath', path);
 }
 
+/**
+* We implement the `resolveDebugConfiguration` that comes with vscode variables resolved already.
+*/
 export class ConfigurationProvider implements vscode.DebugConfigurationProvider {
-	async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
+	async resolveDebugConfigurationWithSubstitutedVariables(
+		folder: vscode.WorkspaceFolder | undefined,
+		config: vscode.DebugConfiguration,
+		token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
 
 		if (!globalContext.workspaceState.get('enabled')) {
 			return config;
