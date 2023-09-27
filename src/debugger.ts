@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { globalContext } from './extension';
-import { MirrordConfigManager } from './config';
+import { isTargetSet, MirrordConfigManager } from './config';
 import { LAST_TARGET_KEY, MirrordAPI, mirrordFailure, MirrordExecution } from './api';
 import { updateTelemetries } from './versionCheck';
 import { getLocalMirrordBinary, getMirrordBinary } from './binaryManager';
@@ -130,8 +130,10 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 		let target = null;
 
 		let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
+		const verifiedConfig = await mirrordApi.verifyConfig(configPath);
+
 		// If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
-		if (!configPath || !await MirrordConfigManager.isTargetInFile(configPath)) {
+		if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
 			let targets;
 			try {
 				targets = await mirrordApi.listTargets(configPath?.path);

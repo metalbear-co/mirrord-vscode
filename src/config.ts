@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import YAML from 'yaml';
 import TOML from 'toml';
 import { NotificationBuilder } from './notification';
+import { mirrordFailure } from './api';
 
 /**
  * Default mirrord configuration.
@@ -21,6 +22,61 @@ const DEFAULT_CONFIG = `{
 interface LaunchConfig {
   name: string,
   env?: { [key: string]: string };
+}
+
+/**
+* Output from `mirrord verify-config`.
+*/
+export type VerifiedConfig = ConfigSuccess | ConfigFail;
+
+/**
+* When `mirrord verify-config` results in a `"Success"`.
+*/
+type ConfigSuccess = { 'type': 'Success', config: Config, warnings: string[] };
+
+/**
+* When `mirrord verify-config` results in a `"Fail"`.
+*/
+type ConfigFail = { 'type': 'Fail', errors: string[] };
+
+
+/**
+* When `mirrord verify-config` results in a `"Success"`, this is the config within.
+*/
+export interface Config {
+  path: Path | undefined
+  namespace: string | undefined
+}
+
+/**
+* Pod/deployment used to detect if `Target` was set in the config.
+*/
+export interface Path {
+  deployment: string | undefined
+  container: string | undefined
+}
+
+/**
+* Looks into the `verifiedConfig` to see if it has a `Target` set (by checking `Config.path`).
+*
+* Also displays warnings/errors if there are any.
+*
+* When `Fail` is detected, we throw an exception after displaying the errors to the user to stop
+* execution, if you `try/catch` this function call, normal mirrord execution will continue until it
+* hits the normal mirrord-config handler.
+*/
+export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
+  switch (verifiedConfig.type) {
+    case 'Success':
+      verifiedConfig.warnings.forEach((warn) => new NotificationBuilder().withMessage(warn).warning());
+      return verifiedConfig.config.path !== undefined;
+    case 'Fail':
+      verifiedConfig.errors.forEach((fail) => new NotificationBuilder().withMessage(fail).error());
+      throw new Error('mirrord verify-config detected an invalid configuration!');
+    default:
+      let _guard: never = verifiedConfig;
+      return _guard;
+  }
 }
 
 export class MirrordConfigManager {
@@ -232,13 +288,26 @@ export class MirrordConfigManager {
   }
 
   /**
+   * Resolves config file path specified in the launch config.
+   * @param folder workspace folder of the launch config
+   * @param path taken from the `MIRRORD_CONFIG_FILE` environment variable in launch config
+   * @returns config file Uri
+   */
+  private static processPathFromLaunchConfig(folder: vscode.WorkspaceFolder | undefined, path: string): vscode.Uri {
+    if (folder) {
+      path = path.replace(/\$\{workspaceFolder\}/g, folder.uri.fsPath);
+    }
+
+    return vscode.Uri.file(path);
+  }
+
+  /**
    * Used when preparing mirrord environment for the process.
    * @param folder optional origin of the launch config
    * @param config debug configuration used
    * @returns path to the mirrord config
    */
   public async resolveMirrordConfig(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.Uri | null> {
-
     if (this.active) {
       new NotificationBuilder()
         .withMessage("using active mirrord configuration")
@@ -248,12 +317,9 @@ export class MirrordConfigManager {
       return this.active;
     }
 
-    // User set config path with a vscode variable, in either `launch.json` or `settings.json`, 
-    // e.g.: `${workspaceFolder}/mirrord/config.json`.
     let launchConfig = config.env?.["MIRRORD_CONFIG_FILE"];
     if (typeof launchConfig === "string") {
-      // Path here is already resolved, e.g.: `/home/bear/mirrord/config.json`.
-      return vscode.Uri.file(launchConfig);
+      return MirrordConfigManager.processPathFromLaunchConfig(folder, launchConfig);
     }
 
     if (folder) {
@@ -284,23 +350,5 @@ export class MirrordConfigManager {
     }
 
     return null;
-  }
-
-  /**
-   * Checks whether mirrord target is specified in the given config.
-   * @param path config path
-   */
-  public static async isTargetInFile(path: vscode.Uri): Promise<boolean> {
-    const contents = (await vscode.workspace.fs.readFile(path)).toString();
-    let parsed;
-    if (path.path.endsWith('json')) {
-      parsed = JSON.parse(contents);
-    } else if (path.path.endsWith('yaml') || path.path.endsWith('yml')) {
-      parsed = YAML.parse(contents);
-    } else if (path.path.endsWith('toml')) {
-      parsed = TOML.parse(contents);
-    }
-
-    return (parsed && (typeof (parsed['target']) === 'string' || parsed['target']?.['path']));
   }
 }
