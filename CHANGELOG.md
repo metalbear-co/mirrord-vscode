@@ -8,6 +8,29 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.54.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.54.0) - 2023-09-27
+
+
+### Added
+
+- Use mirrord verify-config to validate a config file before proceeding with
+  mirrord execution.
+  [#57](https://github.com/metalbear-co/mirrord-vscode/issues/57)
+
+
+### Changed
+
+- Use resolveDebugConfigurationWithSubstitutedVariables to resolve vscode
+  variables in paths..
+  [#63](https://github.com/metalbear-co/mirrord-vscode/issues/63)
+
+
+### Internal
+
+- Create a reusable worflow for running e2e tests such that we maintain e2e in
+  one place and can run tests on mirrord's release branch.
+
+
 ## [3.53.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.53.0) - 2023-09-07
 
 
