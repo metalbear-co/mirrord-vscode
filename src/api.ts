@@ -248,7 +248,7 @@ export class MirrordAPI {
   * `VerifiedConfig`.
   */
   async verifyConfig(configPath: vscode.Uri | null): Promise<VerifiedConfig | undefined> {
-    const args = ['verify-config'];
+    const args = ['verify-config', '--ide', '--path'];
     if (configPath) {
       args.push(configPath.path);
       const stdout = await this.exec(args);

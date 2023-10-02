@@ -69,7 +69,7 @@ export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
   switch (verifiedConfig.type) {
     case 'Success':
       verifiedConfig.warnings.forEach((warn) => new NotificationBuilder().withMessage(warn).warning());
-      return verifiedConfig.config.path !== undefined;
+      return verifiedConfig.config.path !== undefined && verifiedConfig.config.path !== null;
     case 'Fail':
       verifiedConfig.errors.forEach((fail) => new NotificationBuilder().withMessage(fail).error());
       throw new Error('mirrord verify-config detected an invalid configuration!');
