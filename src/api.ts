@@ -197,7 +197,7 @@ export class MirrordAPI {
     });
   }
 
-  /** 
+  /**
   * Spawn the mirrord cli with the given arguments.
   * Used for reading/interacting while process still runs.
   */
@@ -248,7 +248,7 @@ export class MirrordAPI {
   * `VerifiedConfig`.
   */
   async verifyConfig(configPath: vscode.Uri | null): Promise<VerifiedConfig | undefined> {
-    const args = ['verify-config', '--ide', '--path'];
+    let args = ['verify-config', '--ide', '--path'];
     if (configPath) {
       args.push(configPath.path);
       const stdout = await this.exec(args);
@@ -396,7 +396,7 @@ class MirrordWarningHandler {
   }
 }
 
-/** 
+/**
 * Updates the global feedback counter.
 * After each `FEEDBACK_COUNTER_REVIEW_AFTER` mirrord runs, displays a message asking the user to leave a review in the marketplace.
 */

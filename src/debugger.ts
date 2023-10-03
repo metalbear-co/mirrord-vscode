@@ -91,131 +91,137 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
 	async resolveDebugConfigurationWithSubstitutedVariables(
 		folder: vscode.WorkspaceFolder | undefined,
 		config: vscode.DebugConfiguration,
-		token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
-
-		if (!globalContext.workspaceState.get('enabled')) {
-			return config;
-		}
-
-		// For some reason resolveDebugConfiguration runs twice for Node projects. __parentId is populated.
-		if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === 'true') {
-			return config;
-		}
-
-		updateTelemetries();
-
-		//TODO: add progress bar maybe ?
-		let cliPath;
-
+		_token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
 		try {
-			cliPath = await getMirrordBinary();
-		} catch (err) {
-			// Get last active, that should work?
-			cliPath = await getLastActiveMirrordPath();
+			if (!globalContext.workspaceState.get('enabled')) {
+				return config;
+			}
 
-			// Well try any mirrord we can try :\
-			if (!cliPath) {
-				cliPath = await getLocalMirrordBinary();
+			// For some reason resolveDebugConfiguration runs twice for Node projects. __parentId is populated.
+			if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === 'true') {
+				return config;
+			}
+
+			updateTelemetries();
+
+			//TODO: add progress bar maybe ?
+			let cliPath;
+
+			try {
+				cliPath = await getMirrordBinary();
+			} catch (err) {
+				// Get last active, that should work?
+				cliPath = await getLastActiveMirrordPath();
+
+				// Well try any mirrord we can try :\
 				if (!cliPath) {
-					mirrordFailure(`Couldn't download mirrord binaries or find local one in path ${err}.`);
+					cliPath = await getLocalMirrordBinary();
+					if (!cliPath) {
+						mirrordFailure(`Couldn't download mirrord binaries or find local one in path ${err}.`);
+						return null;
+					}
+				}
+			}
+			setLastActiveMirrordPath(cliPath);
+
+			let mirrordApi = new MirrordAPI(cliPath);
+
+			config.env ||= {};
+			let target = null;
+
+			let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
+			const verifiedConfig = await mirrordApi.verifyConfig(configPath);
+
+			// If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
+			if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
+				let targets;
+				try {
+					targets = await mirrordApi.listTargets(configPath?.path);
+				} catch (err) {
+					mirrordFailure(`mirrord failed to list targets: ${err}`);
 					return null;
 				}
-			}
-		}
-		setLastActiveMirrordPath(cliPath);
-
-		let mirrordApi = new MirrordAPI(cliPath);
-
-		config.env ||= {};
-		let target = null;
-
-		let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
-		const verifiedConfig = await mirrordApi.verifyConfig(configPath);
-
-		// If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
-		if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
-			let targets;
-			try {
-				targets = await mirrordApi.listTargets(configPath?.path);
-			} catch (err) {
-				mirrordFailure(`mirrord failed to list targets: ${err}`);
-				return null;
-			}
-			if (targets.length === 0) {
-				new NotificationBuilder()
-					.withMessage(
-						"No mirrord target available in the configured namespace. " +
-						"You can run targetless, or set a different target namespace or kubeconfig in the mirrord configuration file.",
-					)
-					.info();
-			}
-
-			let selected = false;
-
-			while (!selected) {
-				let targetPick = await vscode.window.showQuickPick(targets.quickPickItems(), {
-					placeHolder: 'Select a target path to mirror'
-				});
-
-				if (targetPick) {
-					if (targetPick.type === 'page') {
-						targets.switchPage(targetPick);
-
-						continue;
-					}
-
-					if (targetPick.type !== 'targetless') {
-						target = targetPick.value;
-					}
-
-					globalContext.globalState.update(LAST_TARGET_KEY, target);
-					globalContext.workspaceState.update(LAST_TARGET_KEY, target);
+				if (targets.length === 0) {
+					new NotificationBuilder()
+						.withMessage(
+							"No mirrord target available in the configured namespace. " +
+							"You can run targetless, or set a different target namespace or kubeconfig in the mirrord configuration file.",
+						)
+						.info();
 				}
 
-				selected = true;
+				let selected = false;
+
+				while (!selected) {
+					let targetPick = await vscode.window.showQuickPick(targets.quickPickItems(), {
+						placeHolder: 'Select a target path to mirror'
+					});
+
+					if (targetPick) {
+						if (targetPick.type === 'page') {
+							targets.switchPage(targetPick);
+
+							continue;
+						}
+
+						if (targetPick.type !== 'targetless') {
+							target = targetPick.value;
+						}
+
+						globalContext.globalState.update(LAST_TARGET_KEY, target);
+						globalContext.workspaceState.update(LAST_TARGET_KEY, target);
+					}
+
+					selected = true;
+				}
+
+				if (!target) {
+					new NotificationBuilder()
+						.withMessage("mirrord running targetless")
+						.withDisableAction("promptTargetless")
+						.info();
+				}
 			}
 
-			if (!target) {
-				new NotificationBuilder()
-					.withMessage("mirrord running targetless")
-					.withDisableAction("promptTargetless")
-					.info();
+			if (config.type === "go") {
+				config.env["MIRRORD_SKIP_PROCESSES"] = "dlv;debugserver;compile;go;asm;cgo;link;git;gcc;as;ld;collect2;cc1";
+			} else if (config.type === "python") {
+				config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "debugpy";
+			} else if (config.type === "java") {
+				config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "javaagent";
 			}
+
+			// Add a fixed range of ports that VS Code uses for debugging.
+			// TODO: find a way to use MIRRORD_DETECT_DEBUGGER_PORT for other debuggers.
+			config.env["MIRRORD_IGNORE_DEBUGGER_PORTS"] = "45000-65535";
+
+			let isMac = platform() === "darwin";
+
+			let [executableFieldName, executable] = isMac ? getFieldAndExecutable(config) : [null, null];
+
+			let executionInfo;
+			try {
+				executionInfo = await mirrordApi.binaryExecute(target, configPath?.path || null, executable);
+			} catch (err) {
+				mirrordFailure(`mirrord preparation failed: ${err}`);
+				return null;
+			}
+
+			if (isMac) {
+				changeConfigForSip(config, executableFieldName as string, executionInfo);
+			}
+
+			let env = executionInfo?.env;
+			config.env = Object.assign({}, config.env, Object.fromEntries(env));
+
+			config.env["__MIRRORD_EXT_INJECTED"] = 'true';
+
+			return config;
+		} catch (fail) {
+			console.error(`Something went wrong in the extension: ${fail}`);
+			new NotificationBuilder()
+				.withMessage(`Something went wrong: ${fail}`)
+				.error();
 		}
-
-		if (config.type === "go") {
-			config.env["MIRRORD_SKIP_PROCESSES"] = "dlv;debugserver;compile;go;asm;cgo;link;git;gcc;as;ld;collect2;cc1";
-		} else if (config.type === "python") {
-			config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "debugpy";
-		} else if (config.type === "java") {
-			config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "javaagent";
-		}
-
-		// Add a fixed range of ports that VS Code uses for debugging.
-		// TODO: find a way to use MIRRORD_DETECT_DEBUGGER_PORT for other debuggers.
-		config.env["MIRRORD_IGNORE_DEBUGGER_PORTS"] = "45000-65535";
-
-		let isMac = platform() === "darwin";
-
-		let [executableFieldName, executable] = isMac ? getFieldAndExecutable(config) : [null, null];
-
-		let executionInfo;
-		try {
-			executionInfo = await mirrordApi.binaryExecute(target, configPath?.path || null, executable);
-		} catch (err) {
-			mirrordFailure(`mirrord preparation failed: ${err}`);
-			return null;
-		}
-
-		if (isMac) {
-			changeConfigForSip(config, executableFieldName as string, executionInfo);
-		}
-
-		let env = executionInfo?.env;
-		config.env = Object.assign({}, config.env, Object.fromEntries(env));
-
-		config.env["__MIRRORD_EXT_INJECTED"] = 'true';
-
-		return config;
 	}
 }

@@ -1,8 +1,5 @@
 import * as vscode from 'vscode';
-import YAML from 'yaml';
-import TOML from 'toml';
 import { NotificationBuilder } from './notification';
-import { mirrordFailure } from './api';
 
 /**
  * Default mirrord configuration.
