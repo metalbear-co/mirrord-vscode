@@ -247,7 +247,7 @@ export class MirrordAPI {
   }
 
   /**
-  * Executes the `mirrord verify - config { configPath } ` command, parsing its output into a
+  * Executes the `mirrord verify-config {configPath}` command, parsing its output into a
   * `VerifiedConfig`.
   */
   async verifyConfig(configPath: vscode.Uri | null): Promise<VerifiedConfig | undefined> {
@@ -298,7 +298,7 @@ export class MirrordAPI {
 
         child.on("error", (err) => {
           console.error(err);
-          reject(`process failed: ${err.message} `);
+          reject(`process failed: ${err.message}`);
         });
 
         child.on("close", (code, signal) => {
@@ -306,7 +306,7 @@ export class MirrordAPI {
           if (match) {
             const error = JSON.parse(match);
             const notification = new NotificationBuilder()
-              .withMessage(`mirrord error: ${error["message"]} `);
+              .withMessage(`mirrord error: ${error["message"]}`);
             if (error["help"]) {
               notification.withGenericAction("Help", async () => {
                 vscode.window.showInformationMessage(error["help"]);
@@ -317,11 +317,11 @@ export class MirrordAPI {
           }
 
           if (code) {
-            return reject(`process exited with error code: ${code} `);
+            return reject(`process exited with error code: ${code}`);
           }
 
           if (signal !== null) {
-            return reject(`process was killed by signal: ${signal} `);
+            return reject(`process was killed by signal: ${signal}`);
           }
         });
 
@@ -329,7 +329,7 @@ export class MirrordAPI {
 
         let buffer = "";
         child.stdout.on("data", (data) => {
-          console.log(`mirrord: ${data} `);
+          console.log(`mirrord: ${data}`);
           buffer += data;
           // fml - AH
           let messages = buffer.split("\n");
@@ -410,7 +410,7 @@ function tickFeedbackCounter() {
 
   if ((currentRuns % FEEDBACK_COUNTER_REVIEW_AFTER) === 0) {
     new NotificationBuilder()
-      .withMessage(`Enjoying mirrord ? Don't forget to leave a review! Also consider giving us some feedback, we'd highly appreciate it!`)
+      .withMessage(`Enjoying mirrord? Don't forget to leave a review! Also consider giving us some feedback, we'd highly appreciate it!`)
       .withGenericAction("Review", async () => {
         vscode.env.openExternal(
           vscode.Uri.parse('https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord&ssr=false#review-details')
