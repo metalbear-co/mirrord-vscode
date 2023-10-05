@@ -49,7 +49,7 @@ describe("mirrord sample flow test", function() {
 
             return true;
           }
-        } catch (e) { console.error(`Something went wrong ${e}`) }
+        } catch (e) { console.error(`Something went wrong ${e}`); }
       }
     }, defaultTimeout, "mirrord `enable` button not found -- timed out");
 
@@ -59,7 +59,7 @@ describe("mirrord sample flow test", function() {
           if ((await button.getText()).startsWith('mirrord')) {
             return true;
           }
-        } catch (e) { console.error(`Something went wrong ${e}`) }
+        } catch (e) { console.error(`Something went wrong ${e}`); }
       }
     }, defaultTimeout, "mirrord `disable` button not found -- timed out");
   });

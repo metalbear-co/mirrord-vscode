@@ -188,11 +188,11 @@ export class MirrordAPI {
         }
 
         if (code) {
-          return reject(`process exited with error code: ${code} `);
+          return reject(`process exited with error code: ${code}`);
         }
 
         if (signal !== null) {
-          return reject(`process was killed by signal: ${signal} `);
+          return reject(`process was killed by signal: ${signal}`);
         }
 
         resolve(stdoutData);
