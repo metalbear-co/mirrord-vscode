@@ -164,6 +164,9 @@ export class MirrordAPI {
       child.stdout.on("data", (data) => stdoutData += data.toString());
       child.stderr.on("data", (data) => stderrData += data.toString());
 
+      child.stdout.on('end', () => console.log(`${stdoutData}`));
+      child.stderr.on('end', () => console.log(`${stderrData}`));
+
       child.on("error", (err) => {
         console.error(err);
         reject(`process failed: ${err.message}`);
@@ -197,7 +200,7 @@ export class MirrordAPI {
     });
   }
 
-  /** 
+  /**
   * Spawn the mirrord cli with the given arguments.
   * Used for reading/interacting while process still runs.
   */
@@ -248,9 +251,8 @@ export class MirrordAPI {
   * `VerifiedConfig`.
   */
   async verifyConfig(configPath: vscode.Uri | null): Promise<VerifiedConfig | undefined> {
-    const args = ['verify-config'];
     if (configPath) {
-      args.push(configPath.path);
+      const args = ['verify-config', '--ide', `${configPath.path}`];
       const stdout = await this.exec(args);
 
       const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
@@ -396,7 +398,7 @@ class MirrordWarningHandler {
   }
 }
 
-/** 
+/**
 * Updates the global feedback counter.
 * After each `FEEDBACK_COUNTER_REVIEW_AFTER` mirrord runs, displays a message asking the user to leave a review in the marketplace.
 */
