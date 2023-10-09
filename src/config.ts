@@ -16,9 +16,11 @@ const DEFAULT_CONFIG = `{
 }
 `;
 
+export type EnvVars = { [key: string]: string };
+
 interface LaunchConfig {
   name: string,
-  env?: { [key: string]: string };
+  env?: EnvVars;
 }
 
 /**
