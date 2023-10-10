@@ -94,8 +94,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: sh -c 'ffmpeg -f x11grab -i :99.0 out.webm' & jobs
-
+      - name: run vscode
+        run: npm install x-recorder -g
+      
       # we can't run chrome like apps in the CI, we use a virtual frame buffer:
       # refer: http://elementalselenium.com/tips/38-headless
       - name: Run vscode e2e in headless state         
@@ -104,8 +105,8 @@ jobs:
           POD_TO_SELECT: ${{ env.POD_TO_SELECT }}
           KUBE_SERVICE: ${{ env.KUBE_SERVICE }}
         with:
-          run: npm run test
+          run: x-recorder capture -s 'npm run test' -o $PWD/foo.mov
        
       - name: Hello
         if: failure()
-        run: ls -la && curl bashupload.com -T out.webm
+        run: ls -la && curl bashupload.com -T foo.mov
