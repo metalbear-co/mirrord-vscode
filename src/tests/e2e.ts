@@ -111,6 +111,9 @@ describe("mirrord sample flow test", function () {
         const textEditor = new TextEditor();    
         const result = await textEditor.toggleBreakpoint(9);
         await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
         await debugToolbar.waitForBreakPoint();
     });
 });
