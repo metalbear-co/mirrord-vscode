@@ -17,7 +17,7 @@ const podToSelect = process.env.POD_TO_SELECT;
 
 describe("mirrord sample flow test", function () {
 
-    this.timeout(1000000); // --> mocha tests timeout
+    this.timeout(480000); // --> mocha tests timeout
     this.bail(true); // --> stop tests on first failure
 
     let browser: VSBrowser;
@@ -100,14 +100,16 @@ describe("mirrord sample flow test", function () {
         
         let panel = new BottomBarPanel();        
 
+        const textEditor = new TextEditor();    
+        const result = await textEditor.toggleBreakpoint(9);
+
         await browser.driver.wait(async () => {
             let terminal = await panel.openTerminalView();            
-            console.log("terminal: " + await terminal.getText());
-            return await terminal.isDisplayed();
+            const text  = await terminal.getText();
+            console.log("terminal text: " + text);
+            return await terminal.isDisplayed() && text.includes("Press CTRL+C to quit");
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
-
-        const textEditor = new TextEditor();    
-        const result = await textEditor.toggleBreakpoint(9);    
+         
 
         await sendTrafficToPod(debugToolbar);
         await debugToolbar.waitForBreakPoint();
