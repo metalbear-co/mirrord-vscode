@@ -98,7 +98,7 @@ jobs:
         run: |
           sudo apt-get install -y xvfb x11-xserver-utils ffmpeg
           /usr/bin/xvfb-run -s ":99 -auth /tmp/xvfb.auth -ac -screen 0 1920x1080x24" npm run test &
-          ffmpeg -f x11grab -video_size 1920x1080 -i :99 -codec:v libx264 out.webm
+          ffmpeg -f x11grab -video_size 1920x1080 -i :99 -codec:v out.webm
           wait -n
 
       - name: Upload video
