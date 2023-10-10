@@ -17,7 +17,7 @@ const podToSelect = process.env.POD_TO_SELECT;
 
 describe("mirrord sample flow test", function () {
 
-    this.timeout(480000); // --> mocha tests timeout
+    this.timeout(460000); // --> mocha tests timeout
     this.bail(true); // --> stop tests on first failure
 
     let browser: VSBrowser;
@@ -111,7 +111,7 @@ describe("mirrord sample flow test", function () {
         await browser.driver.wait(async () => {
             const result = await textEditor.toggleBreakpoint(9);
             return result;
-        }, defaultTimeout, "timed out");
+        }, 2 * defaultTimeout, "timed out");
 
         await sendTrafficToPod(debugToolbar);
         await sendTrafficToPod(debugToolbar);
