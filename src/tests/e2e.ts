@@ -97,14 +97,17 @@ describe("mirrord sample flow test", function () {
             return await debugToolbar.isDisplayed();
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
 
-        await setBreakPoint(fileName, browser, defaultTimeout);
+        
         let panel = new BottomBarPanel();        
 
         await browser.driver.wait(async () => {
             let terminal = await panel.openTerminalView();            
-            console.log("terminal: " + terminal.getText());
+            console.log("terminal: " + await terminal.getText());
             return await terminal.isDisplayed();
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
+
+        const textEditor = new TextEditor();    
+        const result = await textEditor.toggleBreakpoint(9);    
 
         await sendTrafficToPod(debugToolbar);
         await debugToolbar.waitForBreakPoint();
