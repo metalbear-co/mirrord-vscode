@@ -103,7 +103,7 @@ jobs:
           KUBE_SERVICE: ${{ env.KUBE_SERVICE }}
         with:
           run: |
-            ffmpeg -f x11grab -i :99.0 out.webm & 
+            ffmpeg -f x11grab -i :99.0 out.webm
             npm run test
        
       - name: Hello
