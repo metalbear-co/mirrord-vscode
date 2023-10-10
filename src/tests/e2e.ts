@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { join } from "path";
-import { VSBrowser, StatusBar, TextEditor, EditorView, ActivityBar, DebugView, InputBox, DebugToolbar } from "vscode-extension-tester";
+import { VSBrowser, StatusBar, TextEditor, EditorView, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel } from "vscode-extension-tester";
 import get from "axios";
 
 
@@ -64,10 +64,8 @@ describe("mirrord sample flow test", function () {
         }, defaultTimeout, "mirrord `disable` button not found -- timed out");
     });
 
-    it("select pod from quickpick", async function () {
-        await setBreakPoint(fileName, browser, defaultTimeout);
+    it("select pod from quickpick", async function () {        
         await startDebugging();
-
         const inputBox = await InputBox.create(defaultTimeout * 2);
         // assertion that podToSelect is not undefined is done in "before" block   
         await browser.driver.wait(async () => {
@@ -100,6 +98,9 @@ describe("mirrord sample flow test", function () {
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
 
         await setBreakPoint(fileName, browser, defaultTimeout);
+        let panel = new BottomBarPanel();
+        let terminal = await panel.openTerminalView();
+        console.log("terminal: " + terminal.getText());
         await sendTrafficToPod(debugToolbar);
         await debugToolbar.waitForBreakPoint();
     });
@@ -126,7 +127,7 @@ async function setBreakPoint(fileName: string, browser: VSBrowser, timeout: numb
 
     const textEditor = new TextEditor();    
     const result = await textEditor.toggleBreakpoint(breakPoint);    
-    // expect(result).to.be.true;
+    expect(result).to.be.true;
 }
 
 // starts debugging the current file with the provided configuration
