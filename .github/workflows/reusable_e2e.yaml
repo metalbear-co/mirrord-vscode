@@ -98,7 +98,7 @@ jobs:
         run: |
           sudo apt-get install -y xvfb x11-xserver-utils ffmpeg
           /usr/bin/xvfb-run --auto-servernum npm run test &
-          ffmpeg -f x11grab -i :99.0 out.webm
+          ffmpeg -f x11grab -i :99.0 -video_size 640x1208 out.webm
 
        
       - name: Hello
