@@ -98,10 +98,7 @@ describe("mirrord sample flow test", function () {
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
 
         
-        let panel = new BottomBarPanel();        
-
-        const textEditor = new TextEditor();    
-        const result = await textEditor.toggleBreakpoint(9);
+        let panel = new BottomBarPanel();                
 
         await browser.driver.wait(async () => {
             let terminal = await panel.openTerminalView();            
@@ -111,6 +108,8 @@ describe("mirrord sample flow test", function () {
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
          
 
+        const textEditor = new TextEditor();    
+        const result = await textEditor.toggleBreakpoint(9);
         await sendTrafficToPod(debugToolbar);
         await debugToolbar.waitForBreakPoint();
     });
