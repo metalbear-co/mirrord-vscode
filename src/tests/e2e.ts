@@ -108,11 +108,9 @@ describe("mirrord sample flow test", function () {
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
         
 
-        await browser.driver.wait(async () => {
-            const result = await textEditor.toggleBreakpoint(9);            
-        }, 2 * defaultTimeout, "timed out");
+        const result = await textEditor.toggleBreakpoint(9);                    
 
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 2000));
 
         
         await sendTrafficToPod(debugToolbar);
