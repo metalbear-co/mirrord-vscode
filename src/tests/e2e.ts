@@ -17,7 +17,7 @@ const podToSelect = process.env.POD_TO_SELECT;
 
 describe("mirrord sample flow test", function () {
 
-    this.timeout(1000000); // --> mocha tests timeout
+    this.timeout(10000); // --> mocha tests timeout
     this.bail(true); // --> stop tests on first failure
 
     let browser: VSBrowser;
