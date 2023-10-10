@@ -94,15 +94,13 @@ describe("mirrord sample flow test", function () {
     });
 
     it("wait for breakpoint to be hit", async function () {
-        const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);
-        // waiting for breakpoint and sending traffic to pod are run in parallel
-        // however, traffic is sent after 10 seconds that we are sure the IDE is listening
-        // for breakpoints
+        const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);        
         await browser.driver.wait(async () => {
             return await debugToolbar.isDisplayed();
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
 
-        sendTrafficToPod(debugToolbar);
+        await setBreakPoint(fileName, browser, defaultTimeout);
+        await sendTrafficToPod(debugToolbar);
         await debugToolbar.waitForBreakPoint();
     });
 });
@@ -126,10 +124,8 @@ async function setBreakPoint(fileName: string, browser: VSBrowser, timeout: numb
         }
     }, timeout, "editor tab title not found -- timed out");
 
-    const textEditor = new TextEditor();
-    console.log("coordinates: " + await textEditor.getCoordinates())
-    const result = await textEditor.toggleBreakpoint(breakPoint);
-    console.log("coordinates: " + await textEditor.getCoordinates())
+    const textEditor = new TextEditor();    
+    const result = await textEditor.toggleBreakpoint(breakPoint);    
     // expect(result).to.be.true;
 }
 
