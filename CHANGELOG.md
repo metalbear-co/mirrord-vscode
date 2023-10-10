@@ -8,6 +8,21 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.54.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.54.1) - 2023-10-10
+
+
+### Fixed
+
+- Uses the `verify-config --ide` flag now to signal mirrord we're in an IDE
+  context. Changes `isTargetSet` to check for both `null` and `undefined`.
+  [#72](https://github.com/metalbear-co/mirrord-vscode/issues/72)
+
+
+### Internal
+
+- Bumped `get-func-name` version.
+
+
 ## [3.54.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.54.0) - 2023-09-27
 
 
