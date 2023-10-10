@@ -64,7 +64,7 @@ describe("mirrord sample flow test", function () {
         }, defaultTimeout, "mirrord `disable` button not found -- timed out");
     });
 
-    it("select pod from quickpick", async function () {        
+    it("select pod from quickpick", async function () {
         await startDebugging();
         const inputBox = await InputBox.create(defaultTimeout * 2);
         // assertion that podToSelect is not undefined is done in "before" block   
@@ -92,24 +92,27 @@ describe("mirrord sample flow test", function () {
     });
 
     it("wait for breakpoint to be hit", async function () {
-        const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);        
+        const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);
+        const textEditor = new TextEditor();
+        const panel = new BottomBarPanel();
         await browser.driver.wait(async () => {
             return await debugToolbar.isDisplayed();
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
-
         
-        let panel = new BottomBarPanel();                
 
         await browser.driver.wait(async () => {
-            let terminal = await panel.openTerminalView();            
-            const text  = await terminal.getText();
+            let terminal = await panel.openTerminalView();
+            const text = await terminal.getText();
             console.log("terminal text: " + text);
             return await terminal.isDisplayed() && text.includes("Press CTRL+C to quit");
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
-         
+        
 
-        const textEditor = new TextEditor();    
-        const result = await textEditor.toggleBreakpoint(9);
+        await browser.driver.wait(async () => {
+            const result = await textEditor.toggleBreakpoint(9);
+            return result;
+        }, defaultTimeout, "timed out");
+
         await sendTrafficToPod(debugToolbar);
         await sendTrafficToPod(debugToolbar);
         await sendTrafficToPod(debugToolbar);
@@ -137,8 +140,8 @@ async function setBreakPoint(fileName: string, browser: VSBrowser, timeout: numb
         }
     }, timeout, "editor tab title not found -- timed out");
 
-    const textEditor = new TextEditor();    
-    const result = await textEditor.toggleBreakpoint(breakPoint);    
+    const textEditor = new TextEditor();
+    const result = await textEditor.toggleBreakpoint(breakPoint);
     // expect(result).to.be.true;
 }
 
