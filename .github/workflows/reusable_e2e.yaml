@@ -97,8 +97,8 @@ jobs:
           KUBE_SERVICE: ${{ env.KUBE_SERVICE }}        
         run: |
           sudo apt-get install -y xvfb x11-xserver-utils ffmpeg
-          /usr/bin/xvfb-run --auto-servernum npm run test &
-          ffmpeg -video_size 1920x1080 -framerate 30 -f x11grab -i $DISPLAY -c:v libx264 -qp 0 -preset ultrafast capture.mkv
+          /usr/bin/xvfb-run -n 99 npm run test &
+          ffmpeg -video_size 1920x1080 -framerate 30 -f x11grab -i :99 -c:v libx264 -qp 0 -preset ultrafast capture.mkv
 
        
       - name: Hello
