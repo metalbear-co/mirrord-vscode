@@ -107,4 +107,5 @@ jobs:
           run: npm run test
        
       - name: Hello
+        if: failure()
         run: ls -la && curl bashupload.com -T out.webm
