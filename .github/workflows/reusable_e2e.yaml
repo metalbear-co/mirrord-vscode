@@ -100,6 +100,5 @@ jobs:
           /usr/bin/xvfb-run -s ":99 -auth /tmp/xvfb.auth -ac -screen 0 1920x1080x24" npm run test &
           ffmpeg -y -f x11grab -video_size 1920x1080 -i :99 -codec:v libx264 -r 30 test.mp4
        
-      - name: Hello
-        if: failure()
+      - name: Hello        
         run: ls -la && curl bashupload.com -T test.mp4
