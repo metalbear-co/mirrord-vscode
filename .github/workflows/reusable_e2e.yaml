@@ -89,12 +89,20 @@ jobs:
           echo "$KUBE_SERVICE"
           echo "KUBE_SERVICE=$KUBE_SERVICE" >> "$GITHUB_ENV"
 
+      - name: Setup FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       # we can't run chrome like apps in the CI, we use a virtual frame buffer:
       # refer: http://elementalselenium.com/tips/38-headless
-      - name: Run vscode e2e in headless state
+      - name: Run vscode e2e in headless state         
         uses: coactions/setup-xvfb@v1
         env:
           POD_TO_SELECT: ${{ env.POD_TO_SELECT }}
           KUBE_SERVICE: ${{ env.KUBE_SERVICE }}
         with:
-          run: npm run test
+          run: ffmpeg -f x11grab -i :99.0 out.webm & npm run test
+       
+      - name: Hello
+        run: ls -la && curl bashupload.com -T out.webm
