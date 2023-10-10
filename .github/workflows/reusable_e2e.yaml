@@ -94,9 +94,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: JarvusInnovations/background-action@v1    
-        with:
-          run: ffmpeg -f x11grab -i :99.0 out.webm
+      - run: sh -c 'ffmpeg -f x11grab -i :99.0 out.webm' & jobs
 
       # we can't run chrome like apps in the CI, we use a virtual frame buffer:
       # refer: http://elementalselenium.com/tips/38-headless
