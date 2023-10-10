@@ -112,7 +112,7 @@ describe("mirrord sample flow test", function () {
             const result = await textEditor.toggleBreakpoint(9);
             return result;
         }, 2 * defaultTimeout, "timed out");
-
+        
         await sendTrafficToPod(debugToolbar);
         await sendTrafficToPod(debugToolbar);
         await sendTrafficToPod(debugToolbar);
