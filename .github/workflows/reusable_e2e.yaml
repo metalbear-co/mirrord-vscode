@@ -98,9 +98,9 @@ jobs:
         run: |
           sudo apt-get install -y xvfb x11-xserver-utils ffmpeg
           /usr/bin/xvfb-run --auto-servernum npm run test &
-          ffmpeg -f x11grab -i :99.0 -video_size 640x1208 out.webm
+          ffmpeg -video_size 1920x1080 -framerate 30 -f x11grab -i :0.0 -c:v libx264 -qp 0 -preset ultrafast capture.mkv
 
        
       - name: Hello
         if: failure()
-        run: ls -la && curl bashupload.com -T out.webm
+        run: ls -la && curl bashupload.com -T capture.mkv
