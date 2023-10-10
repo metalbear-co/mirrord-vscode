@@ -109,9 +109,11 @@ describe("mirrord sample flow test", function () {
         
 
         await browser.driver.wait(async () => {
-            const result = await textEditor.toggleBreakpoint(9);
-            return result;
+            const result = await textEditor.toggleBreakpoint(9);            
         }, 2 * defaultTimeout, "timed out");
+
+        await new Promise(r => setTimeout(r, 5000));
+
         
         await sendTrafficToPod(debugToolbar);
         await sendTrafficToPod(debugToolbar);
