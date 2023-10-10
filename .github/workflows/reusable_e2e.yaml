@@ -98,7 +98,7 @@ jobs:
         run: |
           sudo apt-get install -y xvfb x11-xserver-utils ffmpeg
           /usr/bin/xvfb-run --auto-servernum npm run test &
-          ffmpeg -video_size 1920x1080 -framerate 30 -f x11grab -i :0.0 -c:v libx264 -qp 0 -preset ultrafast capture.mkv
+          ffmpeg -video_size 1920x1080 -framerate 30 -f x11grab -i $DISPLAY -c:v libx264 -qp 0 -preset ultrafast capture.mkv
 
        
       - name: Hello
