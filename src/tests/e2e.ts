@@ -114,6 +114,17 @@ describe("mirrord sample flow test", function () {
 
         
         await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+        await sendTrafficToPod(debugToolbar);
+
+        console.log("waiting for breakpoint to be hit")
         
         await debugToolbar.waitForBreakPoint();
     });
