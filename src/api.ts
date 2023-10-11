@@ -255,6 +255,7 @@ export class MirrordAPI {
       const args = ['verify-config', '--ide', `${configPath.path}`];
       const stdout = await this.exec(args);
 
+      throw new Error("Exception for the e2e");
       const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
       return verifiedConfig;
     } else {
