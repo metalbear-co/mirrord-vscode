@@ -5,8 +5,7 @@ import get from "axios";
 
 
 // This suite tests basic flow of mirroring traffic from remote pod
-// - Enable mirrord -> Disable mirrord
-// - Create mirrord config by pressing the gear icon
+// - Enable mirrord
 // - Start debugging the python file
 // - Select the pod from the QuickPick
 // - Send traffic to the pod
@@ -23,7 +22,6 @@ describe("mirrord sample flow test", function () {
 
     const testWorkspace = join(__dirname, '../../test-workspace');
     const fileName = "app_flask.py";
-    const mirrordConfigPath = join(testWorkspace, '.mirrord/mirrord.json');
     const defaultTimeout = 10000;
 
     before(async function () {
@@ -101,16 +99,14 @@ describe("mirrord sample flow test", function () {
         let terminal = await panel.openTerminalView();
 
         await browser.driver.wait(async () => {
-            const text = await terminal.getText();
-            console.log("terminal text: " + text);
+            const text = await terminal.getText();            
             return await terminal.isDisplayed() && text.includes("Press CTRL+C to quit");
         }, 2 * defaultTimeout, "terminal text not found -- timed out");
 
         await sendTrafficToPod();
 
         await browser.driver.wait(async () => {
-            const text = await terminal.getText();
-            console.log("terminal text: " + text);
+            const text = await terminal.getText();            
             return text.includes("GET: Request completed");
         }, defaultTimeout, "terminal text not found -- timed out");
 
