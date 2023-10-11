@@ -3,26 +3,28 @@ import { join } from "path";
 import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel } from "vscode-extension-tester";
 import get from "axios";
 
-
-// This suite tests basic flow of mirroring traffic from remote pod
-// - Enable mirrord
-// - Start debugging the python file
-// - Select the pod from the QuickPick
-// - Send traffic to the pod
-// - Tests successfully exit if "GET: Request completed" is found in the terminal
 const kubeService = process.env.KUBE_SERVICE;
 const podToSelect = process.env.POD_TO_SELECT;
 
+
+/**
+ * This suite tests basic flow of mirroring traffic from remote pod.
+ * - Enable mirrord
+ * - Start debugging the python file
+ * - Select the pod from the QuickPick
+ * - Send traffic to the pod
+ * - Tests successfully exit if "GET: Request completed" is found in the terminal
+*/
 describe("mirrord sample flow test", function () {
 
-    this.timeout(360000); // --> mocha tests timeout
+    this.timeout("6 minutes"); // --> mocha tests timeout
     this.bail(true); // --> stop tests on first failure
 
     let browser: VSBrowser;
 
     const testWorkspace = join(__dirname, '../../test-workspace');
     const fileName = "app_flask.py";
-    const defaultTimeout = 10000;
+    const defaultTimeout = 10000; // = 10 seconds
 
     before(async function () {
         console.log("podToSelect: " + podToSelect);
@@ -40,25 +42,13 @@ describe("mirrord sample flow test", function () {
         const statusBar = new StatusBar();
         await browser.driver.wait(async () => {
             for (let button of await statusBar.getItems()) {
-                try {
-                    if ((await button.getText()).startsWith('mirrord')) {
-                        await button.click();
+                if ((await button.getText()).startsWith('mirrord')) {
+                    await button.click();
 
-                        return true;
-                    }
-                } catch (e) { console.error(`Something went wrong ${e}`); }
+                    return true;
+                }
             }
-        }, defaultTimeout, "mirrord `enable` button not found -- timed out");
-
-        await browser.driver.wait(async () => {
-            for (let button of await statusBar.getItems()) {
-                try {
-                    if ((await button.getText()).startsWith('mirrord')) {
-                        return true;
-                    }
-                } catch (e) { console.error(`Something went wrong ${e}`); }
-            }
-        }, defaultTimeout, "mirrord `disable` button not found -- timed out");
+        }, defaultTimeout, "mirrord `enable` button not found -- timed out");        
     });
 
     it("select pod from quickpick", async function () {
@@ -88,7 +78,7 @@ describe("mirrord sample flow test", function () {
         await inputBox.selectQuickPick(podToSelect!);
     });
 
-    it("wait for breakpoint to be hit", async function () {
+    it("wait for process to write to terminal", async function () {
         const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);
         const panel = new BottomBarPanel();
         await browser.driver.wait(async () => {
@@ -99,28 +89,34 @@ describe("mirrord sample flow test", function () {
         let terminal = await panel.openTerminalView();
 
         await browser.driver.wait(async () => {
-            const text = await terminal.getText();            
+            const text = await terminal.getText();
             return await terminal.isDisplayed() && text.includes("Press CTRL+C to quit");
         }, 2 * defaultTimeout, "terminal text not found -- timed out");
 
         await sendTrafficToPod();
 
         await browser.driver.wait(async () => {
-            const text = await terminal.getText();            
+            const text = await terminal.getText();
             return text.includes("GET: Request completed");
         }, defaultTimeout, "terminal text not found -- timed out");
 
     });
 });
 
+
+/**
+ * sends a GET request to the pod's nodePort
+ */
 async function sendTrafficToPod() {
     const response = await get(kubeService!!);
     expect(response.status).to.equal(200);
     expect(response.data).to.equal("OK - GET: Request completed\n");
 }
 
-// starts debugging the current file with the provided configuration
-// debugging starts from the "Run and Debug" button in the activity bar
+/**
+ * starts debugging the current file with the provided configuration
+ * debugging starts from the "Run and Debug" button in the activity bar 
+*/
 async function startDebugging(configurationFile: string = "Python: Current File") {
     const activityBar = await new ActivityBar().getViewControl("Run and Debug");
     expect(activityBar).to.not.be.undefined;

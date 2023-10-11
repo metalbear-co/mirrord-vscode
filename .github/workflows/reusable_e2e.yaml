@@ -91,7 +91,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10' 
+          python-version: "3.10"
       - name: Install dependencies
         run: |
           pip install flask
@@ -107,6 +107,7 @@ jobs:
           ffmpeg -loglevel panic -y -framerate 30 -f x11grab -video_size 1920x1080 -i :99 out.webm
           wait -n
 
+      # the video starts at around ~2 minutes, before that you will see a black screen
       - name: Upload video
         if: always()
         uses: actions/upload-artifact@v3
