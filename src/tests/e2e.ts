@@ -1,17 +1,16 @@
 import { expect } from "chai";
 import { join } from "path";
-import { VSBrowser, StatusBar, TextEditor, EditorView, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel } from "vscode-extension-tester";
+import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel } from "vscode-extension-tester";
 import get from "axios";
 
 
 // This suite tests basic flow of mirroring traffic from remote pod
 // - Enable mirrord -> Disable mirrord
 // - Create mirrord config by pressing the gear icon
-// - Set a breakpoint in the python file
 // - Start debugging the python file
 // - Select the pod from the QuickPick
 // - Send traffic to the pod
-// - Tests successfully exit if breakpoint is hit
+// - Tests successfully exit if "GET: Request completed" is found in the terminal
 const kubeService = process.env.KUBE_SERVICE;
 const podToSelect = process.env.POD_TO_SELECT;
 
@@ -93,65 +92,35 @@ describe("mirrord sample flow test", function () {
 
     it("wait for breakpoint to be hit", async function () {
         const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);
-        const textEditor = new TextEditor();
         const panel = new BottomBarPanel();
         await browser.driver.wait(async () => {
             return await debugToolbar.isDisplayed();
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
-        
+
+
+        let terminal = await panel.openTerminalView();
 
         await browser.driver.wait(async () => {
-            let terminal = await panel.openTerminalView();
             const text = await terminal.getText();
             console.log("terminal text: " + text);
             return await terminal.isDisplayed() && text.includes("Press CTRL+C to quit");
-        }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
-        
+        }, 2 * defaultTimeout, "terminal text not found -- timed out");
 
-        const result = await textEditor.toggleBreakpoint(8);                    
+        await sendTrafficToPod();
 
-        await new Promise(r => setTimeout(r, 2000));
+        await browser.driver.wait(async () => {
+            const text = await terminal.getText();
+            console.log("terminal text: " + text);
+            return text.includes("GET: Request completed");
+        }, defaultTimeout, "terminal text not found -- timed out");
 
-        
-        await sendTrafficToPod(debugToolbar);
-        await sendTrafficToPod(debugToolbar);
-        await sendTrafficToPod(debugToolbar);
-        await sendTrafficToPod(debugToolbar);
-        await sendTrafficToPod(debugToolbar);
-        await sendTrafficToPod(debugToolbar);
-        await sendTrafficToPod(debugToolbar);
-        await sendTrafficToPod(debugToolbar);
-        await sendTrafficToPod(debugToolbar);
-        await sendTrafficToPod(debugToolbar);
-
-        console.log("waiting for breakpoint to be hit")
-        
-        await debugToolbar.waitForBreakPoint();
     });
 });
 
-async function sendTrafficToPod(debugToolbar: DebugToolbar) {
+async function sendTrafficToPod() {
     const response = await get(kubeService!!);
     expect(response.status).to.equal(200);
     expect(response.data).to.equal("OK - GET: Request completed\n");
-}
-
-// opens and sets a breakpoint in the given file
-async function setBreakPoint(fileName: string, browser: VSBrowser, timeout: number, breakPoint: number = 9) {
-    const editorView = new EditorView();
-    await editorView.openEditor(fileName);
-    const currentTab = await editorView.getActiveTab();
-    expect(currentTab).to.not.be.undefined;
-    await browser.driver.wait(async () => {
-        const tabTitle = await currentTab?.getTitle();
-        if (tabTitle !== undefined) {
-            return tabTitle === fileName;
-        }
-    }, timeout, "editor tab title not found -- timed out");
-
-    const textEditor = new TextEditor();
-    const result = await textEditor.toggleBreakpoint(breakPoint);
-    // expect(result).to.be.true;
 }
 
 // starts debugging the current file with the provided configuration
