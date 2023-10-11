@@ -17,7 +17,7 @@ const podToSelect = process.env.POD_TO_SELECT;
 
 describe("mirrord sample flow test", function () {
 
-    this.timeout(460000); // --> mocha tests timeout
+    this.timeout(360000); // --> mocha tests timeout
     this.bail(true); // --> stop tests on first failure
 
     let browser: VSBrowser;
@@ -108,7 +108,7 @@ describe("mirrord sample flow test", function () {
         }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
         
 
-        const result = await textEditor.toggleBreakpoint(9);                    
+        const result = await textEditor.toggleBreakpoint(8);                    
 
         await new Promise(r => setTimeout(r, 2000));
 
