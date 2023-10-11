@@ -252,10 +252,9 @@ export class MirrordAPI {
   */
   async verifyConfig(configPath: vscode.Uri | null): Promise<VerifiedConfig | undefined> {
     if (configPath) {
-      const args = ['verify-config', '--ide', `${configPath.path}`];
+      const args = ['verify-config', '-ide', `${configPath.path}`];
       const stdout = await this.exec(args);
 
-      throw new Error("Exception for the e2e");
       const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
       return verifiedConfig;
     } else {
