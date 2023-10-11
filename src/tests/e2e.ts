@@ -40,15 +40,19 @@ describe("mirrord sample flow test", function () {
 
     it("enable mirrord", async function () {
         const statusBar = new StatusBar();
-        await browser.driver.wait(async () => {
-            for (let button of await statusBar.getItems()) {
-                if ((await button.getText()).startsWith('mirrord')) {
-                    await button.click();
 
+        await browser.driver.wait(async () => {
+            return await statusBar.isDisplayed();
+        });
+
+        await browser.driver.wait(async () => {
+            for (let button of await statusBar.getItems()) {            
+                if ((await button.getText()).startsWith('mirrord')) {                
+                    await button.click();
                     return true;
                 }
             }
-        }, defaultTimeout, "mirrord `enable` button not found -- timed out");        
+        }, defaultTimeout, "mirrord `enable` button not found -- timed out");
     });
 
     it("select pod from quickpick", async function () {
