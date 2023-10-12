@@ -26,7 +26,7 @@ describe("mirrord sample flow test", function () {
     const fileName = "app_flask.py";
     const defaultTimeout = 10000; // = 10 seconds
 
-    before(async () => {
+    before(async function () {
         console.log("podToSelect: " + podToSelect);
         console.log("kubeService: " + kubeService);
 
@@ -38,7 +38,7 @@ describe("mirrord sample flow test", function () {
         await browser.openResources(testWorkspace, join(testWorkspace, fileName));
     });
 
-    it("enable mirrord", async function () {
+    it("enable mirrord button", async function () {
         const statusBar = new StatusBar();
 
         await browser.driver.wait(async () => {
@@ -46,8 +46,8 @@ describe("mirrord sample flow test", function () {
         });
 
         await browser.driver.wait(async () => {
-            for (let button of await statusBar.getItems()) {            
-                if ((await button.getText()).startsWith('mirrord')) {                
+            for (let button of await statusBar.getItems()) {
+                if ((await button.getText()).startsWith('mirrord')) {
                     await button.click();
                     return true;
                 }
@@ -55,7 +55,7 @@ describe("mirrord sample flow test", function () {
         }, defaultTimeout, "mirrord `enable` button not found -- timed out");
     });
 
-    it("select pod from quickpick", async () => {
+    it("select pod from quickpick", async function () {
         await startDebugging();
         const inputBox = await InputBox.create(defaultTimeout * 2);
         // assertion that podToSelect is not undefined is done in "before" block   
@@ -70,7 +70,8 @@ describe("mirrord sample flow test", function () {
                 if (label === podToSelect) {
                     return true;
                 }
-
+                // to pick up the podToSelect, we need to select the "Show Pods" 
+                // from quickpick as pods are not displayed first
                 if (label === "Show Pods") {
                     await pick.select();
                 }
@@ -82,7 +83,7 @@ describe("mirrord sample flow test", function () {
         await inputBox.selectQuickPick(podToSelect!);
     });
 
-    it("wait for process to write to terminal", async () => {
+    it("wait for process to write to terminal", async function () {
         const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);
         const panel = new BottomBarPanel();
         await browser.driver.wait(async () => {
