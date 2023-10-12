@@ -45,13 +45,28 @@ describe("mirrord sample flow test", function () {
             return await statusBar.isDisplayed();
         });
 
+        // vscode refreshes the status bar on load and there is no deterministic way but to retry to click on 
+        // the mirrord button after an interval
         await browser.driver.wait(async () => {
-            for (let button of await statusBar.getItems()) {
-                if ((await button.getText()).startsWith('mirrord')) {
-                    await button.click();
-                    return true;
+            let retries = 0;
+            while (retries < 3) {
+                try {
+                    for (let button of await statusBar.getItems()) {
+                        if ((await button.getText()).startsWith('mirrord')) {
+                            await button.click();
+                            return true;
+                        }
+                    }
+                } catch (e) {
+                    if (e instanceof Error && e.name === 'StaleElementReferenceError') {                        
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        retries++;
+                    } else {                        
+                        throw e;
+                    }
                 }
             }
+            throw new Error('Failed to click the button after multiple attempts');
         }, defaultTimeout, "mirrord `enable` button not found -- timed out");
     });
 
