@@ -34,7 +34,8 @@ describe("mirrord sample flow test", function () {
         expect(kubeService).to.not.be.undefined;
 
         browser = VSBrowser.instance;
-        // need to bring the flask app in open editors
+
+        await browser.waitForWorkbench();
         await browser.openResources(testWorkspace, join(testWorkspace, fileName));
     });
 
@@ -58,10 +59,10 @@ describe("mirrord sample flow test", function () {
                         }
                     }
                 } catch (e) {
-                    if (e instanceof Error && e.name === 'StaleElementReferenceError') {                        
+                    if (e instanceof Error && e.name === 'StaleElementReferenceError') {
                         await new Promise(resolve => setTimeout(resolve, 1000));
                         retries++;
-                    } else {                        
+                    } else {
                         throw e;
                     }
                 }
