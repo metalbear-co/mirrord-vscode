@@ -82,7 +82,7 @@ describe("mirrord sample flow test", function () {
         await inputBox.selectQuickPick(podToSelect!);
     });
 
-    it("wait for process to write to terminal", async function () {
+    it("wait for process to write to terminal", async () => {
         const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);
         const panel = new BottomBarPanel();
         await browser.driver.wait(async () => {
