@@ -55,7 +55,7 @@ describe("mirrord sample flow test", function () {
         }, defaultTimeout, "mirrord `enable` button not found -- timed out");
     });
 
-    it("select pod from quickpick", async function () {
+    it("select pod from quickpick", async () => {
         await startDebugging();
         const inputBox = await InputBox.create(defaultTimeout * 2);
         // assertion that podToSelect is not undefined is done in "before" block   
