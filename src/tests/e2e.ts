@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { join } from "path";
-import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel } from "vscode-extension-tester";
+import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView } from "vscode-extension-tester";
 import get from "axios";
 
 const kubeService = process.env.KUBE_SERVICE;
@@ -34,9 +34,18 @@ describe("mirrord sample flow test", function () {
         expect(kubeService).to.not.be.undefined;
 
         browser = VSBrowser.instance;
-
-        await browser.waitForWorkbench();
+        
         await browser.openResources(testWorkspace, join(testWorkspace, fileName));
+        await browser.waitForWorkbench();
+
+        const ew = new EditorView();
+        try {
+            await ew.closeEditor('Welcome');
+        } catch (error) {
+            console.log("Welcome page is not displayed" + error)
+            // continue - Welcome page is not displayed
+        }
+        await ew.openEditor('app_flask.py');
     });
 
     it("enable mirrord button", async function () {
