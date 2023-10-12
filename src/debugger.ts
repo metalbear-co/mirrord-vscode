@@ -199,7 +199,7 @@ async function main(
 
 	let executionInfo;
 	try {
-		executionInfo = await mirrordApi.binaryExecute(target, configPath?.path || null, executable);
+		executionInfo = await mirrordApi.binaryExecute(target, configPath?.path || null, executable, config.env);
 	} catch (err) {
 		mirrordFailure(`mirrord preparation failed: ${err}`);
 		return null;

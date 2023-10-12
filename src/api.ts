@@ -266,7 +266,8 @@ export class MirrordAPI {
   // Run the extension execute sequence
   // Creating agent and gathering execution runtime (env vars to set)
   // Has 60 seconds timeout
-  async binaryExecute(target: string | null, configFile: string | null, executable: string | null): Promise<MirrordExecution> {
+  async binaryExecute(target: string | null, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
+    console.log(`do we have a target here ${target}`);
     tickWaitlistCounter(!!target?.startsWith('deployment/'));
     tickFeedbackCounter();
 
