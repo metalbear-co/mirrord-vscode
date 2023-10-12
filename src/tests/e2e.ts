@@ -26,7 +26,7 @@ describe("mirrord sample flow test", function () {
     const fileName = "app_flask.py";
     const defaultTimeout = 10000; // = 10 seconds
 
-    before(async function () {
+    before(async () => {
         console.log("podToSelect: " + podToSelect);
         console.log("kubeService: " + kubeService);
 
