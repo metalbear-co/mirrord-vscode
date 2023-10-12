@@ -8,19 +8,9 @@ __pycache__
 **/.DS_Store
 target
 build/
-.mirrord
 
 ### go tests ###
 *.go_test_app
 
 ### VSCode ###
 vscode-ext/bin
-
-### Intellij ###
-intellij-ext/.gradle
-intellij-ext/.idea
-intellij-ext/.qodana
-intellij-ext/build
-intellij-ext/libmirrord_layer.*
-intellij-ext/bin
-.idea/
