@@ -9,7 +9,7 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                "MIRRORD_CONFIG_FILE": ".mirrord/mirrord.json"
+                "MIRRORD_CONFIG_FILE": "${workspaceFolder}/.mirrord/mirrord.json"
             }
         }
     ]
