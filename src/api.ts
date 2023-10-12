@@ -134,18 +134,24 @@ export class MirrordExecution {
 
 }
 
+/**
+* Sets up the args that are going to be passed to the mirrord cli.
+*/
 const makeMirrordArgs = (target: string | null, configFilePath: PathLike | null, userExecutable: PathLike | null): readonly string[] => {
   let args = ["ext"];
 
   if (target) {
+    console.log(`target ${target}`);
     args.push("-t", target);
   }
 
   if (configFilePath) {
+    console.log(`configFilePath ${configFilePath.toString()}`);
     args.push("-f", configFilePath.toString());
   }
 
   if (userExecutable) {
+    console.log(`userExecutable ${userExecutable.toString()}`);
     args.push("-e", userExecutable.toString());
   }
 
@@ -282,9 +288,12 @@ export class MirrordAPI {
     }
   }
 
-  // Run the extension execute sequence
-  // Creating agent and gathering execution runtime (env vars to set)
-  // Has 60 seconds timeout
+  /** 
+  * Runs the extension execute sequence, creating agent and gathering execution runtime while also
+  * setting env vars, both from system, and from `launch.json` (`configEnv`).
+  *
+  * Has 60 seconds timeout
+  */
   async binaryExecute(target: string | null, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
     tickWaitlistCounter(!!target?.startsWith('deployment/'));
     tickFeedbackCounter();
