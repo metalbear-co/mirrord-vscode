@@ -89,12 +89,28 @@ jobs:
           echo "$KUBE_SERVICE"
           echo "KUBE_SERVICE=$KUBE_SERVICE" >> "$GITHUB_ENV"
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install flask
       # we can't run chrome like apps in the CI, we use a virtual frame buffer:
       # refer: http://elementalselenium.com/tips/38-headless
       - name: Run vscode e2e in headless state
-        uses: coactions/setup-xvfb@v1
         env:
           POD_TO_SELECT: ${{ env.POD_TO_SELECT }}
           KUBE_SERVICE: ${{ env.KUBE_SERVICE }}
+        run: |
+          sudo apt-get install -y xvfb x11-xserver-utils ffmpeg
+          /usr/bin/xvfb-run -s ":99 -auth /tmp/xvfb.auth -ac -screen 0 1920x1080x24" npm run test &
+          ffmpeg -loglevel panic -y -framerate 30 -f x11grab -video_size 1920x1080 -i :99 out.webm
+          wait -n
+
+      # the video starts at around ~2 minutes, before that you will see a black screen
+      - name: Upload video
+        if: always()
+        uses: actions/upload-artifact@v3
         with:
-          run: npm run test
+          name: video
+          path: out.webm
