@@ -5,6 +5,7 @@ import { tickWaitlistCounter } from './waitlist';
 import { NotificationBuilder } from './notification';
 import { MirrordStatus } from './status';
 import { EnvVars, VerifiedConfig } from './config';
+import { PathLike } from 'fs';
 
 /**
 * Key to access the feedback counter (see `tickFeedbackCounter`) from the global user config.
@@ -133,6 +134,24 @@ export class MirrordExecution {
 
 }
 
+const makeMirrordArgs = (target: string | null, configFilePath: PathLike | null, userExecutable: PathLike | null): readonly string[] => {
+  let args = ["ext"];
+
+  if (target) {
+    args.push("-t", target);
+  }
+
+  if (configFilePath) {
+    args.push("-f", configFilePath.toString());
+  }
+
+  if (userExecutable) {
+    args.push("-e", userExecutable.toString());
+  }
+
+  return args;
+};
+
 /**
 * API to interact with the mirrord CLI, runs in the "ext" mode.
 */
@@ -156,7 +175,7 @@ export class MirrordAPI {
 
   // Execute the mirrord cli with the given arguments, return stdout.
   private async exec(args: string[], configEnv: EnvVars): Promise<string> {
-    const child = this.spawn(args, configEnv);
+    const child = this.spawnCliWithArgsAndEnv(args, configEnv);
 
     return await new Promise<string>((resolve, reject) => {
       let stdoutData = "";
@@ -205,7 +224,7 @@ export class MirrordAPI {
   * Spawn the mirrord cli with the given arguments.
   * Used for reading/interacting while process still runs.
   */
-  private spawn(args: string[], configEnv: EnvVars): ChildProcessWithoutNullStreams {
+  private spawnCliWithArgsAndEnv(args: readonly string[], configEnv: EnvVars): ChildProcessWithoutNullStreams {
     return spawn(this.cliPath, args, { env: MirrordAPI.getEnv(configEnv) });
   }
 
@@ -267,7 +286,6 @@ export class MirrordAPI {
   // Creating agent and gathering execution runtime (env vars to set)
   // Has 60 seconds timeout
   async binaryExecute(target: string | null, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
-    console.log(`do we have a target here ${target}`);
     tickWaitlistCounter(!!target?.startsWith('deployment/'));
     tickFeedbackCounter();
 
@@ -282,18 +300,10 @@ export class MirrordAPI {
           reject("timeout");
         }, 120 * 1000);
 
-        const args = ["ext"];
-        if (target) {
-          args.push("-t", target);
-        }
-        if (configFile) {
-          args.push("-f", configFile);
-        }
-        if (executable) {
-          args.push("-e", executable);
-        }
+        target = null;
+        const args = makeMirrordArgs(target, configFile, executable);
 
-        const child = this.spawn(args, {});
+        const child = this.spawnCliWithArgsAndEnv(args, configEnv);
 
         let stderrData = "";
         child.stderr.on("data", (data) => stderrData += data.toString());
