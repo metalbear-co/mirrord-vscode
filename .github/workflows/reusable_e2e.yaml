@@ -70,7 +70,7 @@ jobs:
         if: ${{ inputs.mirrord_release_branch }}
         run: |
           chmod u+x mirrord
-          echo "${GITHUB_WORKSPACE}" >> "$GITHUB_PATH"
+          echo "${GITHUB_WORKSPACE}" >> $GITHUB_PATH
 
       - name: get the latest mirrord binary
         if: ${{ !inputs.mirrord_release_branch }}
