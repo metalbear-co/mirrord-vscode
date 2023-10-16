@@ -300,13 +300,9 @@ export class MirrordConfigManager {
         .withDisableAction("promptUsingActiveConfig")
         .info();
       return this.active;
-    }
-
-    if (config.env?.["MIRRORD_CONFIG_FILE"]) {
+    } else if (config.env?.["MIRRORD_CONFIG_FILE"]) {
       return vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
-    }
-
-    if (folder) {
+    } else if (folder) {
       let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
       if (predefinedConfig) {
         new NotificationBuilder()
@@ -315,24 +311,26 @@ export class MirrordConfigManager {
           .withDisableAction("promptUsingDefaultConfig")
           .warning();
         return predefinedConfig;
+      } else {
+        return null;
+      }
+    } else {
+      folder = vscode.workspace.workspaceFolders?.[0];
+      if (!folder) {
+        throw new Error("mirrord requires an open folder in the workspace");
+      }
+
+      let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
+      if (predefinedConfig) {
+        new NotificationBuilder()
+          .withMessage(`using a default mirrord config from folder ${folder.name} `)
+          .withOpenFileAction(predefinedConfig)
+          .withDisableAction("promptUsingDefaultConfig")
+          .warning();
+        return predefinedConfig;
+      } else {
+        return null;
       }
     }
-
-    folder = vscode.workspace.workspaceFolders?.[0];
-    if (!folder) {
-      throw new Error("mirrord requires an open folder in the workspace");
-    }
-
-    let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
-    if (predefinedConfig) {
-      new NotificationBuilder()
-        .withMessage(`using a default mirrord config from folder ${folder.name} `)
-        .withOpenFileAction(predefinedConfig)
-        .withDisableAction("promptUsingDefaultConfig")
-        .warning();
-      return predefinedConfig;
-    }
-
-    return null;
   }
 }
