@@ -294,6 +294,7 @@ export class MirrordConfigManager {
    */
   public async resolveMirrordConfig(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.Uri | null> {
     if (this.active) {
+      // User has selected a config (via active config button).
       new NotificationBuilder()
         .withMessage("using active mirrord configuration")
         .withOpenFileAction(this.active)
@@ -301,6 +302,7 @@ export class MirrordConfigManager {
         .info();
       return this.active;
     } else if (config.env?.["MIRRORD_CONFIG_FILE"]) {
+      // Get the config path from the env var.
       return vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
     } else if (folder) {
       let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
