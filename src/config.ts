@@ -287,20 +287,6 @@ export class MirrordConfigManager {
   }
 
   /**
-   * Resolves config file path specified in the launch config.
-   * @param folder workspace folder of the launch config
-   * @param path taken from the `MIRRORD_CONFIG_FILE` environment variable in launch config
-   * @returns config file Uri
-   */
-  private static processPathFromLaunchConfig(folder: vscode.WorkspaceFolder | undefined, path: string): vscode.Uri {
-    if (folder) {
-      path = path.replace(/\$\{workspaceFolder\}/g, folder.uri.fsPath);
-    }
-
-    return vscode.Uri.file(path);
-  }
-
-  /**
    * Used when preparing mirrord environment for the process.
    * @param folder optional origin of the launch config
    * @param config debug configuration used
@@ -316,9 +302,8 @@ export class MirrordConfigManager {
       return this.active;
     }
 
-    let launchConfig = config.env?.["MIRRORD_CONFIG_FILE"];
-    if (typeof launchConfig === "string") {
-      return MirrordConfigManager.processPathFromLaunchConfig(folder, launchConfig);
+    if (config.env?.["MIRRORD_CONFIG_FILE"]) {
+      return vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
     }
 
     if (folder) {
@@ -341,7 +326,7 @@ export class MirrordConfigManager {
     let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
     if (predefinedConfig) {
       new NotificationBuilder()
-        .withMessage(`using a default mirrord config from folder ${folder.name}`)
+        .withMessage(`using a default mirrord config from folder ${folder.name} `)
         .withOpenFileAction(predefinedConfig)
         .withDisableAction("promptUsingDefaultConfig")
         .warning();

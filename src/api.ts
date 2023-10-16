@@ -309,7 +309,6 @@ export class MirrordAPI {
           reject("timeout");
         }, 120 * 1000);
 
-        target = null;
         const args = makeMirrordArgs(target, configFile, executable);
 
         const child = this.spawnCliWithArgsAndEnv(args, configEnv);
