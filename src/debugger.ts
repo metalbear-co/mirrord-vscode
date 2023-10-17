@@ -95,17 +95,17 @@ async function main(
     return config;
   }
 
-	if (config.request === "attach") {
-		new NotificationBuilder()
-			.withMessage("mirrord cannot be used with `attach` launch configurations")
-			.error();
-		return null;
-	}
+  if (config.request === "attach") {
+    new NotificationBuilder()
+      .withMessage("mirrord cannot be used with `attach` launch configurations")
+      .error();
+    return null;
+  }
 
-	// For some reason resolveDebugConfiguration runs twice for Node projects. __parentId is populated.
-	if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === 'true') {
-		return config;
-	}
+  // For some reason resolveDebugConfiguration runs twice for Node projects. __parentId is populated.
+  if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === 'true') {
+    return config;
+  }
 
   updateTelemetries();
 
