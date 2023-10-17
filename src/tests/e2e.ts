@@ -42,7 +42,7 @@ describe("mirrord sample flow test", function () {
         try {
             await ew.closeEditor('Welcome');
         } catch (error) {
-            console.log("Welcome page is not displayed" + error)
+            console.log("Welcome page is not displayed" + error);
             // continue - Welcome page is not displayed
         }
         await ew.openEditor('app_flask.py');
