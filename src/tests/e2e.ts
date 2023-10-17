@@ -55,7 +55,7 @@ describe("mirrord sample flow test", function() {
       return await statusBar.isDisplayed();
     });
 
-    // vscode refreshes the status bar on load and there is no deterministic way but to retry to click on 
+    // vscode refreshes the status bar on load and there is no deterministic way but to retry to click on
     // the mirrord button after an interval
     await browser.driver.wait(async () => {
       let retries = 0;
@@ -83,7 +83,7 @@ describe("mirrord sample flow test", function() {
   it("select pod from quickpick", async function() {
     await startDebugging();
     const inputBox = await InputBox.create(defaultTimeout * 2);
-    // assertion that podToSelect is not undefined is done in "before" block   
+    // assertion that podToSelect is not undefined is done in "before" block
     await browser.driver.wait(async () => {
       if (!await inputBox.isDisplayed()) {
         return false;
@@ -95,7 +95,7 @@ describe("mirrord sample flow test", function() {
         if (label === podToSelect) {
           return true;
         }
-        // to pick up the podToSelect, we need to select the "Show Pods" 
+        // to pick up the podToSelect, we need to select the "Show Pods"
         // from quickpick as pods are not displayed first
         if (label === "Show Pods") {
           await pick.select();
@@ -145,7 +145,7 @@ async function sendTrafficToPod() {
 
 /**
  * starts debugging the current file with the provided configuration
- * debugging starts from the "Run and Debug" button in the activity bar 
+ * debugging starts from the "Run and Debug" button in the activity bar
 */
 async function startDebugging(configurationFile: string = "Python: Current File") {
   const activityBar = await new ActivityBar().getViewControl("Run and Debug");

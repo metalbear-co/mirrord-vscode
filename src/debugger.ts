@@ -30,7 +30,7 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
       if ("python" in config) {
         return ["python", config["python"]];
       }
-      // Official documentation states the relevant field name is "python" (https://code.visualstudio.com/docs/python/debugging#_python), 
+      // Official documentation states the relevant field name is "python" (https://code.visualstudio.com/docs/python/debugging#_python),
       // but when debugging we see the field is called "pythonPath".
       return ["pythonPath", config["pythonPath"]];
     }
@@ -95,10 +95,17 @@ async function main(
     return config;
   }
 
-  // For some reason resolveDebugConfiguration runs twice for Node projects. __parentId is populated.
-  if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === 'true') {
-    return config;
-  }
+	if (config.request === "attach") {
+		new NotificationBuilder()
+			.withMessage("mirrord cannot be used with `attach` launch configurations")
+			.error();
+		return null;
+	}
+
+	// For some reason resolveDebugConfiguration runs twice for Node projects. __parentId is populated.
+	if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === 'true') {
+		return config;
+	}
 
   updateTelemetries();
 
