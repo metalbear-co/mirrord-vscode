@@ -1,0 +1,1 @@
+Prevent mirrord from throwing an error when running with `node-terminal` configuration type with missing `command` field.

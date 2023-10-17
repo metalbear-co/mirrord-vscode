@@ -46,7 +46,7 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldName: string, executionInfo: MirrordExecution) {
 	if (config.type === "node-terminal") {
 		const command = config[executableFieldName];
-		if (command === null) {
+		if (command == null) {
 			return;
 		}
 
