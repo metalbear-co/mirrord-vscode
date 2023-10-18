@@ -172,10 +172,10 @@ export class MirrordAPI {
   private static getEnv(configEnv: EnvVars): NodeJS.ProcessEnv {
     // clone env vars and add MIRRORD_PROGRESS_MODE
     return {
+      ...process.env,
+      ...configEnv,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       "MIRRORD_PROGRESS_MODE": "json",
-      ...configEnv,
-      ...process.env,
     };
   }
 
