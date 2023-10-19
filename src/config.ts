@@ -16,9 +16,11 @@ const DEFAULT_CONFIG = `{
 }
 `;
 
+export type EnvVars = { [key: string]: string };
+
 interface LaunchConfig {
   name: string,
-  env?: { [key: string]: string };
+  env?: EnvVars;
 }
 
 /**
@@ -285,20 +287,6 @@ export class MirrordConfigManager {
   }
 
   /**
-   * Resolves config file path specified in the launch config.
-   * @param folder workspace folder of the launch config
-   * @param path taken from the `MIRRORD_CONFIG_FILE` environment variable in launch config
-   * @returns config file Uri
-   */
-  private static processPathFromLaunchConfig(folder: vscode.WorkspaceFolder | undefined, path: string): vscode.Uri {
-    if (folder) {
-      path = path.replace(/\$\{workspaceFolder\}/g, folder.uri.fsPath);
-    }
-
-    return vscode.Uri.file(path);
-  }
-
-  /**
    * Used when preparing mirrord environment for the process.
    * @param folder optional origin of the launch config
    * @param config debug configuration used
@@ -306,20 +294,17 @@ export class MirrordConfigManager {
    */
   public async resolveMirrordConfig(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): Promise<vscode.Uri | null> {
     if (this.active) {
+      // User has selected a config (via active config button).
       new NotificationBuilder()
         .withMessage("using active mirrord configuration")
         .withOpenFileAction(this.active)
         .withDisableAction("promptUsingActiveConfig")
         .info();
       return this.active;
-    }
-
-    let launchConfig = config.env?.["MIRRORD_CONFIG_FILE"];
-    if (typeof launchConfig === "string") {
-      return MirrordConfigManager.processPathFromLaunchConfig(folder, launchConfig);
-    }
-
-    if (folder) {
+    } else if (config.env?.["MIRRORD_CONFIG_FILE"]) {
+      // Get the config path from the env var.
+      return vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
+    } else if (folder) {
       let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
       if (predefinedConfig) {
         new NotificationBuilder()
@@ -328,24 +313,26 @@ export class MirrordConfigManager {
           .withDisableAction("promptUsingDefaultConfig")
           .warning();
         return predefinedConfig;
+      } else {
+        return null;
+      }
+    } else {
+      folder = vscode.workspace.workspaceFolders?.[0];
+      if (!folder) {
+        throw new Error("mirrord requires an open folder in the workspace");
+      }
+
+      let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
+      if (predefinedConfig) {
+        new NotificationBuilder()
+          .withMessage(`using a default mirrord config from folder ${folder.name} `)
+          .withOpenFileAction(predefinedConfig)
+          .withDisableAction("promptUsingDefaultConfig")
+          .warning();
+        return predefinedConfig;
+      } else {
+        return null;
       }
     }
-
-    folder = vscode.workspace.workspaceFolders?.[0];
-    if (!folder) {
-      throw new Error("mirrord requires an open folder in the workspace");
-    }
-
-    let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
-    if (predefinedConfig) {
-      new NotificationBuilder()
-        .withMessage(`using a default mirrord config from folder ${folder.name}`)
-        .withOpenFileAction(predefinedConfig)
-        .withDisableAction("promptUsingDefaultConfig")
-        .warning();
-      return predefinedConfig;
-    }
-
-    return null;
   }
 }

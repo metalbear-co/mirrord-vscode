@@ -4,7 +4,8 @@ import { globalContext } from './extension';
 import { tickWaitlistCounter } from './waitlist';
 import { NotificationBuilder } from './notification';
 import { MirrordStatus } from './status';
-import { VerifiedConfig } from './config';
+import { EnvVars, VerifiedConfig } from './config';
+import { PathLike } from 'fs';
 
 /**
 * Key to access the feedback counter (see `tickFeedbackCounter`) from the global user config.
@@ -134,6 +135,30 @@ export class MirrordExecution {
 }
 
 /**
+* Sets up the args that are going to be passed to the mirrord cli.
+*/
+const makeMirrordArgs = (target: string | null, configFilePath: PathLike | null, userExecutable: PathLike | null): readonly string[] => {
+  let args = ["ext"];
+
+  if (target) {
+    console.log(`target ${target}`);
+    args.push("-t", target);
+  }
+
+  if (configFilePath) {
+    console.log(`configFilePath ${configFilePath.toString()}`);
+    args.push("-f", configFilePath.toString());
+  }
+
+  if (userExecutable) {
+    console.log(`userExecutable ${userExecutable.toString()}`);
+    args.push("-e", userExecutable.toString());
+  }
+
+  return args;
+};
+
+/**
 * API to interact with the mirrord CLI, runs in the "ext" mode.
 */
 export class MirrordAPI {
@@ -144,18 +169,19 @@ export class MirrordAPI {
   }
 
   // Return environment for the spawned mirrord cli processes.
-  private static getEnv(): NodeJS.ProcessEnv {
+  private static getEnv(configEnv: EnvVars): NodeJS.ProcessEnv {
     // clone env vars and add MIRRORD_PROGRESS_MODE
     return {
+      ...process.env,
+      ...configEnv,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       "MIRRORD_PROGRESS_MODE": "json",
-      ...process.env,
     };
   }
 
   // Execute the mirrord cli with the given arguments, return stdout.
-  private async exec(args: string[]): Promise<string> {
-    const child = this.spawn(args);
+  private async exec(args: string[], configEnv: EnvVars): Promise<string> {
+    const child = this.spawnCliWithArgsAndEnv(args, configEnv);
 
     return await new Promise<string>((resolve, reject) => {
       let stdoutData = "";
@@ -204,15 +230,15 @@ export class MirrordAPI {
   * Spawn the mirrord cli with the given arguments.
   * Used for reading/interacting while process still runs.
   */
-  private spawn(args: string[]): ChildProcessWithoutNullStreams {
-    return spawn(this.cliPath, args, { env: MirrordAPI.getEnv() });
+  private spawnCliWithArgsAndEnv(args: readonly string[], configEnv: EnvVars): ChildProcessWithoutNullStreams {
+    return spawn(this.cliPath, args, { env: MirrordAPI.getEnv(configEnv) });
   }
 
   /**
    * Runs mirrord --version and returns the version string.
    */
   async getBinaryVersion(): Promise<string | undefined> {
-    const stdout = await this.exec(["--version"]);
+    const stdout = await this.exec(["--version"], {});
     // parse mirrord x.y.z
     return stdout.split(" ")[1].trim();
   }
@@ -227,7 +253,7 @@ export class MirrordAPI {
       args.push('-f', configPath);
     }
 
-    const stdout = await this.exec(args);
+    const stdout = await this.exec(args, {});
 
     const targets: string[] = JSON.parse(stdout);
     targets.sort();
@@ -250,10 +276,10 @@ export class MirrordAPI {
   * Executes the `mirrord verify-config {configPath}` command, parsing its output into a
   * `VerifiedConfig`.
   */
-  async verifyConfig(configPath: vscode.Uri | null): Promise<VerifiedConfig | undefined> {
+  async verifyConfig(configPath: vscode.Uri | null, configEnv: EnvVars): Promise<VerifiedConfig | undefined> {
     if (configPath) {
       const args = ['verify-config', '--ide', `${configPath.path}`];
-      const stdout = await this.exec(args);
+      const stdout = await this.exec(args, configEnv);
 
       const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
       return verifiedConfig;
@@ -262,10 +288,13 @@ export class MirrordAPI {
     }
   }
 
-  // Run the extension execute sequence
-  // Creating agent and gathering execution runtime (env vars to set)
-  // Has 60 seconds timeout
-  async binaryExecute(target: string | null, configFile: string | null, executable: string | null): Promise<MirrordExecution> {
+  /** 
+  * Runs the extension execute sequence, creating agent and gathering execution runtime while also
+  * setting env vars, both from system, and from `launch.json` (`configEnv`).
+  *
+  * Has 60 seconds timeout
+  */
+  async binaryExecute(target: string | null, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
     tickWaitlistCounter(!!target?.startsWith('deployment/'));
     tickFeedbackCounter();
 
@@ -280,18 +309,9 @@ export class MirrordAPI {
           reject("timeout");
         }, 120 * 1000);
 
-        const args = ["ext"];
-        if (target) {
-          args.push("-t", target);
-        }
-        if (configFile) {
-          args.push("-f", configFile);
-        }
-        if (executable) {
-          args.push("-e", executable);
-        }
+        const args = makeMirrordArgs(target, configFile, executable);
 
-        const child = this.spawn(args);
+        const child = this.spawnCliWithArgsAndEnv(args, configEnv);
 
         let stderrData = "";
         child.stderr.on("data", (data) => stderrData += data.toString());
