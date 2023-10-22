@@ -19,7 +19,7 @@ export class MirrordStatus {
         this.statusBar = statusBar;
     }
 
-    public draw() {
+    draw() {
         const {
             enabled,            
             statusBar,
