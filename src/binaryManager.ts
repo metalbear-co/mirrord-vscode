@@ -8,13 +8,14 @@ import * as fs from 'node:fs';
 import { platform } from 'os';
 import { Uri, workspace, window, ProgressLocation, ExtensionMode, InputBoxOptions } from 'vscode';
 import { NotificationBuilder } from './notification';
+import { eq, gte, lt } from 'semver';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 // const binaryCheckInterval = 1000 * 60 * 3;
 const baseDownloadUri = 'https://github.com/metalbear-co/mirrord/releases/download';
 
 export let autoUpdate = true;
-let mirrordBinaryVersion: string | null = null;
+let userSpecifiedMirrordBinaryVersion: string | null | undefined = null;
 
 function getExtensionMirrordPath(): Uri {
     return Utils.joinPath(globalContext.globalStorageUri, 'mirrord');
@@ -24,34 +25,17 @@ function getExtensionMirrordPath(): Uri {
 /**
  * Tries to find local mirrord in path or in extension storage.
  */
-export async function getLocalMirrordBinary(version?: string): Promise<string | null> {
+export async function getLocalMirrordBinary(): Promise<string | null> {
     try {
         const mirrordPath = await which("mirrord");
-        if (version) {
-            const api = new MirrordAPI(mirrordPath);
-            const installedVersion = await api.getBinaryVersion();
-            if (installedVersion === version) {
-                return mirrordPath;
-            }
-        } else {
-            return mirrordPath;
-        }
+        return mirrordPath;
     } catch (e) {
         console.debug("couldn't find mirrord in path");
     }
     try {
         const mirrordPath = getExtensionMirrordPath();
         await workspace.fs.stat(mirrordPath);
-        if (version) {
-            const api = new MirrordAPI(mirrordPath.fsPath);
-            const installedVersion = await api.getBinaryVersion();
-            if (installedVersion === version) {
-                return mirrordPath.fsPath;
-            }
-        } else {
-            return mirrordPath.fsPath;
-        }
-
+        return mirrordPath.fsPath;
     } catch (e) {
         console.log("couldn't find mirrord in extension storage");
     }
@@ -102,26 +86,41 @@ async function getConfiguredMirrordBinary(): Promise<string | null> {
 export async function getMirrordBinary(): Promise<string> {
     const configured = await getConfiguredMirrordBinary();
     if (configured) {
+        await vscode.window.showInformationMessage(`Using mirrord binary specified in settings: ${configured}`);
         return configured;
     }
 
-    let foundLocal = await getLocalMirrordBinary();
-    // timeout is 1s if we have alternative or 10s if we don't
-    let timeout = foundLocal ? 1000 : 10000;
-    const latestVersion = await getLatestSupportedVersion(timeout);
+    const extensionMirrordPath = getExtensionMirrordPath();
+    const latestVersion = await getLatestSupportedVersion(10000);
 
-    // See if maybe we have it installed already, in correct version.
-    const localMirrord = await getLocalMirrordBinary(latestVersion);
-    if (localMirrord) {
-        const api = new MirrordAPI(localMirrord);
-        const installedVersion = await api.getBinaryVersion();
-        if (installedVersion === latestVersion) {
-            return localMirrord;
+    if (autoUpdate) {
+        await downloadMirrordBinary(extensionMirrordPath, latestVersion);
+        return extensionMirrordPath.fsPath;
+    } else {
+        if (userSpecifiedMirrordBinaryVersion) {
+            await downloadMirrordBinary(extensionMirrordPath, userSpecifiedMirrordBinaryVersion);
+            return extensionMirrordPath.fsPath;
+        } else {
+            let localMirrord = await getLocalMirrordBinary();
+            if (localMirrord) {
+                const api = new MirrordAPI(localMirrord);
+                const installedVersion = await api.getBinaryVersion();
+
+                // in the release CI - the semver version is greater than the current remote semver version
+                // and hence, we need to use the local version
+
+                if (installedVersion !== null && installedVersion !== undefined && lt(installedVersion, latestVersion)) {
+                    await vscode.window.showInformationMessage(`Using local mirrord binary: ${localMirrord} which is outdated. Latest supported version is ${latestVersion}`);
+                } else if (installedVersion !== null && installedVersion !== undefined && eq(installedVersion, latestVersion)) {
+                    await vscode.window.showInformationMessage(`Using local mirrord binary: ${localMirrord} which is up-to-date`);
+                } else if (installedVersion !== null && installedVersion !== undefined && gte(installedVersion, latestVersion)) {
+                    await vscode.window.showInformationMessage(`Using local mirrord binary: ${localMirrord} which is newer than the latest supported version ${latestVersion}. Possily a CI build`);
+                }
+
+                return localMirrord;
+            }
         }
     }
-
-    const extensionMirrordPath = getExtensionMirrordPath();
-    await downloadMirrordBinary(extensionMirrordPath, latestVersion);
 
     return extensionMirrordPath.fsPath;
 }
@@ -201,27 +200,33 @@ async function downloadMirrordBinary(destPath: Uri, version: string): Promise<vo
 }
 
 
+
+/**
+ * Toggles auto-update of mirrord binary.
+ * Criteria for auto-update:
+ * - Auto-update is enabled by default
+ * - if mirrord binary path is mentioned in workspace settings, then that is used
+ * - if 
+*/
 export async function toggleAutoUpdate() {
-
     if (autoUpdate) {
-        autoUpdate = false;
-        vscode.window.showInformationMessage("Auto-update disabled");
-
         let options: InputBoxOptions = {
             title: "Specify mirrord binary version",
-            prompt: "Label: ",
-            placeHolder: "(placeholder)",
-            validateInput: (value: string) => {
-                if (value !== "") {
-                    if (/^[0-9]+\\.[0-9]+\\.[0-9]+$/.test(value)) {
-                        vscode.window.showErrorMessage("Invalid version format ${value}: must follow semver format");
-                    }
-                }
-                return null;
-            }
+            prompt: "auto-update will be disabled, mirrord will be updated to the specified version.",
+            placeHolder: "Current version: " + userSpecifiedMirrordBinaryVersion ?? "unspecified",
         };
-    
-        await vscode.window.showInputBox(options);
+        const value = await vscode.window.showInputBox(options);
+        if (value && value !== "" && !(/^[0-9]+\.[0-9]+\.[0-9]+$/.test(value))) {
+            vscode.window.showErrorMessage(`Invalid version format ${value}: must follow semver format`);
+        }
+        autoUpdate = false;
+
+        if (value !== undefined) {
+            if (value !== null && userSpecifiedMirrordBinaryVersion === null) {
+                userSpecifiedMirrordBinaryVersion = value;
+            }
+        }
+        vscode.window.showInformationMessage("Auto-update disabled");
     } else {
         autoUpdate = true;
         vscode.window.showInformationMessage("Auto-update enabled");

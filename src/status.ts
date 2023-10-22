@@ -19,7 +19,7 @@ export class MirrordStatus {
         this.statusBar = statusBar;
     }
 
-    draw() {
+    public draw() {
         const {
             enabled,            
             statusBar,
@@ -39,10 +39,8 @@ export class MirrordStatus {
         const activeConfig = MirrordConfigManager.getInstance().activeConfig();
         if (activeConfig) {
             statusBar.tooltip.appendMarkdown(`\n\n[Active config: ${vscode.workspace.asRelativePath(activeConfig)}](${activeConfig})`);
-        }
-        
-        const autoUpdateState = autoUpdate;
-        statusBar.tooltip.appendMarkdown(`\n\n[Auto-update: ${autoUpdateState ? 'Enabled' : 'Disabled'}](command:${MirrordStatus.autoUpdateCommandId})`);        
+        }               
+        statusBar.tooltip.appendMarkdown(`\n\n[Auto-update: ${autoUpdate ? 'Enabled' : 'Disabled'}](command:${MirrordStatus.autoUpdateCommandId})`);        
         statusBar.tooltip.appendMarkdown(`\n\n[Select active config](command:${MirrordStatus.selectActiveConfigId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${MirrordStatus.settingsCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams Waitlist](command:${MirrordStatus.waitlistCommandId})`);
@@ -63,6 +61,7 @@ export class MirrordStatus {
         }));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.autoUpdateCommandId, async () => {
             await toggleAutoUpdate();
+            this.draw();
         }));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.settingsCommandId, configManager.changeSettings.bind(configManager)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.toggleCommandId, this.toggle.bind(this)));
