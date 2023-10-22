@@ -118,6 +118,8 @@ export async function getMirrordBinary(): Promise<string> {
                 }
 
                 return localMirrord;
+            } else {
+                await downloadMirrordBinary(extensionMirrordPath, latestVersion);
             }
         }
     }
@@ -206,26 +208,32 @@ async function downloadMirrordBinary(destPath: Uri, version: string): Promise<vo
  * Criteria for auto-update:
  * - Auto-update is enabled by default
  * - if mirrord binary path is mentioned in workspace settings, then that is used
- * - if 
+ * - if auto-update is enabled, then latest supported version is downloaded
+ * - if auto-update is disabled, and a version is specified, then that version is downloaded
+ * - if auto-update is disabled, and no version is specified, then local mirrord binary is used
+ * * - if auto-update is disabled, and no version is specified, and no local mirrord binary is found, then latest supported version is downloaded
+ * Note: typing "clear" in the input box will clear the user specified version
 */
 export async function toggleAutoUpdate() {
     if (autoUpdate) {
-        let options: InputBoxOptions = {
+        const options: vscode.InputBoxOptions = {
             title: "Specify mirrord binary version",
-            prompt: "auto-update will be disabled, mirrord will be updated to the specified version.",
-            placeHolder: "Current version: " + userSpecifiedMirrordBinaryVersion ?? "unspecified",
+            prompt: "Auto-update will be disabled, mirrord will be updated to the specified version on restart.",
+            placeHolder: `Current version: ${userSpecifiedMirrordBinaryVersion ?? "unspecified (will download"}`,
         };
         const value = await vscode.window.showInputBox(options);
-        if (value && value !== "" && !(/^[0-9]+\.[0-9]+\.[0-9]+$/.test(value))) {
-            vscode.window.showErrorMessage(`Invalid version format ${value}: must follow semver format`);
-        }
-        autoUpdate = false;
 
-        if (value !== undefined) {
-            if (value !== null && userSpecifiedMirrordBinaryVersion === null) {
+        if (value) {
+            if (value === 'clear') {
+                userSpecifiedMirrordBinaryVersion = null;
+            } else if (/^[0-9]+\.[0-9]+\.[0-9]+$/.test(value)) {
                 userSpecifiedMirrordBinaryVersion = value;
+            } else {
+                vscode.window.showErrorMessage(`Invalid version format ${value}: must follow semver format`);
             }
         }
+
+        autoUpdate = false;
         vscode.window.showInformationMessage("Auto-update disabled");
     } else {
         autoUpdate = true;
