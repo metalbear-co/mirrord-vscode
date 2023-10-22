@@ -1,16 +1,20 @@
 import axios, { AxiosResponse } from 'axios';
+import * as vscode from 'vscode';
 import which from 'which';
 import { globalContext } from './extension';
 import { MirrordAPI } from './api';
 import { Utils } from 'vscode-uri';
 import * as fs from 'node:fs';
 import { platform } from 'os';
-import { Uri, workspace, window, ProgressLocation, ExtensionMode } from 'vscode';
+import { Uri, workspace, window, ProgressLocation, ExtensionMode, InputBoxOptions } from 'vscode';
 import { NotificationBuilder } from './notification';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 // const binaryCheckInterval = 1000 * 60 * 3;
 const baseDownloadUri = 'https://github.com/metalbear-co/mirrord/releases/download';
+
+export let autoUpdate = true;
+let mirrordBinaryVersion: string | null = null;
 
 function getExtensionMirrordPath(): Uri {
     return Utils.joinPath(globalContext.globalStorageUri, 'mirrord');
@@ -194,4 +198,32 @@ async function downloadMirrordBinary(destPath: Uri, version: string): Promise<vo
     );
     fs.writeFileSync(destPath.fsPath, response.data);
     fs.chmodSync(destPath.fsPath, 0o755);
+}
+
+
+export async function toggleAutoUpdate() {
+
+    if (autoUpdate) {
+        autoUpdate = false;
+        vscode.window.showInformationMessage("Auto-update disabled");
+
+        let options: InputBoxOptions = {
+            title: "Specify mirrord binary version",
+            prompt: "Label: ",
+            placeHolder: "(placeholder)",
+            validateInput: (value: string) => {
+                if (value !== "") {
+                    if (/^[0-9]+\\.[0-9]+\\.[0-9]+$/.test(value)) {
+                        vscode.window.showErrorMessage("Invalid version format ${value}: must follow semver format");
+                    }
+                }
+                return null;
+            }
+        };
+    
+        await vscode.window.showInputBox(options);
+    } else {
+        autoUpdate = true;
+        vscode.window.showInformationMessage("Auto-update enabled");
+    }
 }
