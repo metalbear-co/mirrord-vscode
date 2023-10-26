@@ -24,6 +24,22 @@ function getExtensionMirrordPath(): Uri {
  */
 export async function getLocalMirrordBinary(version?: string): Promise<string | null> {
     try {
+        const mirrordPath = getExtensionMirrordPath();
+        await workspace.fs.stat(mirrordPath);
+        if (version) {
+            const api = new MirrordAPI(mirrordPath.fsPath);
+            const installedVersion = await api.getBinaryVersion();
+            if (installedVersion === version) {
+                return mirrordPath.fsPath;
+            }
+        } else {
+            return mirrordPath.fsPath;
+        }
+
+    } catch (e) {
+        console.log("couldn't find mirrord in extension storage");
+    }
+    try {
         const mirrordPath = await which("mirrord");
         if (version) {
             const api = new MirrordAPI(mirrordPath);
@@ -39,22 +55,6 @@ export async function getLocalMirrordBinary(version?: string): Promise<string | 
         }
     } catch (e) {
         console.debug("couldn't find mirrord in path");
-    }
-    try {
-        const mirrordPath = getExtensionMirrordPath();
-        await workspace.fs.stat(mirrordPath);
-        if (version) {
-            const api = new MirrordAPI(mirrordPath.fsPath);
-            const installedVersion = await api.getBinaryVersion();
-            if (installedVersion === version) {
-                return mirrordPath.fsPath;
-            }
-        } else {
-            return mirrordPath.fsPath;
-        }
-
-    } catch (e) {
-        console.log("couldn't find mirrord in extension storage");
     }
     return null;
 }
@@ -98,15 +98,6 @@ async function getConfiguredMirrordBinary(): Promise<string | null> {
 }
 
 /**
- * Auto-update configuration i.e. workspace settings for mirrord auto-update
-*/
-
-interface AutoUpdateConfiguration {
-    enabled: boolean;
-    version: string | null;
-}
-
-/**
  * Toggles auto-update of mirrord binary.
  * Criteria for auto-update:
  * - Auto-update is enabled by default
@@ -114,7 +105,7 @@ interface AutoUpdateConfiguration {
  * - if auto-update is enabled, then latest supported version is downloaded
  * - if auto-update is disabled, and a version is specified, then that version is downloaded
  * - if auto-update is disabled, and no version is specified, then local mirrord binary is used
- * * - if auto-update is disabled, and no version is specified, and no local mirrord binary is found, then latest supported version is downloaded
+ * - if auto-update is disabled, and no version is specified, and no local mirrord binary is found, then latest supported version is downloaded
  * @returns Path to mirrord binary
 */
 export async function getMirrordBinary(): Promise<string> {
@@ -124,35 +115,31 @@ export async function getMirrordBinary(): Promise<string> {
         vscode.window.showInformationMessage(`Using mirrord binary specified in settings: ${configured}`);
         return configured;
     }
-
-    const autoUpdateConfigured: AutoUpdateConfiguration | null = vscode.workspace.getConfiguration().get("mirrord.autoUpdate", { enabled: true, version: null });
-
-    const extensionMirrordPath = getExtensionMirrordPath();
     const latestVersion = await getLatestSupportedVersion(10000);
 
-    if (autoUpdateConfigured && !autoUpdateConfigured.enabled) {
-        if (autoUpdateConfigured.version && semver.valid(autoUpdateConfigured.version)) {
-            const localMirrordBinary = await getLocalMirrordBinary(autoUpdateConfigured.version);
+    const autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate", true);
+
+
+    if (typeof autoUpdateConfigured === 'string') {        
+        if (semver.valid(autoUpdateConfigured)) {
+            const localMirrordBinary = await getLocalMirrordBinary(autoUpdateConfigured);
             if (localMirrordBinary) {
                 return localMirrordBinary;
             }
-            await downloadMirrordBinary(extensionMirrordPath, autoUpdateConfigured.version);
+            await downloadMirrordBinary(getExtensionMirrordPath(), autoUpdateConfigured);
+            return getExtensionMirrordPath().fsPath;
         } else {
-            vscode.window.showErrorMessage(`Invalid version format ${autoUpdateConfigured.version}: must follow semver format`);
+            vscode.window.showErrorMessage(`Invalid version format ${autoUpdateConfigured}: must follow semver format`);
         }
     }
 
-    // Auto-update is enabled or no specific version specified.
+    // Auto-update is enabled or no specific version specified.    
     const localMirrordBinary = await getLocalMirrordBinary();
-
     if (localMirrordBinary) {
         return localMirrordBinary;
     }
-
-    // No local mirrord binary found, download the latest supported version.
-    await downloadMirrordBinary(extensionMirrordPath, latestVersion);
-
-    return extensionMirrordPath.fsPath;
+    await downloadMirrordBinary(getExtensionMirrordPath(), latestVersion);
+    return getExtensionMirrordPath().fsPath;
 }
 
 /**

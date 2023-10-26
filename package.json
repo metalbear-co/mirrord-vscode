@@ -120,6 +120,11 @@
 					],
 					"default": null,
 					"description": "Path to local mirrord installation."
+				},
+				"mirrord.autoUpdate": {
+					"type": ["string", "boolean"],
+					"default": true,
+					"description": "Automatically update mirrord binary."					
 				}
 			}
 		},

@@ -1,0 +1,7 @@
+{
+    "mirrord.autoUpdate": {
+        "enabled": false,
+        "version": "3.70.0"       
+    },
+    "mirrord.binaryPath": null
+}
