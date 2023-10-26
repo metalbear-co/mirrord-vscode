@@ -6,7 +6,7 @@ import { MirrordAPI } from './api';
 import { Utils } from 'vscode-uri';
 import * as fs from 'node:fs';
 import { platform } from 'os';
-import { Uri, workspace, window, ProgressLocation, ExtensionMode, InputBoxOptions } from 'vscode';
+import { Uri, workspace, window, ProgressLocation, ExtensionMode } from 'vscode';
 import { NotificationBuilder } from './notification';
 import * as semver from 'semver';
 
