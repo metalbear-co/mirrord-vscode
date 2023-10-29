@@ -102,10 +102,9 @@ async function getConfiguredMirrordBinary(): Promise<string | null> {
  * Criteria for auto-update:
  * - Auto-update is enabled by default
  * - if mirrord binary path is mentioned in workspace settings, then that is used
+ * - if a version is specified, that version is downloaded
  * - if auto-update is enabled, then latest supported version is downloaded
- * - if auto-update is disabled, and a version is specified, then that version is downloaded
- * - if auto-update is disabled, and no version is specified, then local mirrord binary is used
- * - if auto-update is disabled, and no version is specified, and no local mirrord binary is found, then latest supported version is downloaded
+ * - if auto-update is disabled, any local mirrord binary is used
  * @returns Path to mirrord binary
 */
 export async function getMirrordBinary(): Promise<string> {
@@ -117,7 +116,9 @@ export async function getMirrordBinary(): Promise<string> {
     }
     const latestVersion = await getLatestSupportedVersion(10000);
 
-    const autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate", true);
+    const autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate");
+
+    const extensionPath = getExtensionMirrordPath().fsPath;
 
 
     if (typeof autoUpdateConfigured === 'string') {        
@@ -127,19 +128,29 @@ export async function getMirrordBinary(): Promise<string> {
                 return localMirrordBinary;
             }
             await downloadMirrordBinary(getExtensionMirrordPath(), autoUpdateConfigured);
-            return getExtensionMirrordPath().fsPath;
+            return extensionPath;
         } else {
             vscode.window.showErrorMessage(`Invalid version format ${autoUpdateConfigured}: must follow semver format`);
         }
     }
 
+    if (typeof autoUpdateConfigured === 'boolean') {        
+        if (!autoUpdateConfigured) {
+            const localMirrordBinary = await getLocalMirrordBinary();
+            if (localMirrordBinary) {
+                return localMirrordBinary;
+            }            
+            return extensionPath;
+        }
+    }
+
     // Auto-update is enabled or no specific version specified.    
-    const localMirrordBinary = await getLocalMirrordBinary();
+    const localMirrordBinary = await getLocalMirrordBinary(latestVersion);
     if (localMirrordBinary) {
         return localMirrordBinary;
     }
     await downloadMirrordBinary(getExtensionMirrordPath(), latestVersion);
-    return getExtensionMirrordPath().fsPath;
+    return extensionPath;
 }
 
 /**
