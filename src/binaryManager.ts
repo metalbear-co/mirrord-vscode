@@ -119,12 +119,17 @@ export async function getMirrordBinary(extensionActivate?: boolean): Promise<str
         vscode.window.showInformationMessage(`Using mirrord binary specified in settings: ${configured}`);
         return configured;
     }
-    const latestVersion = await getLatestSupportedVersion(10000);
+
+    let foundLocal = await getLocalMirrordBinary();
+    // timeout is 1s if we have alternative or 10s if we don't
+    let timeout = foundLocal ? 1000 : 10000;
+    const latestVersion = await getLatestSupportedVersion(timeout);
+
     const autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate");
     const extensionPath = getExtensionMirrordPath().fsPath;
-    
+
     // check the type can be only null, string or boolean
-    if (typeof autoUpdateConfigured !== 'boolean' && typeof autoUpdateConfigured !== 'string' && autoUpdateConfigured !== null) {
+    if (typeof autoUpdateConfigured !== 'boolean' && typeof autoUpdateConfigured !== 'string') {
         vscode.window.showErrorMessage(`Invalid autoUpdate setting ${autoUpdateConfigured}: must be a boolean or a string`);
         return extensionPath;
     }
@@ -143,8 +148,8 @@ export async function getMirrordBinary(extensionActivate?: boolean): Promise<str
                     await vscode.commands.executeCommand("workbench.action.reloadWindow");
                 })
                 .warning();
-        }
-        return extensionPath;
+            return extensionPath;
+        }        
     }
 
     if (typeof autoUpdateConfigured === 'string') {
@@ -160,23 +165,19 @@ export async function getMirrordBinary(extensionActivate?: boolean): Promise<str
         }
     }
 
-    if (typeof autoUpdateConfigured === 'boolean') {
-        if (!autoUpdateConfigured) {
-            const localMirrordBinary = await getLocalMirrordBinary();
-            if (localMirrordBinary) {
-                return localMirrordBinary;
-            }
-            return extensionPath;
+    if (autoUpdateConfigured === true) {
+        const localMirrordBinary = await getLocalMirrordBinary(latestVersion);
+        if (localMirrordBinary) {
+            return localMirrordBinary;
         }
+        await downloadMirrordBinary(getExtensionMirrordPath(), latestVersion);
+        return extensionPath;
+    } else {
+        if (foundLocal) {
+            return foundLocal;
+        }
+        return extensionPath;
     }
-
-        
-    const localMirrordBinary = await getLocalMirrordBinary(latestVersion);
-    if (localMirrordBinary) {
-        return localMirrordBinary;
-    }
-    await downloadMirrordBinary(getExtensionMirrordPath(), latestVersion);
-    return extensionPath;
 }
 
 /**
