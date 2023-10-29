@@ -120,12 +120,17 @@ export async function getMirrordBinary(extensionActivate?: boolean): Promise<str
         return configured;
     }
 
-    let foundLocal = await getLocalMirrordBinary();
-    // timeout is 1s if we have alternative or 10s if we don't
-    let timeout = foundLocal ? 1000 : 10000;
-    const latestVersion = await getLatestSupportedVersion(timeout);
+    let foundLocal = await getLocalMirrordBinary();    
+    const latestVersion = await getLatestSupportedVersion();
 
     const autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate");
+
+    // values for `mirrord.autoUpdate` can be:
+    // - true: auto-update is enabled
+    // - false: auto-update is disabled
+    // - string: version to download
+    // example: "mirrord.autoUpdate": "3.70.1" or "mirrord.autoUpdate": false or "mirrord.autoUpdate": true
+
     const extensionPath = getExtensionMirrordPath().fsPath;
 
     // check the type can be only null, string or boolean
@@ -184,7 +189,7 @@ export async function getMirrordBinary(extensionActivate?: boolean): Promise<str
  * 
  * @returns The latest supported version of mirrord for current extension version
  */
-async function getLatestSupportedVersion(timeout: number): Promise<string> {
+async function getLatestSupportedVersion(): Promise<string> {
     // commented out logic to avoid checking every X seconds
     // uncomment if hits performance or too annoying
     // let lastChecked = globalContext.globalState.get('binaryLastChecked', 0);
