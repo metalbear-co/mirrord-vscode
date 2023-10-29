@@ -12,10 +12,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.workspaceState.update('enabled', false);
 	vscode.debug.registerDebugConfigurationProvider('*', new ConfigurationProvider(), 2);
-
-
-	// start mirrord binary updates
-	await getMirrordBinary();
+	
+	// start mirrord binary updates, so that we avoid downloading mid session
+	await getMirrordBinary(true);
 
 	new MirrordStatus(vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0))
 		.register()
