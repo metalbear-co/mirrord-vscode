@@ -122,6 +122,13 @@ export async function getMirrordBinary(extensionActivate?: boolean): Promise<str
     const latestVersion = await getLatestSupportedVersion(10000);
     const autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate");
     const extensionPath = getExtensionMirrordPath().fsPath;
+    
+    // check the type can be only null, string or boolean
+    if (typeof autoUpdateConfigured !== 'boolean' && typeof autoUpdateConfigured !== 'string' && autoUpdateConfigured !== null) {
+        vscode.window.showErrorMessage(`Invalid autoUpdate setting ${autoUpdateConfigured}: must be a boolean or a string`);
+        return extensionPath;
+    }
+
 
     // if extension is activating, then set a global state to what was read in the workspace settings
     if (extensionActivate) {
@@ -163,7 +170,7 @@ export async function getMirrordBinary(extensionActivate?: boolean): Promise<str
         }
     }
 
-    // Auto-update is enabled or no specific version specified.    
+        
     const localMirrordBinary = await getLocalMirrordBinary(latestVersion);
     if (localMirrordBinary) {
         return localMirrordBinary;
