@@ -82,7 +82,7 @@ async function getConfiguredMirrordBinary(): Promise<string | null> {
 
     let latestVersion;
     try {
-        latestVersion = await getLatestSupportedVersion(1000);
+        latestVersion = await getLatestSupportedVersion();
     } catch (err) {
         new NotificationBuilder()
             .withMessage(`failed to check latest supported version of mirrord binary, binary specified in settings may be outdated: ${err}`)
@@ -112,7 +112,7 @@ async function getConfiguredMirrordBinary(): Promise<string | null> {
  * to mirrord binary auto-update will prompt the user to reload the window.
  * @returns Path to mirrord binary
 */
-export async function getMirrordBinary(extensionActivate?: boolean): Promise<string> {
+export async function getMirrordBinary(): Promise<string> {
     const configured = await getConfiguredMirrordBinary();
 
     if (configured) {
@@ -120,7 +120,7 @@ export async function getMirrordBinary(extensionActivate?: boolean): Promise<str
         return configured;
     }
 
-    let foundLocal = await getLocalMirrordBinary();    
+    let foundLocal = await getLocalMirrordBinary();
     const latestVersion = await getLatestSupportedVersion();
 
     const autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate");
@@ -137,24 +137,6 @@ export async function getMirrordBinary(extensionActivate?: boolean): Promise<str
     if (typeof autoUpdateConfigured !== 'boolean' && typeof autoUpdateConfigured !== 'string') {
         vscode.window.showErrorMessage(`Invalid autoUpdate setting ${autoUpdateConfigured}: must be a boolean or a string`);
         return extensionPath;
-    }
-
-
-    // if extension is activating, then set a global state to what was read in the workspace settings
-    if (extensionActivate) {
-        globalContext.workspaceState.update('autoUpdate', autoUpdateConfigured);
-    } else {
-        // extension is active, check if auto-update setting has changed
-        const autoUpdate = globalContext.workspaceState.get('autoUpdate');
-        if (autoUpdate !== autoUpdateConfigured) {
-            await new NotificationBuilder()
-                .withMessage("mirrord binary auto-update setting has changed, please reload the window for the change to take effect.")
-                .withGenericAction("Reload", async () => {
-                    await vscode.commands.executeCommand("workbench.action.reloadWindow");
-                })
-                .warning();
-            return extensionPath;
-        }        
     }
 
     if (typeof autoUpdateConfigured === 'string') {
