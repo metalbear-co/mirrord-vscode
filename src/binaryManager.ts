@@ -49,7 +49,8 @@ export async function getLocalMirrordBinary(version?: string): Promise<string | 
 
             // we use semver.gte here because installedVersion can be greater than the latest version
             // if we are running on the release CI.
-            if (installedVersion && semver.gte(installedVersion, version)) {
+            if ((process.env.CI_BUILD_PLUGIN === "true" && installedVersion && semver.gte(installedVersion, version)) ||
+                (!process.env.CI_BUILD_PLUGIN && installedVersion === version)) {
                 return mirrordPath;
             }
         } else {
