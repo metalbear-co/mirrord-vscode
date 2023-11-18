@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ConfigurationProvider } from './debugger';
 import { MirrordStatus } from './status';
+import { getMirrordBinary } from './binaryManager';
 
 export let globalContext: vscode.ExtensionContext;
 
@@ -11,6 +12,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.workspaceState.update('enabled', false);
 	vscode.debug.registerDebugConfigurationProvider('*', new ConfigurationProvider(), 2);
+	
+	// start mirrord binary updates, so that we avoid downloading mid session
+	await getMirrordBinary();
 
 	new MirrordStatus(vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0))
 		.register()

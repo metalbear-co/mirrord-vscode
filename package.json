@@ -120,6 +120,11 @@
 					],
 					"default": null,
 					"description": "Path to local mirrord installation."
+				},
+				"mirrord.autoUpdate": {
+					"type": ["string", "boolean"],
+					"default": true,
+					"description": "Automatically update mirrord binary."					
 				}
 			}
 		},
@@ -226,7 +231,7 @@
 	},
 	"dependencies": {
 		"axios": "^1.4.0",
-		"semver": "^7.3.7",
+		"semver": "^7.5.4",
 		"toml": "^3.0.0",
 		"vscode-uri": "^3.0.7",
 		"which": "^3.0.1",

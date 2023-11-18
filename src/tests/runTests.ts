@@ -6,7 +6,7 @@ import { ExTester, ReleaseQuality } from 'vscode-extension-tester';
 // https://github.com/redhat-developer/vscode-extension-tester/issues/485#issuecomment-1648050797 is fixed
 
 async function main(): Promise<void> {
-    const version = "latest";
+    const version = "1.83.1";
     const testPath = path.join(__dirname, 'e2e.js');
     const storageFolder = path.join(__dirname, '..', 'storage');
     const extFolder = path.join(__dirname, '..', 'extensions');
