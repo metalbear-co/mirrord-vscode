@@ -21,7 +21,7 @@ function getExtensionMirrordPath(): Uri {
 
 /**
  * Tries to find local mirrord in path or in extension storage.
- * @param version If specified, then the version of the binary is checked and matched path is returned if it matches.
+ * @param version If specified, then the version of the binary is checked and matched path is returned.
  * @returns Path to mirrord binary or null if not found
  */
 export async function getLocalMirrordBinary(version?: string): Promise<string | null> {
@@ -47,7 +47,7 @@ export async function getLocalMirrordBinary(version?: string): Promise<string | 
             const api = new MirrordAPI(mirrordPath);
             const installedVersion = await api.getBinaryVersion();
 
-            // we use semver.get here because installedVersion can be greater than the latest version
+            // we use semver.gte here because installedVersion can be greater than the latest version
             // if we are running on the release CI.
             if (installedVersion && semver.gte(installedVersion, version)) {
                 return mirrordPath;
@@ -145,6 +145,7 @@ export async function getMirrordBinary(): Promise<string> {
             if (localMirrordBinary) {
                 return localMirrordBinary;
             }
+            // donot block and download binary, instead download in background
             await downloadMirrordBinary(getExtensionMirrordPath(), autoUpdateConfigured);
             return extensionPath;
         } else {
@@ -218,25 +219,35 @@ function getMirrordDownloadUrl(version: string): string {
  * @param destPath Path to download the binary to
  */
 async function downloadMirrordBinary(destPath: Uri, version: string): Promise<void> {
-    fs.mkdirSync(Utils.dirname(destPath).fsPath, { recursive: true });
-    const response: AxiosResponse = await window.withProgress({
-        location: ProgressLocation.Notification,
+    await window.withProgress({
+        location: ProgressLocation.Window,
         title: "mirrord",
         cancellable: false
-    }, (progress, _) => {
-        progress.report({ increment: 0, "message": "Downloading mirrord binary..." });
-        const p = axios.get(
-            getMirrordDownloadUrl(version),
-            {
-                onDownloadProgress: function (progressEvent) {
-                    progress.report({ increment: progressEvent.progress, "message": "Downloading mirrord binary..." });
-                },
-                responseType: 'arraybuffer',
-            });
+    }, async (progress) => {
+        return new Promise<void>(async (resolve, reject) => {
+            fs.mkdirSync(Utils.dirname(destPath).fsPath, { recursive: true });
+            try {
+                const response: AxiosResponse = await axios.get(
+                    getMirrordDownloadUrl(version),
+                    {
+                        onDownloadProgress: function (progressEvent) {
+                            progress.report({ increment: progressEvent.progress, "message": "Downloading mirrord binary..." });
+                        },
+                        responseType: 'arraybuffer',
+                    });
 
-        return p;
-    }
-    );
-    fs.writeFileSync(destPath.fsPath, response.data);
-    fs.chmodSync(destPath.fsPath, 0o755);
+                fs.writeFileSync(destPath.fsPath, response.data);
+                fs.chmodSync(destPath.fsPath, 0o755);
+                new NotificationBuilder()
+                    .withMessage(`Downloaded mirrord binary version ${version}`)
+                    .info();
+                resolve();
+            } catch (error) {
+                new NotificationBuilder()
+                    .withMessage(`Error downloading mirrord binary: ${error}`)
+                    .error();
+                reject(error);
+            }
+        });
+    });
 }
