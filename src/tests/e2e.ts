@@ -15,7 +15,7 @@ const podToSelect = process.env.POD_TO_SELECT;
  * - Send traffic to the pod
  * - Tests successfully exit if "GET: Request completed" is found in the terminal
 */
-describe("mirrord sample flow test", function () {
+describe("mirrord sample flow test", function() {
 
   this.timeout("6 minutes"); // --> mocha tests timeout
   this.bail(true); // --> stop tests on first failure
@@ -26,7 +26,7 @@ describe("mirrord sample flow test", function () {
   const fileName = "app_flask.py";
   const defaultTimeout = 10000; // = 10 seconds
 
-  before(async function () {
+  before(async function() {
     console.log("podToSelect: " + podToSelect);
     console.log("kubeService: " + kubeService);
 
@@ -48,7 +48,7 @@ describe("mirrord sample flow test", function () {
     await ew.openEditor('app_flask.py');
   });
 
-  it("enable mirrord button", async function () {
+  it("enable mirrord button", async function() {
     const statusBar = new StatusBar();
 
     await browser.driver.wait(async () => {
@@ -80,7 +80,7 @@ describe("mirrord sample flow test", function () {
     }, defaultTimeout, "mirrord `enable` button not found -- timed out");
   });
 
-  it("select pod from quickpick", async function () {
+  it("select pod from quickpick", async function() {
     await startDebugging();
     const inputBox = await InputBox.create(defaultTimeout * 2);
     // assertion that podToSelect is not undefined is done in "before" block
@@ -108,37 +108,27 @@ describe("mirrord sample flow test", function () {
     await inputBox.selectQuickPick(podToSelect!);
   });
 
-  it("wait for process to write to terminal", async function () {
+  it("wait for process to write to terminal", async function() {
     const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);
-    console.log("waiting for debug toolbar1");
     const panel = new BottomBarPanel();
-    let terminal = await panel.openTerminalView();
-    console.log("waiting for debug toolbar2");
     await browser.driver.wait(async () => {
-      return await debugToolbar.isDisplayed() && await panel.isDisplayed();
+      return await debugToolbar.isDisplayed();
     }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
 
-    console.log("debug toolbar found");
-    
 
-    console.log("terminal opened");
+    let terminal = await panel.openTerminalView();
 
     await browser.driver.wait(async () => {
       const text = await terminal.getText();
       return await terminal.isDisplayed() && text.includes("Press CTRL+C to quit");
     }, 2 * defaultTimeout, "terminal text not found -- timed out");
 
-    console.log("terminal text found");
     await sendTrafficToPod();
-
-    console.log("traffic sent to pod");
 
     await browser.driver.wait(async () => {
       const text = await terminal.getText();
       return text.includes("GET: Request completed");
     }, defaultTimeout, "terminal text not found -- timed out");
-
-    console.log("terminal text found - traffic sent to pod");
 
   });
 });
