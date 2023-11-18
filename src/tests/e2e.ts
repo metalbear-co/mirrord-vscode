@@ -110,11 +110,14 @@ describe("mirrord sample flow test", function () {
 
   it("wait for process to write to terminal", async function () {
     const debugToolbar = await DebugToolbar.create(2 * defaultTimeout);
+    console.log("waiting for debug toolbar1");
     const panel = new BottomBarPanel();
+    console.log("waiting for debug toolbar2");
     await browser.driver.wait(async () => {
       return await debugToolbar.isDisplayed() && await panel.isDisplayed();
     }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
 
+    console.log("debug toolbar found");
 
     let terminal = await panel.openTerminalView();
 
