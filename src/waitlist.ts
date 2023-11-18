@@ -17,7 +17,7 @@ const WAITLIST_CTA_REPEAT = 30;
 export async function waitlistRegisterCommand(email?: string, blockPrompt?: boolean): Promise<IWaitlistResult> {
     if (email && email.length > 0) {
         try {
-            let response = await axios.postForm(`https://waitlist.metalbear.co/v1/waitlist`, { email });
+            let response = await axios.postForm(`https://waitlist.metalbear.co/v1/waitlist?source=vscode`, { email });
 
             if (response.status === 200) {
                 return {
