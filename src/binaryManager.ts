@@ -26,22 +26,6 @@ function getExtensionMirrordPath(): Uri {
  */
 export async function getLocalMirrordBinary(version?: string): Promise<string | null> {
     try {
-        const mirrordPath = getExtensionMirrordPath();
-        await workspace.fs.stat(mirrordPath);
-        if (version) {
-            const api = new MirrordAPI(mirrordPath.fsPath);
-            const installedVersion = await api.getBinaryVersion();
-            if (installedVersion === version) {
-                return mirrordPath.fsPath;
-            }
-        } else {
-            return mirrordPath.fsPath;
-        }
-
-    } catch (e) {
-        console.log("couldn't find mirrord in extension storage");
-    }
-    try {
         const mirrordPath = await which("mirrord");
         if (version) {
             const api = new MirrordAPI(mirrordPath);
@@ -58,6 +42,21 @@ export async function getLocalMirrordBinary(version?: string): Promise<string | 
         }
     } catch (e) {
         console.debug("couldn't find mirrord in path");
+    }
+    try {
+        const mirrordPath = getExtensionMirrordPath();
+        await workspace.fs.stat(mirrordPath);
+        if (version) {
+            const api = new MirrordAPI(mirrordPath.fsPath);
+            const installedVersion = await api.getBinaryVersion();
+            if (installedVersion === version) {
+                return mirrordPath.fsPath;
+            }
+        } else {
+            return mirrordPath.fsPath;
+        }
+    } catch (e) {
+        console.log("couldn't find mirrord in extension storage");
     }
     return null;
 }
