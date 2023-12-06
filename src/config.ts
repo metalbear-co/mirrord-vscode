@@ -300,39 +300,54 @@ export class MirrordConfigManager {
         .withOpenFileAction(this.active)
         .withDisableAction("promptUsingActiveConfig")
         .info();
+
       return this.active;
     } else if (config.env?.["MIRRORD_CONFIG_FILE"]) {
       // Get the config path from the env var.
-      return vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
+      const configFromEnv = vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
+
+      new NotificationBuilder()
+        .withMessage("using active mirrord configuration")
+        .withOpenFileAction(configFromEnv)
+        .withDisableAction("promptUsingActiveConfig")
+        .info();
+
+      return configFromEnv;
+
     } else if (folder) {
-      let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
-      if (predefinedConfig) {
+      const configFromMirrordFolder = await MirrordConfigManager.getDefaultConfig(folder);
+
+      if (configFromMirrordFolder) {
         new NotificationBuilder()
-          .withMessage("using a default mirrord config")
-          .withOpenFileAction(predefinedConfig)
+          .withMessage("using config from .mirrord")
+          .withOpenFileAction(configFromMirrordFolder)
           .withDisableAction("promptUsingDefaultConfig")
-          .warning();
-        return predefinedConfig;
+          .info();
+
+        return configFromMirrordFolder;
       } else {
         return null;
       }
     } else {
-      folder = vscode.workspace.workspaceFolders?.[0];
-      if (!folder) {
+      const configFromWorkspace = vscode.workspace.workspaceFolders?.[0];
+      if (configFromWorkspace) {
+        const predefinedConfig = await MirrordConfigManager.getDefaultConfig(configFromWorkspace);
+
+        if (predefinedConfig) {
+          new NotificationBuilder()
+            .withMessage(`using a default mirrord config from folder ${configFromWorkspace.name} `)
+            .withOpenFileAction(predefinedConfig)
+            .withDisableAction("promptUsingDefaultConfig")
+            .warning();
+
+          return predefinedConfig;
+        } else {
+          return null;
+        }
+      } else {
         throw new Error("mirrord requires an open folder in the workspace");
       }
 
-      let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
-      if (predefinedConfig) {
-        new NotificationBuilder()
-          .withMessage(`using a default mirrord config from folder ${folder.name} `)
-          .withOpenFileAction(predefinedConfig)
-          .withDisableAction("promptUsingDefaultConfig")
-          .warning();
-        return predefinedConfig;
-      } else {
-        return null;
-      }
     }
   }
 }
