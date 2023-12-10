@@ -4,9 +4,11 @@ env:
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'gh-readonly-queue/**'
   pull_request:
-    branches: [main, staging, trying]
+    branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
 
 # Cancel previous runs on the same PR.
