@@ -113,7 +113,7 @@ async function main(
   let cliPath;
 
   try {
-    cliPath = await getMirrordBinary();
+    cliPath = await getMirrordBinary(false);
   } catch (err) {
     // Get last active, that should work?
     cliPath = await getLastActiveMirrordPath();

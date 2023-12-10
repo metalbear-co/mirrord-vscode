@@ -1,0 +1,1 @@
+Fix error when loading into Windows VSCode and improve binary fetching code
