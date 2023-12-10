@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.55.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.1) - 2023-12-10
+
+
+### Fixed
+
+- Fix error when loading into Windows VSCode and improve binary fetching code
+
+
 ## [3.55.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.0) - 2023-12-08
 
 
