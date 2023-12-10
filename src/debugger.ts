@@ -3,7 +3,7 @@ import { globalContext } from './extension';
 import { isTargetSet, MirrordConfigManager } from './config';
 import { LAST_TARGET_KEY, MirrordAPI, mirrordFailure, MirrordExecution } from './api';
 import { updateTelemetries } from './versionCheck';
-import { getLocalMirrordBinary, getMirrordBinary } from './binaryManager';
+import { getMirrordBinary } from './binaryManager';
 import { platform } from 'node:os';
 import { NotificationBuilder } from './notification';
 
@@ -66,24 +66,6 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
 }
 
 
-
-async function getLastActiveMirrordPath(): Promise<string | null> {
-  const binaryPath = globalContext.globalState.get('binaryPath', null);
-  if (!binaryPath) {
-    return null;
-  }
-  try {
-    await vscode.workspace.fs.stat(binaryPath);
-    return binaryPath;
-  } catch (e) {
-    return null;
-  }
-}
-
-function setLastActiveMirrordPath(path: string) {
-  globalContext.globalState.update('binaryPath', path);
-}
-
 /**
 * Entrypoint for the vscode extension, called from `resolveDebugConfigurationWithSubstitutedVariables`.
 */
@@ -110,24 +92,12 @@ async function main(
   updateTelemetries();
 
   //TODO: add progress bar maybe ?
-  let cliPath;
+  let cliPath = await getMirrordBinary(false);
 
-  try {
-    cliPath = await getMirrordBinary(false);
-  } catch (err) {
-    // Get last active, that should work?
-    cliPath = await getLastActiveMirrordPath();
-
-    // Well try any mirrord we can try :\
-    if (!cliPath) {
-      cliPath = await getLocalMirrordBinary();
-      if (!cliPath) {
-        mirrordFailure(`Couldn't download mirrord binaries or find local one in path ${err}.`);
-        return null;
-      }
-    }
+  if (!cliPath) {
+      mirrordFailure(`Couldn't download mirrord binaries or find local one in path`);
+      return null;
   }
-  setLastActiveMirrordPath(cliPath);
 
   let mirrordApi = new MirrordAPI(cliPath);
 
