@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.55.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.2) - 2023-12-21
+
+
+### Changed
+
+- Removed waitlist registration action, added mirrord for Teams action.
+
+
 ## [3.55.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.1) - 2023-12-10
 
 
