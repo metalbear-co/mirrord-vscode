@@ -28,7 +28,7 @@ export function tickMirrordForTeamsCounter(isDeploymentExec: boolean) {
     } else if (counter >= NOTIFICATION_STARTS_AT) {
         if (counter === NOTIFICATION_STARTS_AT || (counter - NOTIFICATION_STARTS_AT) % NOTIFICATION_REPEATS_EVERY === 0) {
             showMirrordForTeamsNotification(
-                'mirrord for Teams ' // TODO
+                'For more features of mirrord, including multi-pod impersonation, check out mirrord for Teams.'
             );
         }
     }
