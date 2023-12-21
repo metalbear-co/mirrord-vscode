@@ -10,7 +10,7 @@ const NOTIFICATION_REPEATS_EVERY = 30;
 async function showMirrordForTeamsNotification(message: string) {
     new NotificationBuilder()
         .withMessage(message)
-        .withGenericAction("Read more", async () => {
+        .withGenericAction("Try it now", async () => {
             await vscode.commands.executeCommand(MirrordStatus.mirrordForTeamsCommandId);
         })
         .withDisableAction("promptMirrordForTeams")
