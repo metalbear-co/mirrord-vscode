@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
-import { tickWaitlistCounter } from './waitlist';
+import { tickMirrordForTeamsCounter } from './mirrordForTeams';
 import { NotificationBuilder } from './notification';
 import { MirrordStatus } from './status';
 import { EnvVars, VerifiedConfig } from './config';
@@ -295,7 +295,7 @@ export class MirrordAPI {
   * Has 60 seconds timeout
   */
   async binaryExecute(target: string | null, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
-    tickWaitlistCounter(!!target?.startsWith('deployment/'));
+    tickMirrordForTeamsCounter(!!target?.startsWith('deployment/'));
     tickFeedbackCounter();
 
     /// Create a promise that resolves when the mirrord process exits
