@@ -14,7 +14,6 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 ### Fixed
 
 - Fixed dependencies for E2E test and the extension.
-  [#deps](https://github.com/metalbear-co/mirrord-vscode/issues/deps)
 
 
 ## [3.55.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.2) - 2023-12-21
