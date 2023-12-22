@@ -229,6 +229,7 @@
 		"webpack-cli": "^5.0.1"
 	},
 	"dependencies": {
+		"axios": "^1.4.0",
 		"semver": "^7.5.4",
 		"toml": "^3.0.0",
 		"vscode-uri": "^3.0.7",
