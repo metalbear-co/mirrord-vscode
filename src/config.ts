@@ -337,6 +337,9 @@ export class MirrordConfigManager {
 
         return configFromMirrordFolder;
       } else {
+        // There is no configuration file in a .mirrord directory and no configuration file was specified
+        // via "active configuration" extension setting or environment variable. This is a valid case.
+        // mirrord will run without a configuration file.
         return null;
       }
     } else {
