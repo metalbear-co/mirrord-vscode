@@ -309,7 +309,7 @@ export class MirrordConfigManager {
       new NotificationBuilder()
         .withMessage(`Using mirrord configuration from env var "MIRRORD_CONFIG_FILE".`)
         .withOpenFileAction(configFromEnv)
-        .withDisableAction("promptUsingActiveConfig")
+        .withDisableAction("promptUsingEnvVarConfig")
         .info();
 
       return configFromEnv;

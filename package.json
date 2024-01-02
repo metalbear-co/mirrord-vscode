@@ -87,6 +87,11 @@
 					"default": true,
 					"description": "Show a notification when mirrord uses active configuration."
 				},
+				"mirrord.promptUsingEnvVarConfig": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when mirrord uses env var configuration."
+				},
 				"mirrord.promptUsingDefaultConfig": {
 					"type": "boolean",
 					"default": true,
