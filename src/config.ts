@@ -296,7 +296,7 @@ export class MirrordConfigManager {
     if (this.active) {
       // User has selected a config (via active config button).
       new NotificationBuilder()
-        .withMessage("using active mirrord configuration")
+        .withMessage("Using active mirrord configuration.")
         .withOpenFileAction(this.active)
         .withDisableAction("promptUsingActiveConfig")
         .info();
@@ -307,7 +307,7 @@ export class MirrordConfigManager {
       const configFromEnv = vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
 
       new NotificationBuilder()
-        .withMessage("using active mirrord configuration")
+        .withMessage(`Using mirrord configuration from env var "MIRRORD_CONFIG_FILE".`)
         .withOpenFileAction(configFromEnv)
         .withDisableAction("promptUsingActiveConfig")
         .info();
@@ -319,7 +319,7 @@ export class MirrordConfigManager {
 
       if (configFromMirrordFolder) {
         new NotificationBuilder()
-          .withMessage("using config from .mirrord")
+          .withMessage(`Using mirrord configuration from ".mirrord" folder.`)
           .withOpenFileAction(configFromMirrordFolder)
           .withDisableAction("promptUsingDefaultConfig")
           .info();
@@ -329,25 +329,11 @@ export class MirrordConfigManager {
         return null;
       }
     } else {
-      const configFromWorkspace = vscode.workspace.workspaceFolders?.[0];
-      if (configFromWorkspace) {
-        const predefinedConfig = await MirrordConfigManager.getDefaultConfig(configFromWorkspace);
+      new NotificationBuilder()
+        .withMessage(`mirrord could not find a configuration file! Try using the "Settings" button or the "Select active config" button to generate/select a mirrord config file.`)
+        .warning();
 
-        if (predefinedConfig) {
-          new NotificationBuilder()
-            .withMessage(`using a default mirrord config from folder ${configFromWorkspace.name} `)
-            .withOpenFileAction(predefinedConfig)
-            .withDisableAction("promptUsingDefaultConfig")
-            .warning();
-
-          return predefinedConfig;
-        } else {
-          return null;
-        }
-      } else {
-        throw new Error("mirrord requires an open folder in the workspace");
-      }
-
+      return null;
     }
   }
 }
