@@ -329,10 +329,6 @@ export class MirrordConfigManager {
         return null;
       }
     } else {
-      new NotificationBuilder()
-        .withMessage(`mirrord could not find a configuration file! Try using the "Settings" button or the "Select active config" button to generate/select a mirrord config file.`)
-        .warning();
-
       return null;
     }
   }
