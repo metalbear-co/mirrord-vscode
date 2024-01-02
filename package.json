@@ -3,7 +3,7 @@
 	"displayName": "mirrord",
 	"description": "Run your local process in the context of your cloud cluster",
 	"publisher": "MetalBear",
-	"version": "3.54.1",
+	"version": "3.55.3",
 	"engines": {
 		"vscode": "^1.63.0"
 	},
@@ -31,8 +31,7 @@
 	],
 	"icon": "images/icon.png",
 	"activationEvents": [
-		"onStartupFinished",
-		"onCommand:mirrord.waitlistSignup"
+		"onStartupFinished"
 	],
 	"extensionKind": [
 		"workspace"
@@ -45,9 +44,9 @@
 				"title": "Change settings"
 			},
 			{
-				"command": "mirrord.waitlistSignup",
+				"command": "mirrord.mirrordForTeams",
 				"category": "mirrord",
-				"title": "Sign up to the waitlist for mirrord for Teams"
+				"title": "Navigate to mirrord for Teams introduction"
 			},
 			{
 				"command": "mirrord.selectActiveConfig",
@@ -68,10 +67,10 @@
 		"configuration": {
 			"title": "mirrord",
 			"properties": {
-				"mirrord.promptWaitlistSignup": {
+				"mirrord.promptMirrordForTeams": {
 					"type": "boolean",
 					"default": true,
-					"description": "Show notifications about waitlist signup."
+					"description": "Show notifications about mirrord for Teams."
 				},
 				"mirrord.promptActiveConfigRemoved": {
 					"type": "boolean",
@@ -135,7 +134,7 @@
 					"when": "true"
 				},
 				{
-					"command": "mirrord.waitlistSignup",
+					"command": "mirrord.mirrordForTeams",
 					"when": "true"
 				},
 				{

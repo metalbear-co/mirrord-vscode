@@ -8,6 +8,56 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.55.3](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.3) - 2023-12-22
+
+
+### Fixed
+
+- Fixed dependencies for E2E test and the extension.
+
+
+## [3.55.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.2) - 2023-12-21
+
+
+### Changed
+
+- Removed waitlist registration action, added mirrord for Teams action.
+
+
+## [3.55.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.1) - 2023-12-10
+
+
+### Fixed
+
+- Fix error when loading into Windows VSCode and improve binary fetching code
+
+
+## [3.55.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.0) - 2023-12-08
+
+
+### Added
+
+- Add option to disable auto-update.
+  [#62](https://github.com/metalbear-co/mirrord-vscode/issues/62)
+- Added source identifier to waitlist register
+
+
+### Fixed
+
+- Passes the `launch.json` `env` section to `mirrord verify-config`, resolving
+  config options that were set as env vars.
+  [#70](https://github.com/metalbear-co/mirrord-vscode/issues/70)
+- mirrord now shows an error notification when the user tries to use it with an
+  `attach` launch configuration.
+
+
+### Internal
+
+- Add video playback and bugfixes for the e2e
+- Pin vscode version for e2e, as it fails on latest release
+- Remove quotes around GITHUB_PATH in e2e
+
+
 ## [3.54.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.54.1) - 2023-10-10
 
 

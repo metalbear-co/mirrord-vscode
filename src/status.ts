@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { MirrordConfigManager } from './config';
 import { globalContext } from './extension';
-import { waitlistRegisterCommand } from './waitlist';
 import { NotificationBuilder } from './notification';
 
 export class MirrordStatus {
@@ -9,7 +8,7 @@ export class MirrordStatus {
     static readonly toggleCommandId = 'mirrord.toggleMirroring';
     static readonly settingsCommandId = 'mirrord.changeSettings';
     static readonly submitFeedbackCommandId = 'mirrord.submitFeedback';
-    static readonly waitlistCommandId = 'mirrord.waitlistSignup';
+    static readonly mirrordForTeamsCommandId = 'mirrord.mirrordForTeams';
     static readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
     static readonly helpCommandId = 'mirrord.help';
 
@@ -40,7 +39,7 @@ export class MirrordStatus {
         }
         statusBar.tooltip.appendMarkdown(`\n\n[Select active config](command:${MirrordStatus.selectActiveConfigId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${MirrordStatus.settingsCommandId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams Waitlist](command:${MirrordStatus.waitlistCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams](command:${MirrordStatus.mirrordForTeamsCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Submit Feedback](command:${MirrordStatus.submitFeedbackCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Help](command:${MirrordStatus.helpCommandId})`);
 
@@ -59,7 +58,7 @@ export class MirrordStatus {
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.settingsCommandId, configManager.changeSettings.bind(configManager)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.toggleCommandId, this.toggle.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.submitFeedbackCommandId, this.submitFeedback.bind(this)));
-        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.waitlistCommandId, waitlistRegisterCommand));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.mirrordForTeamsCommandId, this.mirrordForTeams.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.helpCommandId, async () => {
             vscode.commands.executeCommand(`workbench.action.openWalkthrough`, `MetalBear.mirrord#mirrord.welcome`, false);
         }));
@@ -92,5 +91,9 @@ export class MirrordStatus {
 
     submitFeedback() {
         vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/feedback'));
+    }
+
+    mirrordForTeams() {
+        vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/docs/teams/introduction/'));
     }
 }
