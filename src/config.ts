@@ -78,6 +78,17 @@ export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
   }
 }
 
+/**
+* Notifies the user we're running with a default config when `resolveMirrordConfig` 
+* returns `null`.
+*/
+export function notifyRunningWithDefaultConfig() {
+  new NotificationBuilder()
+    .withMessage(`Using default mirrord configuration.`)
+    .withDisableAction("promptUsingDefaultConfig")
+    .info();
+}
+
 export class MirrordConfigManager {
   private static instance?: MirrordConfigManager = undefined;
 
