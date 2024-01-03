@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { globalContext } from './extension';
-import { isTargetSet, MirrordConfigManager, notifyRunningWithDefaultConfig } from './config';
+import { isTargetSet, MirrordConfigManager } from './config';
 import { LAST_TARGET_KEY, MirrordAPI, mirrordFailure, MirrordExecution } from './api';
 import { updateTelemetries } from './versionCheck';
 import { getMirrordBinary } from './binaryManager';
