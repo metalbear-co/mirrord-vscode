@@ -336,7 +336,7 @@ export class MirrordConfigManager {
       // not set up the `MIRRORD_CONFIG_FILE` env var.
       new NotificationBuilder()
         .withMessage(`Could not find a config file, using the default mirrord configuration.`)
-        .withDisableAction("promptUsingDefaultConfig")
+        .withDisableAction("promptUsingDefaultConfigSingleFileNoFolder")
         .info();
 
       return null;

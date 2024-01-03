@@ -97,6 +97,11 @@
 					"default": true,
 					"description": "Show a notification when mirrord uses default configuration."
 				},
+				"mirrord.promptUsingDefaultConfigSingleFileNoFolder": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when mirrord uses default configuration when running vscode with a single file (no folder)."
+				},
 				"mirrord.promptTargetless": {
 					"type": "boolean",
 					"default": true,
