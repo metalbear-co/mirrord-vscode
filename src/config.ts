@@ -78,17 +78,6 @@ export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
   }
 }
 
-/**
-* Notifies the user we're running with a default config when `resolveMirrordConfig` 
-* returns `null`.
-*/
-export function notifyRunningWithDefaultConfig() {
-  new NotificationBuilder()
-    .withMessage(`Using default mirrord configuration.`)
-    .withDisableAction("promptUsingDefaultConfig")
-    .info();
-}
-
 export class MirrordConfigManager {
   private static instance?: MirrordConfigManager = undefined;
 
@@ -340,6 +329,13 @@ export class MirrordConfigManager {
         return null;
       }
     } else {
+      // User probably openend vscode in a single file, no folder is loaded and they have
+      // not set up the `MIRRORD_CONFIG_FILE` env var.
+      new NotificationBuilder()
+        .withMessage(`Could not find a config file, using the default mirrord configuration.`)
+        .withDisableAction("promptUsingDefaultConfig")
+        .info();
+
       return null;
     }
   }

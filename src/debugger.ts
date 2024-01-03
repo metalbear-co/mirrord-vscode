@@ -105,8 +105,6 @@ async function main(
   let target = null;
 
   let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
-  if (configPath === null) { notifyRunningWithDefaultConfig(); }
-
   const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
