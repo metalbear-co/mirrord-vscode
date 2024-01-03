@@ -335,7 +335,7 @@ export class MirrordConfigManager {
       // User probably openend vscode in a single file, no folder is loaded and they have
       // not set up the `MIRRORD_CONFIG_FILE` env var.
       new NotificationBuilder()
-        .withMessage(`Could not find a config file, using the default mirrord configuration.`)
+        .withMessage(`No folder open in editor - so not using a configuration file even if one exists.`)
         .withDisableAction("promptUsingDefaultConfigSingleFileNoFolder")
         .info();
 
