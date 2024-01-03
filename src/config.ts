@@ -296,43 +296,50 @@ export class MirrordConfigManager {
     if (this.active) {
       // User has selected a config (via active config button).
       new NotificationBuilder()
-        .withMessage("using active mirrord configuration")
+        .withMessage("Using active mirrord configuration.")
         .withOpenFileAction(this.active)
         .withDisableAction("promptUsingActiveConfig")
         .info();
+
       return this.active;
     } else if (config.env?.["MIRRORD_CONFIG_FILE"]) {
       // Get the config path from the env var.
-      return vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
+      const configFromEnv = vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
+
+      new NotificationBuilder()
+        .withMessage(`Using mirrord configuration from env var "MIRRORD_CONFIG_FILE".`)
+        .withOpenFileAction(configFromEnv)
+        .withDisableAction("promptUsingEnvVarConfig")
+        .info();
+
+      return configFromEnv;
+
     } else if (folder) {
-      let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
-      if (predefinedConfig) {
+      const configFromMirrordFolder = await MirrordConfigManager.getDefaultConfig(folder);
+
+      if (configFromMirrordFolder) {
         new NotificationBuilder()
-          .withMessage("using a default mirrord config")
-          .withOpenFileAction(predefinedConfig)
+          .withMessage(`Using mirrord configuration from ".mirrord" folder.`)
+          .withOpenFileAction(configFromMirrordFolder)
           .withDisableAction("promptUsingDefaultConfig")
-          .warning();
-        return predefinedConfig;
+          .info();
+
+        return configFromMirrordFolder;
       } else {
+        // There is no configuration file in a .mirrord directory and no configuration file was specified
+        // via "active configuration" extension setting or environment variable. This is a valid case.
+        // mirrord will run without a configuration file.
         return null;
       }
     } else {
-      folder = vscode.workspace.workspaceFolders?.[0];
-      if (!folder) {
-        throw new Error("mirrord requires an open folder in the workspace");
-      }
+      // User probably openend vscode in a single file, no folder is loaded and they have
+      // not set up the `MIRRORD_CONFIG_FILE` env var.
+      new NotificationBuilder()
+        .withMessage(`No folder open in editor - so not using a configuration file even if one exists.`)
+        .withDisableAction("promptUsingDefaultConfigSingleFileNoFolder")
+        .info();
 
-      let predefinedConfig = await MirrordConfigManager.getDefaultConfig(folder);
-      if (predefinedConfig) {
-        new NotificationBuilder()
-          .withMessage(`using a default mirrord config from folder ${folder.name} `)
-          .withOpenFileAction(predefinedConfig)
-          .withDisableAction("promptUsingDefaultConfig")
-          .warning();
-        return predefinedConfig;
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 }

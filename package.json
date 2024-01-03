@@ -87,10 +87,20 @@
 					"default": true,
 					"description": "Show a notification when mirrord uses active configuration."
 				},
+				"mirrord.promptUsingEnvVarConfig": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when mirrord uses env var configuration."
+				},
 				"mirrord.promptUsingDefaultConfig": {
 					"type": "boolean",
 					"default": true,
 					"description": "Show a notification when mirrord uses default configuration."
+				},
+				"mirrord.promptUsingDefaultConfigSingleFileNoFolder": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification when mirrord uses default configuration when running vscode with a single file (no folder)."
 				},
 				"mirrord.promptTargetless": {
 					"type": "boolean",

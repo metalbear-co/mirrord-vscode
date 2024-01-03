@@ -95,8 +95,8 @@ async function main(
   let cliPath = await getMirrordBinary(false);
 
   if (!cliPath) {
-      mirrordFailure(`Couldn't download mirrord binaries or find local one in path`);
-      return null;
+    mirrordFailure(`Couldn't download mirrord binaries or find local one in path`);
+    return null;
   }
 
   let mirrordApi = new MirrordAPI(cliPath);
