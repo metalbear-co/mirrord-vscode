@@ -44,9 +44,11 @@ jobs:
           git fetch --all --tags
           git checkout tags/$(jq -r .version package.json)
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 18.15.x
+          cache: npm
       - name: Install dependencies
         run: |
           npm install
