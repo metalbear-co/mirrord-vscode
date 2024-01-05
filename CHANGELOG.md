@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.56.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.56.1) - 2024-01-05
+
+
+### Internal
+
+- npm update e2e tester
+
+
 ## [3.56.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.56.0) - 2024-01-05
 
 

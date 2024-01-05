@@ -1,1 +1,0 @@
-npm update e2e tester
