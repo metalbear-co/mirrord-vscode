@@ -437,7 +437,7 @@ function tickFeedbackCounter() {
         );
       })
       .withGenericAction("Feedback", async () => {
-        vscode.commands.executeCommand(MirrordStatus.submitFeedbackCommandId);
+        vscode.commands.executeCommand(MirrordStatus.joinDiscordCommandId);
       })
       .withDisableAction('promptReview')
       .info();

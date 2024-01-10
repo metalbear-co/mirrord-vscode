@@ -7,7 +7,7 @@ export class MirrordStatus {
     readonly statusBar: vscode.StatusBarItem;
     static readonly toggleCommandId = 'mirrord.toggleMirroring';
     static readonly settingsCommandId = 'mirrord.changeSettings';
-    static readonly submitFeedbackCommandId = 'mirrord.submitFeedback';
+    static readonly joinDiscordCommandId = 'mirrord.joinDiscord';
     static readonly mirrordForTeamsCommandId = 'mirrord.mirrordForTeams';
     static readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
     static readonly helpCommandId = 'mirrord.help';
@@ -40,8 +40,8 @@ export class MirrordStatus {
         statusBar.tooltip.appendMarkdown(`\n\n[Select active config](command:${MirrordStatus.selectActiveConfigId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${MirrordStatus.settingsCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams](command:${MirrordStatus.mirrordForTeamsCommandId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[Submit Feedback](command:${MirrordStatus.submitFeedbackCommandId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[Help](command:${MirrordStatus.helpCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[Get help on Discord](command:${MirrordStatus.joinDiscordCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[Walkthrough](command:${MirrordStatus.helpCommandId})`);
 
         statusBar.show();
     }
@@ -57,7 +57,7 @@ export class MirrordStatus {
         }));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.settingsCommandId, configManager.changeSettings.bind(configManager)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.toggleCommandId, this.toggle.bind(this)));
-        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.submitFeedbackCommandId, this.submitFeedback.bind(this)));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.joinDiscordCommandId, this.joinDiscord.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.mirrordForTeamsCommandId, this.mirrordForTeams.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.helpCommandId, async () => {
             vscode.commands.executeCommand(`workbench.action.openWalkthrough`, `MetalBear.mirrord#mirrord.welcome`, false);
@@ -89,11 +89,11 @@ export class MirrordStatus {
         this.draw();
     }
 
-    submitFeedback() {
-        vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/feedback'));
+    joinDiscord() {
+        vscode.env.openExternal(vscode.Uri.parse('https://discord.gg/metalbear'));
     }
 
     mirrordForTeams() {
-        vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/docs/teams/introduction/'));
+        vscode.env.openExternal(vscode.Uri.parse('https://app.metalbear.co/'));
     }
 }
