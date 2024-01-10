@@ -1,1 +1,0 @@
-Fixed dependencies for E2E test and the extension.

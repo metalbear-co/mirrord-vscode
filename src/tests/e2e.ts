@@ -113,7 +113,7 @@ describe("mirrord sample flow test", function() {
     const panel = new BottomBarPanel();
     await browser.driver.wait(async () => {
       return await debugToolbar.isDisplayed();
-    }, 2 * defaultTimeout, "debug toolbar not found -- timed out");
+    }, 4 * defaultTimeout, "debug toolbar not found -- timed out");
 
 
     let terminal = await panel.openTerminalView();

@@ -8,6 +8,38 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.56.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.56.1) - 2024-01-05
+
+
+### Internal
+
+- npm update e2e tester
+
+
+## [3.56.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.56.0) - 2024-01-05
+
+
+### Changed
+
+- Changed notifications when loading config file to be less confusing.
+  [#29](https://github.com/metalbear-co/mirrord-vscode/issues/29)
+- npm update
+
+
+### Internal
+
+- Address latest e2e flakes
+- Make some small changes to README
+
+
+## [3.55.3](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.3) - 2023-12-22
+
+
+### Fixed
+
+- Fixed dependencies for E2E test and the extension.
+
+
 ## [3.55.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.55.2) - 2023-12-21
 
 
