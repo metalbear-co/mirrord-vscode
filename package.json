@@ -56,7 +56,7 @@
 			{
 				"command": "mirrord.joinDiscord",
 				"category": "mirrord",
-				"title": "Submit feedback"
+				"title": "Join our Discord"
 			},
 			{
 				"command": "mirrord.help",
