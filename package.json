@@ -54,9 +54,9 @@
 				"title": "Select active configuration"
 			},
 			{
-				"command": "mirrord.submitFeedback",
+				"command": "mirrord.joinDiscord",
 				"category": "mirrord",
-				"title": "Submit feedback"
+				"title": "Join our Discord"
 			},
 			{
 				"command": "mirrord.help",
@@ -152,7 +152,7 @@
 					"when": "true"
 				},
 				{
-					"command": "mirrord.submitFeedback",
+					"command": "mirrord.joinDiscord",
 					"when": "true"
 				},
 				{
