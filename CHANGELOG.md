@@ -8,6 +8,19 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.57.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.57.0) - 2024-01-22
+
+
+### Added
+
+- add more matches to mirrord schema
+
+
+### Changed
+
+- Add Discord to the menu
+
+
 ## [3.56.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.56.1) - 2024-01-05
 
 
