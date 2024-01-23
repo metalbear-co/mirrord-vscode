@@ -1,0 +1,1 @@
+Schema now uses latest released and not from main branch
