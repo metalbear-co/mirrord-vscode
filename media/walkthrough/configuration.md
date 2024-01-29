@@ -1,6 +1,6 @@
 # Configuration
 
-mirrord offers rich [configuration options](https://mirrord.dev/docs/overview/configuration/). The easiest way to configure how mirrord manages the context of your application is to provide a configuration file.
+mirrord offers rich [configuration options](https://mirrord.dev/docs/reference/configuration/). The easiest way to configure how mirrord manages the context of your application is to provide a configuration file.
 
 When no configuration file is specified, mirrord uses the first one found in the `.mirrord` directory. If there is none, one is created automatically:
 
