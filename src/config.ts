@@ -173,8 +173,14 @@ export class MirrordConfigManager {
    */
   public async selectActiveConfig() {
     const options: Map<string, vscode.Uri> = new Map();
-    const files = await vscode.workspace.findFiles("**/*mirrord.{json,toml,yml,yaml}");
-    files.forEach(f => options.set(vscode.workspace.asRelativePath(f), f));
+
+    const filePatterns = [
+      "**/*mirrord.{json,toml,yml,yaml}", // known extensions, names ending with `mirrord`
+      "**/*.mirrord/*.{json,toml,yml,yaml}", // known extensions, located in directories with names ending with `.mirrord` 
+    ];
+
+    const files = await Promise.all(filePatterns.map(pattern => vscode.workspace.findFiles(pattern)));
+    files.flat().forEach(file => options.set(vscode.workspace.asRelativePath(file), file));
 
     const displayed = this.active ? ["<unset active config>", ...options.keys()] : [...options.keys()];
     const placeHolder = this.active
