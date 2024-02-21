@@ -77,11 +77,10 @@ async function main(
     return config;
   }
 
+  // Sometimes VSCode launches then attaches, so having a warning/error here is confusing
+  // We used to return null in that case but that failed the attach.
   if (config.request === "attach") {
-    new NotificationBuilder()
-      .withMessage("mirrord cannot be used with `attach` launch configurations")
-      .error();
-    return null;
+    return config
   }
 
   // For some reason resolveDebugConfiguration runs twice for Node projects. __parentId is populated.
