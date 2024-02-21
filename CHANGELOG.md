@@ -8,6 +8,27 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.57.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.57.1) - 2024-02-21
+
+
+### Changed
+
+- Schema now uses latest released and not from main branch
+
+
+### Fixed
+
+- Fixed available configs list (displayed when setting active config) to
+  include files located in `*.mirrord` directories.
+- Fixed debugger not attaching when running Flask apps
+
+
+### Internal
+
+- Increase timeout on waiting for debugging to start in e2e tests
+- Update links to new docs
+
+
 ## [3.57.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.57.0) - 2024-01-22
 
 

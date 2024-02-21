@@ -1,1 +1,0 @@
-Fixed available configs list (displayed when setting active config) to include files located in `*.mirrord` directories.
