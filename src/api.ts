@@ -288,7 +288,7 @@ export class MirrordAPI {
     }
   }
 
-  /** 
+  /**
   * Runs the extension execute sequence, creating agent and gathering execution runtime while also
   * setting env vars, both from system, and from `launch.json` (`configEnv`).
   *
@@ -376,22 +376,39 @@ export class MirrordAPI {
               }
             }
 
-            if (message["type"] === "Warning") {
-              warningHandler.handle(message["message"]);
-            } else {
-              // If it is not last message, it is progress
-              let formattedMessage = message["name"];
-              if (message["message"]) {
-                formattedMessage += ": " + message["message"];
+            // TODO(alex) [high]: Move these "Warning | Info" to typed enum.
+            // Be very careful here, when showing messages, the notification is happy to take a json
+            // object, but it won't show anything! There is no json->string conversion, it just
+            // silently does nothing (no compiler warnings either).
+            switch (message["type"]) {
+              case "Warning": {
+                warningHandler.handle(message["message"]);
+                break;
               }
-              progress.report({ message: formattedMessage });
+              case "Info": {
+                new NotificationBuilder()
+                  .withMessage(message["message"])
+                  .info();
+                break;
+              }
+              default: {
+                // If it is not last message, it is progress
+                let formattedMessage = message["name"];
+                if (message["message"]) {
+                  formattedMessage += ": " + message["message"];
+                }
+                progress.report({ message: formattedMessage });
+                break;
+              }
             }
           }
+
         });
       });
     });
   }
 }
+
 
 class MirrordWarningHandler {
   private filters: [(message: string) => boolean, string][];
