@@ -376,7 +376,6 @@ export class MirrordAPI {
               }
             }
 
-            // TODO(alex) [high]: Move these "Warning | Info" to typed enum.
             // Be very careful here, when showing messages, the notification is happy to take a json
             // object, but it won't show anything! There is no json->string conversion, it just
             // silently does nothing (no compiler warnings either).
@@ -402,13 +401,11 @@ export class MirrordAPI {
               }
             }
           }
-
         });
       });
     });
   }
 }
-
 
 class MirrordWarningHandler {
   private filters: [(message: string) => boolean, string][];
