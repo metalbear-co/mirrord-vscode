@@ -295,7 +295,6 @@ export class MirrordAPI {
   * Has 60 seconds timeout
   */
   async binaryExecute(target: string | null, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
-    tickMirrordForTeamsCounter(!!target?.startsWith('deployment/'));
     tickFeedbackCounter();
 
     /// Create a promise that resolves when the mirrord process exits
@@ -388,6 +387,14 @@ export class MirrordAPI {
                 new NotificationBuilder()
                   .withMessage(message["message"])
                   .info();
+                break;
+              }
+              case "Internal": {
+                // Internal messages sent by mirrord.
+                const internal_value = message["value"];
+                if (internal_value["operator"] === null) {
+                  tickMirrordForTeamsCounter(!!target?.startsWith('deployment/'));
+                }
                 break;
               }
               default: {
