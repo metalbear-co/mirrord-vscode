@@ -467,11 +467,7 @@ export class MirrordAPI {
               }
               case "IdeMessage": {
                 // Internal messages sent by mirrord.
-                const ideMessage: IdeMessage = message["message"];
-                handleIdeMessage(ideMessage);
-                // if (internal_value["operator"] === null) {
-                //   tickMirrordForTeamsCounter(!!target?.startsWith('deployment/'));
-                // }
+                handleIdeMessage(message["message"]);
                 break;
               }
               default: {
