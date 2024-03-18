@@ -29,6 +29,44 @@ const TARGETLESS_TARGET: TargetQuickPick = {
   type: 'targetless'
 };
 
+type NotificationLevel = "Info" | "Warning";
+
+type Link = { kind: "Link", label: string, link: string };
+type Foo = { kind: "Foo" };
+
+type IdeAction = Link | Foo;
+
+interface IdeMessage {
+  level: NotificationLevel,
+  text: string,
+  actions: Set<IdeAction>
+}
+
+function handleIdeMessage(message: IdeMessage) {
+  let notificationBuilder = new NotificationBuilder().withMessage(message.text);
+  message.actions.forEach((action) => {
+    switch (action.kind) {
+      case "Link": {
+        notificationBuilder.withGenericAction(action.label, async () => {
+          vscode.env.openExternal(vscode.Uri.parse(action.link));
+        });
+        break;
+      }
+    }
+  });
+
+  switch (message.level) {
+    case "Info": {
+      notificationBuilder.info();
+      break;
+    }
+    case "Warning": {
+      notificationBuilder.warning();
+      break;
+    }
+  }
+}
+
 type TargetQuickPick = vscode.QuickPickItem & (
   { type: 'targetless' } |
   { type: 'target' | 'page', value: string }
@@ -389,12 +427,13 @@ export class MirrordAPI {
                   .info();
                 break;
               }
-              case "Internal": {
+              case "IdeMessage": {
                 // Internal messages sent by mirrord.
-                const internal_value = message["value"];
-                if (internal_value["operator"] === null) {
-                  tickMirrordForTeamsCounter(!!target?.startsWith('deployment/'));
-                }
+                const ideMessage: IdeMessage = message["message"];
+                handleIdeMessage(ideMessage);
+                // if (internal_value["operator"] === null) {
+                //   tickMirrordForTeamsCounter(!!target?.startsWith('deployment/'));
+                // }
                 break;
               }
               default: {
