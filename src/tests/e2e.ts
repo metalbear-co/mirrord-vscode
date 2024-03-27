@@ -24,7 +24,7 @@ describe("mirrord sample flow test", function() {
 
   const testWorkspace = join(__dirname, '../../test-workspace');
   const fileName = "app_flask.py";
-  const defaultTimeout = 60000; // = 10 seconds
+  const defaultTimeout = 40000; // = 40 seconds
 
   before(async function() {
     console.log("podToSelect: " + podToSelect);
