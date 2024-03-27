@@ -29,6 +29,82 @@ const TARGETLESS_TARGET: TargetQuickPick = {
   type: 'targetless'
 };
 
+/**
+* Level of the notification, different levels map to different notification boxes.
+*/
+type NotificationLevel = "Info" | "Warning";
+
+/**
+* Represents an [`IdeAction`] that is a link button in the pop-up box.
+*/
+type Link = { kind: "Link", label: string, link: string };
+
+/**
+* The actions of an [`IdeMessage`].
+*
+* TODO(alex): Add more possibilities as variants: `Link | Button | Close`.
+*/
+type IdeAction = Link;
+
+/**
+* Special mirrord -> IDE message, containing the message text, how to display it and more.
+*/
+interface IdeMessage {
+  /**
+  * Identifies this message, used to map a message with a `configEntry`.
+  *
+  * Not shown to the user.
+  */
+  id: string,
+
+  /**
+  * Level we should display this message as. 
+  */
+  level: NotificationLevel,
+
+  /**
+  * The main content of the message, that fills the pop-up box. 
+  */
+  text: string,
+
+  /**
+  * Buttons/actions that this message might contain. 
+  */
+  actions: Set<IdeAction>
+}
+
+/**
+* Handles the mirrord -> IDE messages that come in json format.
+*
+* These messages contain more information than just text, see [`IdeMessage`].
+*/
+function handleIdeMessage(message: IdeMessage) {
+  let notificationBuilder = new NotificationBuilder().withMessage(message.text);
+
+  // Prepares each action.
+  message.actions.forEach((action) => {
+    switch (action.kind) {
+      case "Link": {
+        notificationBuilder.withGenericAction(action.label, async () => {
+          vscode.env.openExternal(vscode.Uri.parse(action.link));
+        });
+        break;
+      }
+    }
+  });
+
+  switch (message.level) {
+    case "Info": {
+      notificationBuilder.info();
+      break;
+    }
+    case "Warning": {
+      notificationBuilder.warning();
+      break;
+    }
+  }
+}
+
 type TargetQuickPick = vscode.QuickPickItem & (
   { type: 'targetless' } |
   { type: 'target' | 'page', value: string }
@@ -295,7 +371,7 @@ export class MirrordAPI {
   * Has 60 seconds timeout
   */
   async binaryExecute(target: string | null, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
-    tickMirrordForTeamsCounter(!!target?.startsWith('deployment/'));
+    tickMirrordForTeamsCounter();
     tickFeedbackCounter();
 
     /// Create a promise that resolves when the mirrord process exits
@@ -388,6 +464,11 @@ export class MirrordAPI {
                 new NotificationBuilder()
                   .withMessage(message["message"])
                   .info();
+                break;
+              }
+              case "IdeMessage": {
+                // Internal messages sent by mirrord.
+                handleIdeMessage(message["message"]);
                 break;
               }
               default: {
