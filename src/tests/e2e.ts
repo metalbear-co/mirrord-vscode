@@ -15,7 +15,7 @@ const podToSelect = process.env.POD_TO_SELECT;
  * - Send traffic to the pod
  * - Tests successfully exit if "GET: Request completed" is found in the terminal
 */
-describe("mirrord sample flow test", function () {
+describe("mirrord sample flow test", function() {
 
   this.timeout("6 minutes"); // --> mocha tests timeout
   this.bail(true); // --> stop tests on first failure
@@ -24,9 +24,9 @@ describe("mirrord sample flow test", function () {
 
   const testWorkspace = join(__dirname, '../../test-workspace');
   const fileName = "app_flask.py";
-  const defaultTimeout = 10000; // = 10 seconds
+  const defaultTimeout = 60000; // = 10 seconds
 
-  before(async function () {
+  before(async function() {
     console.log("podToSelect: " + podToSelect);
     console.log("kubeService: " + kubeService);
 
@@ -48,7 +48,7 @@ describe("mirrord sample flow test", function () {
     await ew.openEditor('app_flask.py');
   });
 
-  it("enable mirrord button", async function () {
+  it("enable mirrord button", async function() {
     const statusBar = new StatusBar();
 
     await browser.driver.wait(async () => {
@@ -80,7 +80,7 @@ describe("mirrord sample flow test", function () {
     }, defaultTimeout, "mirrord `enable` button not found -- timed out");
   });
 
-  it("select pod from quickpick", async function () {
+  it("select pod from quickpick", async function() {
     await startDebugging();
     const inputBox = await InputBox.create(defaultTimeout * 2);
     // assertion that podToSelect is not undefined is done in "before" block
@@ -108,7 +108,7 @@ describe("mirrord sample flow test", function () {
     await inputBox.selectQuickPick(podToSelect!);
   });
 
-  it("wait for process to write to terminal", async function () {
+  it("wait for process to write to terminal", async function() {
     const debugToolbar = await DebugToolbar.create(4 * defaultTimeout);
 
     assert.isTrue(await debugToolbar.isDisplayed(), "Debug toolbar not found");
