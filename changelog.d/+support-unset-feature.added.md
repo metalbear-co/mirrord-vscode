@@ -1,1 +1,0 @@
-support unset env feature part of https://github.com/metalbear-co/mirrord/issues/2260
