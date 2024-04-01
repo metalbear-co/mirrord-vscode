@@ -252,6 +252,9 @@ export class MirrordAPI {
       ...configEnv,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       "MIRRORD_PROGRESS_MODE": "json",
+      // to have "advanced" progress in IDE
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      "MIRRORD_PROGRESS_SUPPORT_IDE": "true"
     };
   }
 
