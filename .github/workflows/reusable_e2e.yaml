@@ -83,6 +83,17 @@ jobs:
           echo "$KUBE_SERVICE"
           echo "KUBE_SERVICE=$KUBE_SERVICE" >> "$GITHUB_ENV"
 
+
+      - name: download image
+        if: ${{ inputs.mirrord_release_branch }}
+        uses: actions/download-artifact@v3
+        with:
+          name: test
+          path: /tmp
+      - run: minikube image load /tmp/test.tar
+        if: ${{ inputs.mirrord_release_branch }}
+
+
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
@@ -92,6 +103,20 @@ jobs:
       # we can't run chrome like apps in the CI, we use a virtual frame buffer:
       # refer: http://elementalselenium.com/tips/38-headless
       - name: Run vscode e2e in headless state
+        if: ${{ inputs.mirrord_release_branch }}
+        env:
+          POD_TO_SELECT: ${{ env.POD_TO_SELECT }}
+          KUBE_SERVICE: ${{ env.KUBE_SERVICE }}
+          MIRRORD_AGENT_IMAGE: "test"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb x11-xserver-utils ffmpeg
+          /usr/bin/xvfb-run -s ":99 -auth /tmp/xvfb.auth -ac -screen 0 1920x1080x24" npm run test &
+          ffmpeg -loglevel panic -y -framerate 30 -f x11grab -video_size 1920x1080 -i :99 out.webm
+          wait -n
+
+      - name: Run vscode e2e in headless state
+        if: ${{ !inputs.mirrord_release_branch }}
         env:
           POD_TO_SELECT: ${{ env.POD_TO_SELECT }}
           KUBE_SERVICE: ${{ env.KUBE_SERVICE }}
