@@ -197,15 +197,17 @@ export class MirrordExecution {
 
   env: Map<string, string>;
   patchedPath: string | null;
+  envToUnset: undefined | string[];
 
-  constructor(env: Map<string, string>, patchedPath: string | null) {
+  constructor(env: Map<string, string>, patchedPath: string | null, envToUnset: string[]) {
     this.env = env;
     this.patchedPath = patchedPath;
+    this.envToUnset = envToUnset;
   }
 
   static mirrordExecutionFromJson(data: string): MirrordExecution {
     const parsed = JSON.parse(data);
-    return new MirrordExecution(new Map(Object.entries(parsed["environment"])), parsed["patched_path"]);
+    return new MirrordExecution(new Map(Object.entries(parsed["environment"])), parsed["patched_path"], parsed["env_to_unset"]);
   }
 
 }

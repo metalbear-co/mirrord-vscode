@@ -186,7 +186,14 @@ async function main(
   }
 
   let env = executionInfo?.env;
+
   config.env = Object.assign({}, config.env, Object.fromEntries(env));
+
+  if (executionInfo.envToUnset) {
+    for (let key of executionInfo.envToUnset) {
+      delete config.env[key]
+    }
+  }
 
   config.env["__MIRRORD_EXT_INJECTED"] = 'true';
 
