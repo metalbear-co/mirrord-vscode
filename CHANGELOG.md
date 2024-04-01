@@ -8,6 +8,25 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.58.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.58.0) - 2024-04-01
+
+
+### Added
+
+- Handle new mirrord -> IDE message type IdeMessage. Add env to be backward
+  compatible. [#100](https://github.com/metalbear-co/mirrord-vscode/issues/100)
+- Notify user on license validity.
+  [#382](https://github.com/metalbear-co/mirrord-vscode/issues/382)
+- support unset env feature part of
+  https://github.com/metalbear-co/mirrord/issues/2260
+
+
+### Internal
+
+- Fix e2e failing on release because image doesn't exist
+- update dependencies
+
+
 ## [3.57.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.57.1) - 2024-02-21
 
 
