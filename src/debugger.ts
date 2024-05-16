@@ -73,7 +73,7 @@ async function main(
   folder: vscode.WorkspaceFolder | undefined,
   config: vscode.DebugConfiguration,
   _token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
-  if (!globalContext.workspaceState.get('enabled')) {
+  if (!globalContext.workspaceState.get('enabled') && !(config.env?.["MIRRORD_ACTIVE"] === "1")) {
     return config;
   }
 
