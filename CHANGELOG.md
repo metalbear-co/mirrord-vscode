@@ -8,6 +8,16 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.59.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.59.0) - 2024-05-16
+
+
+### Added
+
+- Users can now specify MIRRORD_ACTIVE=1 in run configuration's environment
+    variable to explicitly enable mirrord regardless of the button status
+  [#122](https://github.com/metalbear-co/mirrord-vscode/issues/122)
+
+
 ## [3.58.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.58.0) - 2024-04-01
 
 
