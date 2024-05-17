@@ -120,7 +120,7 @@
 				"mirrord.promptDiscord": {
 					"type": "boolean",
 					"default": true,
-					"description": "Occasionally show a notification inviting to the Discord server."
+					"description": "Show a notification inviting the user to the Discord server."
 				},
 				"mirrord.promptAgentVersionMismatch": {
 					"type": "boolean",

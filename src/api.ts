@@ -557,7 +557,7 @@ function tickFeedbackCounter() {
 
 /**
 * Updates the global Discord counter.
-* After each `DISCORD_COUNTER_PROMPT_AFTER` mirrord runs, displays a message asking the user to join the discord.
+* After `DISCORD_COUNTER_PROMPT_AFTER` mirrord runs, displays a message asking the user to join the discord.
 */
 function tickDiscordCounter() {
   const previousRuns = parseInt(globalContext.globalState.get(DISCORD_COUNTER) ?? '0');
@@ -565,7 +565,7 @@ function tickDiscordCounter() {
 
   globalContext.globalState.update(DISCORD_COUNTER, currentRuns);
 
-  if ((currentRuns % DISCORD_COUNTER_PROMPT_AFTER) === 0) {
+  if ((currentRuns - DISCORD_COUNTER_PROMPT_AFTER) === 0) {
     new NotificationBuilder()
       .withMessage(`Need any help with mirrord? Come chat with our team on Discord!`)
       .withGenericAction("Join us!", async () => {
