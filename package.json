@@ -115,7 +115,12 @@
 				"mirrord.promptReview": {
 					"type": "boolean",
 					"default": true,
-					"description": "Occasionally show a notification asking for plugin review"
+					"description": "Occasionally show a notification asking for plugin review."
+				},
+				"mirrord.promptDiscord": {
+					"type": "boolean",
+					"default": true,
+					"description": "Occasionally show a notification inviting to the Discord server."
 				},
 				"mirrord.promptAgentVersionMismatch": {
 					"type": "boolean",
@@ -131,9 +136,12 @@
 					"description": "Path to local mirrord installation."
 				},
 				"mirrord.autoUpdate": {
-					"type": ["string", "boolean"],
+					"type": [
+						"string",
+						"boolean"
+					],
 					"default": true,
-					"description": "Automatically update mirrord binary."					
+					"description": "Automatically update mirrord binary."
 				}
 			}
 		},
@@ -163,7 +171,10 @@
 		},
 		"jsonValidation": [
 			{
-				"fileMatch": ["*mirrord.json", "*.mirrord/*.json"],
+				"fileMatch": [
+					"*mirrord.json",
+					"*.mirrord/*.json"
+				],
 				"url": "https://raw.githubusercontent.com/metalbear-co/mirrord/latest/mirrord-schema.json"
 			}
 		],

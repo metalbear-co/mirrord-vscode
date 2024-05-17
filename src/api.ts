@@ -571,7 +571,7 @@ function tickDiscordCounter() {
       .withGenericAction("Join us!", async () => {
         vscode.commands.executeCommand(MirrordStatus.joinDiscordCommandId);
       })
-      .withDisableAction('promptReview')
+      .withDisableAction('promptDiscord')
       .info();
   }
 }
