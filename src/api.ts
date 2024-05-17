@@ -17,6 +17,16 @@ const FEEDBACK_COUNTER = 'mirrord-feedback-counter';
 */
 const FEEDBACK_COUNTER_REVIEW_AFTER = 100;
 
+/**
+* Key to access the feedback counter (see `tickDiscordCounter`) from the global user config.
+*/
+const DISCORD_COUNTER = 'mirrord-discord-counter';
+
+/**
+* Amount of times we run mirrord before inviting the user to join the Discord server.
+*/
+const DISCORD_COUNTER_PROMPT_AFTER = 10;
+
 const TARGET_TYPE_DISPLAY: Record<string, string> = {
   pod: 'Pod',
   deployment: 'Deployment',
@@ -378,6 +388,7 @@ export class MirrordAPI {
   async binaryExecute(target: string | null, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
     tickMirrordForTeamsCounter();
     tickFeedbackCounter();
+    tickDiscordCounter();
 
     /// Create a promise that resolves when the mirrord process exits
     return await vscode.window.withProgress({
@@ -540,6 +551,27 @@ function tickFeedbackCounter() {
         vscode.commands.executeCommand(MirrordStatus.joinDiscordCommandId);
       })
       .withDisableAction('promptReview')
+      .info();
+  }
+}
+
+/**
+* Updates the global Discord counter.
+* After `DISCORD_COUNTER_PROMPT_AFTER` mirrord runs, displays a message asking the user to join the discord.
+*/
+function tickDiscordCounter() {
+  const previousRuns = parseInt(globalContext.globalState.get(DISCORD_COUNTER) ?? '0');
+  const currentRuns = previousRuns + 1;
+
+  globalContext.globalState.update(DISCORD_COUNTER, currentRuns);
+
+  if ((currentRuns - DISCORD_COUNTER_PROMPT_AFTER) === 0) {
+    new NotificationBuilder()
+      .withMessage(`Need any help with mirrord? Come chat with our team on Discord!`)
+      .withGenericAction("Join us!", async () => {
+        vscode.commands.executeCommand(MirrordStatus.joinDiscordCommandId);
+      })
+      .withDisableAction('promptDiscord')
       .info();
   }
 }
