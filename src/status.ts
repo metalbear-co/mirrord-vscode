@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { MirrordConfigManager } from './config';
 import { globalContext } from './extension';
 import { NotificationBuilder } from './notification';
+import { getOperatorUsed } from './mirrordForTeams';
 
 export class MirrordStatus {
     readonly statusBar: vscode.StatusBarItem;
@@ -39,7 +40,9 @@ export class MirrordStatus {
         }
         statusBar.tooltip.appendMarkdown(`\n\n[Select active config](command:${MirrordStatus.selectActiveConfigId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${MirrordStatus.settingsCommandId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams](command:${MirrordStatus.mirrordForTeamsCommandId})`);
+        if (!getOperatorUsed()) {
+            statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams](command:${MirrordStatus.mirrordForTeamsCommandId})`);
+        }
         statusBar.tooltip.appendMarkdown(`\n\n[Get help on Discord](command:${MirrordStatus.joinDiscordCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Walkthrough](command:${MirrordStatus.helpCommandId})`);
 

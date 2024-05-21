@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
-import { tickMirrordForTeamsCounter } from './mirrordForTeams';
+import { setOperatorUsed, tickMirrordForTeamsCounter } from './mirrordForTeams';
 import { NotificationBuilder } from './notification';
 import { MirrordStatus } from './status';
 import { EnvVars, VerifiedConfig } from './config';
@@ -208,16 +208,23 @@ export class MirrordExecution {
   env: Map<string, string>;
   patchedPath: string | null;
   envToUnset: undefined | string[];
+  usesOperator?: boolean;
 
-  constructor(env: Map<string, string>, patchedPath: string | null, envToUnset: string[]) {
+  constructor(env: Map<string, string>, patchedPath: string | null, envToUnset: string[], usesOperator: boolean | undefined) {
     this.env = env;
     this.patchedPath = patchedPath;
     this.envToUnset = envToUnset;
+    this.usesOperator = usesOperator;
   }
 
   static mirrordExecutionFromJson(data: string): MirrordExecution {
     const parsed = JSON.parse(data);
-    return new MirrordExecution(new Map(Object.entries(parsed["environment"])), parsed["patched_path"], parsed["env_to_unset"]);
+    return new MirrordExecution(
+      new Map(Object.entries(parsed["environment"])),
+      parsed["patched_path"],
+      parsed["env_to_unset"],
+      parsed["uses_operator"],
+    );
   }
 
 }
@@ -464,6 +471,7 @@ export class MirrordAPI {
             if ((message["name"] === "mirrord preparing to launch") && (message["type"]) === "FinishedTask") {
               if (message["success"]) {
                 progress.report({ message: "mirrord started successfully, launching target." });
+
                 return resolve(MirrordExecution.mirrordExecutionFromJson(message["message"]));
               }
             }
