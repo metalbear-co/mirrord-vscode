@@ -6,6 +6,7 @@ import { updateTelemetries } from './versionCheck';
 import { getMirrordBinary } from './binaryManager';
 import { platform } from 'node:os';
 import { NotificationBuilder } from './notification';
+import { setOperatorUsed } from './mirrordForTeams';
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
@@ -181,6 +182,10 @@ async function main(
     return null;
   }
 
+  if (executionInfo.usesOperator === true) {
+    setOperatorUsed();
+  }
+
   if (isMac) {
     changeConfigForSip(config, executableFieldName as string, executionInfo);
   }
@@ -191,7 +196,7 @@ async function main(
 
   if (executionInfo.envToUnset) {
     for (let key of executionInfo.envToUnset) {
-      delete config.env[key]
+      delete config.env[key];
     }
   }
 
