@@ -89,6 +89,14 @@ export class MirrordStatus {
 
         this.enabled = !this.enabled;
 
+        let filePath = vscode.Uri.joinPath(globalContext.globalStorageUri, 'toggleStatus.json');
+        let obj = { enabled: this.enabled };
+        let data = new TextEncoder().encode(JSON.stringify(obj));
+
+        vscode.workspace.fs.writeFile(filePath, data).then(() => {}, err => {
+            console.error('Error writing file:', err);
+        });
+
         this.draw();
     }
 
