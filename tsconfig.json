@@ -1,13 +1,14 @@
 {
 	"compilerOptions": {
-		"module": "es6",
-		"target": "ES2020",
+		"module": "commonjs",
+		"target": "es6",
 		"outDir": "out",
 		"lib": [
-			"ES2020"
+			"es6"
 		],
 		"sourceMap": true,
 		"rootDir": "src",
+		"skipLibCheck": true,
 		"esModuleInterop": true, // Without this, will report errors in k8s client node modules https://github.com/kubernetes-client/javascript/issues/751#issuecomment-986953203
 		"strict": true   /* enable all strict type-checking options */
 		/* Additional Checks */
