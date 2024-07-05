@@ -11,10 +11,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 17
+          node-version: 20
           cache: "npm"
           cache-dependency-path: package-lock.json
       - name: Get release version
@@ -22,8 +22,6 @@ jobs:
         run: |
           echo "version=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
         id: version
-      # TypeScript set at 4.7.4 because @kubernetes/client-node 0.16.3 (and 0.17.0) breaks with version 4.8.2+
-      - run: npm install -g vsce typescript@4.7.4 esbuild
       - run: mkdir -p /tmp/vscode-ext
       - run: |
           npm install
@@ -33,7 +31,7 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: vsce publish ${{ steps.version.outputs.version }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: vscode-ext
           path: |
@@ -50,8 +48,8 @@ jobs:
       deployments: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+        uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
           path: /tmp/artifacts
       - uses: montudor/action-zip@v1
@@ -72,7 +70,7 @@ jobs:
     if: github.event_name != 'workflow_dispatch'
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Get complete history
           fetch-depth: 0
