@@ -8,6 +8,24 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.60.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.60.0) - 2024-07-05
+
+
+### Added
+
+- Users will be invited to join the Discord server after 10 usages
+  [#114](https://github.com/metalbear-co/mirrord-vscode/issues/114)
+- Support for debugpy current file debugging on macOS.
+  [#132](https://github.com/metalbear-co/mirrord-vscode/issues/132)
+
+
+### Fixed
+
+- When the plugin detects operator usage it stops proposing mirrord for Teams
+  to the user.
+  [#120](https://github.com/metalbear-co/mirrord-vscode/issues/120)
+
+
 ## [3.59.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.59.0) - 2024-05-16
 
 
