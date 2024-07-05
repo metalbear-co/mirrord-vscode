@@ -37,6 +37,11 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
       return ["pythonPath", config["pythonPath"]];
     }
     default: {
+      if ("python" in config) {
+        // We don't know that config type yet, but the config has the field "python", so we assume that's the path of the 
+        // python binary and we patch that.
+        return ["python", config["python"]];
+      }
       return ["program", config["program"]];
     }
   }
