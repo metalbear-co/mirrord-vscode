@@ -7,6 +7,7 @@ import { getMirrordBinary } from './binaryManager';
 import { platform } from 'node:os';
 import { NotificationBuilder } from './notification';
 import { setOperatorUsed } from './mirrordForTeams';
+import fs from 'fs';
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
@@ -37,9 +38,9 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
       return ["pythonPath", config["pythonPath"]];
     }
     default: {
-      if ("python" in config) {
-        // We don't know that config type yet, but the config has the field "python", so we assume that's the path of the 
-        // python binary and we patch that.
+      if ("python" in config && fs.existsSync(config["python"])) {
+        // We don't know that config type yet, but the config has the field "python" that contains a path that exists,
+        // so we assume that's the path of the python binary and we patch that.
         return ["python", config["python"]];
       }
       return ["program", config["program"]];
