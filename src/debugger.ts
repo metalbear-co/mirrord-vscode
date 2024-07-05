@@ -27,6 +27,7 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
       // for SIP, so we pass the shell to the mirrod CLI.
       return ["command", vscode.env.shell];
     }
+    case "debugpy":
     case "python": {
       if ("python" in config) {
         return ["python", config["python"]];
