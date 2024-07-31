@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.60.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.60.1) - 2024-07-31
+
+
+### Fixed
+
+- Accept config type debugpy for detecting debugger port
+  [#137](https://github.com/metalbear-co/mirrord-vscode/issues/137)
+
 ## [3.60.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.60.0) - 2024-07-05
 
 
