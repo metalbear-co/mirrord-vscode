@@ -11,8 +11,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 17
           cache: "npm"
@@ -33,7 +33,7 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: vsce publish ${{ steps.version.outputs.version }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: vscode-ext
           path: |
@@ -50,8 +50,8 @@ jobs:
       deployments: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+        uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
           path: /tmp/artifacts
       - uses: montudor/action-zip@v1
@@ -72,7 +72,7 @@ jobs:
     if: github.event_name != 'workflow_dispatch'
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Get complete history
           fetch-depth: 0
