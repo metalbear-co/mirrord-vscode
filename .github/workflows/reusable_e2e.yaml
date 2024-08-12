@@ -28,13 +28,13 @@ jobs:
 
       - name: checkout repository
         if: ${{ !inputs.mirrord_release_branch }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # mirrord_release_branch boolean when set, means we are on a release branch
       # and hence we need to checkout into the last released tag of mirrord-vscode
       - name: checkout into mirrord-vscode if mirrord_release_branch
         if: ${{ inputs.mirrord_release_branch }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: "metalbear-co/mirrord-vscode"
 
@@ -57,7 +57,7 @@ jobs:
       # mirrord-artifacts and add it to the path
       - name: download mirrord binary
         if: ${{ inputs.mirrord_release_branch }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: mirrord-artifacts
       - name: add downloaded mirrord to path
@@ -86,7 +86,7 @@ jobs:
 
       - name: download image
         if: ${{ inputs.mirrord_release_branch }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: test
           path: /tmp
@@ -130,7 +130,7 @@ jobs:
       # the video starts at around ~2 minutes, before that you will see a black screen
       - name: Upload video
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: video
           path: out.webm
