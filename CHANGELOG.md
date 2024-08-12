@@ -22,6 +22,7 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 - Accept config type debugpy for detecting debugger port
   [#137](https://github.com/metalbear-co/mirrord-vscode/issues/137)
+- Fixed node version installed in the CI actions
 
 ## [3.60.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.60.0) - 2024-07-05
 
