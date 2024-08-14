@@ -10,9 +10,10 @@ export let globalContext: vscode.ExtensionContext;
 export async function activate(context: vscode.ExtensionContext) {
 	globalContext = context;
 
-	context.workspaceState.update('enabled', false);
+	const enabled = vscode.workspace.getConfiguration().get<boolean | null>("mirrord.enabledByDefault");
+	context.workspaceState.update('enabled', enabled);
 	vscode.debug.registerDebugConfigurationProvider('*', new ConfigurationProvider(), 2);
-	
+
 	// start mirrord binary updates, so that we avoid downloading mid session
 	await getMirrordBinary(true);
 

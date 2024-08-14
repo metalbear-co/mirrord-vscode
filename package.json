@@ -142,6 +142,13 @@
 					],
 					"default": true,
 					"description": "Automatically update mirrord binary."
+				},
+				"mirrord.enabledByDefault": {
+					"type": [
+						"boolean"
+					],
+					"default": false,
+					"description": "Enable mirrord by default on startup."
 				}
 			}
 		},
