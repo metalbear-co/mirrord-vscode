@@ -8,6 +8,23 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.61.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.61.0) - 2024-08-16
+
+
+### Added
+
+- Add the option for mirrord to be enabled by default on startup by setting
+  mirrord.enabledByDefault
+  [#131](https://github.com/metalbear-co/mirrord-vscode/issues/131)
+
+
+### Fixed
+
+- Fixed an issue where `mirrord.autoUpdate` set to an empty string prevented
+  the extension from downloading mirrord binary. Improved notifications related
+  to auto update.
+  [#144](https://github.com/metalbear-co/mirrord-vscode/issues/144)
+
 ## [3.60.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.60.2) - 2024-08-12
 
 
