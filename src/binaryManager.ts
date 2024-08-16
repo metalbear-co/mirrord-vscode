@@ -22,9 +22,9 @@ function getExtensionMirrordPath(): Uri {
 /**
  * Tries to find local mirrord in path or in extension storage.
  * @param version If specified, then the version of the binary is checked and matched path is returned.
- * @returns Path to mirrord binary or null if not found
+ * @returns (path to mirrord binary, whether it was found in $PATH) or null if not found
  */
-export async function getLocalMirrordBinary(version: string | null): Promise<string | null> {
+export async function getLocalMirrordBinary(version: string | null): Promise<[string, boolean] | null> {
     try {
         const mirrordPath = await which("mirrord");
         if (version) {
@@ -35,14 +35,15 @@ export async function getLocalMirrordBinary(version: string | null): Promise<str
             // if we are running on the release CI.
             if ((process.env.CI_BUILD_PLUGIN === "true" && installedVersion && semver.gte(installedVersion, version)) ||
                 (!process.env.CI_BUILD_PLUGIN && installedVersion === version)) {
-                return mirrordPath;
+                return [mirrordPath, true];
             }
         } else {
-            return mirrordPath;
+            return [mirrordPath, true];
         }
     } catch (e) {
         console.debug("couldn't find mirrord in path");
     }
+
     try {
         const mirrordPath = getExtensionMirrordPath();
         await workspace.fs.stat(mirrordPath);
@@ -50,14 +51,15 @@ export async function getLocalMirrordBinary(version: string | null): Promise<str
             const api = new MirrordAPI(mirrordPath.fsPath);
             const installedVersion = await api.getBinaryVersion();
             if (installedVersion === version) {
-                return mirrordPath.fsPath;
+                return [mirrordPath.fsPath, false];
             }
         } else {
-            return mirrordPath.fsPath;
+            return [mirrordPath.fsPath, false];
         }
     } catch (e) {
         console.log("couldn't find mirrord in extension storage");
     }
+
     return null;
 }
 
@@ -110,8 +112,8 @@ async function getConfiguredMirrordBinary(background: boolean, latestVersion: st
  * @returns Path to mirrord binary
 */
 export async function getMirrordBinary(background: boolean): Promise<string | null> {
-    let latestVersion;
-    let wantedVersion = null;
+    let latestVersion: string | null;
+    let wantedVersion: string | null = null;
 
     try {
         latestVersion = await getLatestSupportedVersion(background);
@@ -129,55 +131,63 @@ export async function getMirrordBinary(background: boolean): Promise<string | nu
     const autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate");
 
     // values for `mirrord.autoUpdate` can be:
-    // - true: auto-update is enabled
+    // - true or empty string: auto-update is enabled
     // - false: auto-update is disabled
-    // - string: version to download
+    // - non-empty string: version to download
     // example: "mirrord.autoUpdate": "3.70.1" or "mirrord.autoUpdate": false or "mirrord.autoUpdate": true
 
     // check the type can be only null, string or boolean
     if (typeof autoUpdateConfigured !== 'boolean' && typeof autoUpdateConfigured !== 'string') {
-        vscode.window.showErrorMessage(`Invalid autoUpdate setting ${autoUpdateConfigured}: must be a boolean or a string`);
+        vscode.window.showErrorMessage(
+            `Invalid value of mirrord.autoUpdate setting: \`${autoUpdateConfigured}\` (must be a boolean or a string)`
+        );
         return null;
     }
 
-    if (typeof autoUpdateConfigured === 'string') {
+    if (autoUpdateConfigured === true || autoUpdateConfigured === '') {
+        wantedVersion = latestVersion;
+    } else if (typeof autoUpdateConfigured === 'string') {
         if (!semver.valid(autoUpdateConfigured)) {
-            vscode.window.showErrorMessage(`Invalid version format ${autoUpdateConfigured}: must follow semver format`);
+            vscode.window.showErrorMessage(
+                `Invalid value of mirrord.autoUpdate setting: \`${autoUpdateConfigured}\` (string must follow semver format)`
+            );
             return null;
         }
         wantedVersion = autoUpdateConfigured;
-    } else if (autoUpdateConfigured === true) {
-        wantedVersion = latestVersion;
     } else {
         // any version will do
         wantedVersion = null;
     }
 
-    let foundLocal = await getLocalMirrordBinary(wantedVersion);
-
+    const foundLocal = await getLocalMirrordBinary(wantedVersion);
     if (foundLocal) {
-        vscode.window.showInformationMessage(`Using mirrord binary found in path: ${foundLocal} of version ${wantedVersion}`);
-        return foundLocal;
+        const message = `Using mirrord binary found in ${foundLocal[1] ? 'path' : 'extension storage'}: \
+        ${foundLocal[0]}${wantedVersion ? ` of version ${wantedVersion}` : ''}`;
+        vscode.window.showInformationMessage(message);
+        return foundLocal[0];
     }
 
     if (!wantedVersion) {
         let anyVersion = await getLocalMirrordBinary(null);
         if (anyVersion) {
-            vscode.window.showInformationMessage(`Version check not available/allowed and no wanted version set. Using mirrord binary found in path: ${anyVersion}`);
-            return anyVersion;
+            const message = `Version check not available/allowed and no wanted version set. \
+            Using mirrord binary found in ${anyVersion[1] ? 'path' : 'extension storage'}: ${anyVersion[0]}`;
+            vscode.window.showInformationMessage(message);
+            return anyVersion[0];
         }
+
         vscode.window.showErrorMessage(`Failed to find mirrord binary in path and failed to check latest supported version of mirrord binary to download`);
         return null;
     }
 
-    // now wantedVersion is true, meaning we haven't found it yet locally so we have to download it{
     if (background) {
         downloadMirrordBinary(getExtensionMirrordPath(), wantedVersion);
     } else {
         await downloadMirrordBinary(getExtensionMirrordPath(), wantedVersion);
     }
-    
-    return await getLocalMirrordBinary(wantedVersion);
+
+    const downloaded = await getLocalMirrordBinary(wantedVersion);
+    return downloaded ? downloaded[0] : null;
 }
 
 /**
