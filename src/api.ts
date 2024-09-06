@@ -84,6 +84,13 @@ interface IdeMessage {
 }
 
 /**
+ * Replaces the "plugin" platform query parameter in the given link with "vscode"
+ */
+function changeQueryParam(link: string): string {
+  return link.replace("utm_medium=cli", "utm_medium=vscode").replace("utm_medium=plugin", "utm_medium=vscode")
+}
+
+/**
 * Handles the mirrord -> IDE messages that come in json format.
 *
 * These messages contain more information than just text, see [`IdeMessage`].
@@ -96,7 +103,7 @@ function handleIdeMessage(message: IdeMessage) {
     switch (action.kind) {
       case "Link": {
         notificationBuilder.withGenericAction(action.label, async () => {
-          vscode.env.openExternal(vscode.Uri.parse(action.link));
+          vscode.env.openExternal(vscode.Uri.parse(changeQueryParam(action.link)));
         });
         break;
       }
