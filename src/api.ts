@@ -87,7 +87,7 @@ interface IdeMessage {
  * Replaces the "plugin" platform query parameter in the given link with "vscode"
  */
 function changeQueryParam(link: string): string {
-  return link.replace("utm_medium=cli", "utm_medium=vscode").replace("utm_medium=plugin", "utm_medium=vscode")
+  return link.replace("utm_medium=cli", "utm_medium=vscode").replace("utm_medium=plugin", "utm_medium=vscode");
 }
 
 /**
