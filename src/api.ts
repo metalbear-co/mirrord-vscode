@@ -87,7 +87,7 @@ interface IdeMessage {
  * Replaces the "plugin" platform query parameter in the given link with "vscode"
  */
 function changeQueryParam(link: string): string {
-  return link.replace("utm_medium=cli", "utm_medium=vscode").replace("utm_medium=plugin", "utm_medium=vscode")
+  return link.replace("utm_medium=cli", "utm_medium=vscode").replace("utm_medium=plugin", "utm_medium=vscode");
 }
 
 /**
@@ -350,7 +350,7 @@ export class MirrordAPI {
 
   /**
   * Uses `mirrord ls` to get a list of all targets.
-  * Targets are sorted, with an exception of the last used target being the first on the list.
+  * Targets come sorted, with an exception of the last used target being the first on the list.
   */
   async listTargets(configPath: string | null | undefined): Promise<Targets> {
     const args = ['ls'];
@@ -361,7 +361,6 @@ export class MirrordAPI {
     const stdout = await this.exec(args, {});
 
     const targets: string[] = JSON.parse(stdout);
-    targets.sort();
 
     let lastTarget: string | undefined = globalContext.workspaceState.get(LAST_TARGET_KEY)
       || globalContext.globalState.get(LAST_TARGET_KEY);
