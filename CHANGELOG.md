@@ -8,6 +8,22 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.62.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.62.0) - 2024-09-16
+
+
+### Changed
+
+- Do not sort targets when showing them to the user, they come pre-sorted from
+  mirrord ls. [#147](https://github.com/metalbear-co/mirrord-vscode/issues/147)
+
+
+### Internal
+
+- Change link attributions from plugin or cli source to vscode source for
+  notifications from mirrord.
+  [#148](https://github.com/metalbear-co/mirrord-vscode/issues/148)
+
+
 ## [3.61.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.61.0) - 2024-08-16
 
 
