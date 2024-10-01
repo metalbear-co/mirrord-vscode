@@ -35,19 +35,19 @@ describe("mirrord sample flow test", function() {
 
     browser = VSBrowser.instance;
 
-    await browser.openResources(testWorkspace, join(testWorkspace, fileName));
     await browser.waitForWorkbench();
+    const ev = new EditorView();
 
-    const ew = new EditorView();
-
-    const openEditors = await Promise.all((await ew.getOpenTabs()).map(editor => editor.getTitle()))
+    const openEditors = await Promise.all((await ev.getOpenTabs()).map(editor => editor.getTitle()))
     console.log(`open editor tabs: ${openEditors}`)
 
     if (openEditors.includes('Welcome')) {
-      await ew.closeEditor('Welcome');
+      await ev.closeEditor('Welcome');
     }
 
-    await ew.openEditor('app_flask.py');
+    await browser.openResources(testWorkspace, join(testWorkspace, fileName));
+    await browser.waitForWorkbench();
+    await ev.openEditor('app_flask.py');
   });
 
   it("enable mirrord button", async function() {
