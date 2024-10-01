@@ -34,18 +34,6 @@ describe("mirrord sample flow test", function() {
     expect(kubeService).to.not.be.undefined;
 
     browser = VSBrowser.instance;
-
-    await browser.waitForWorkbench();
-    const ev = new EditorView();
-
-    const openEditors = await Promise.all((await ev.getOpenTabs()).map(editor => editor.getTitle()));
-    console.log(`open editor tabs: ${openEditors}`)
-
-    if (openEditors.includes('Welcome')) {
-      await ev.closeEditor('Welcome');
-    }
-
-    await browser.openResources(testWorkspace, join(testWorkspace, fileName));
     await browser.waitForWorkbench();
 
     (await new ActivityBar().getViewControl('Explorer'))?.openView();
@@ -53,7 +41,12 @@ describe("mirrord sample flow test", function() {
 		const titlePart = await view.getTitlePart().getTitle();
     expect(titlePart.toLowerCase()).equals('explorer');
 		const content = view.getContent();
-    const tree = (await content.getSection('test-workspace')) as DefaultTreeSection;
+    const sections = await content.getSections()
+    const tree = sections.find(async section => await section.getTitle() === 'test-workspace') as DefaultTreeSection | undefined
+    if (tree === undefined) {
+      const names = await Promise.all(sections.map(section => section.getTitle()))
+      throw new Error(`test-workspace not found in explorer sections: ${names}`);
+    }
     const items = await tree.getVisibleItems();
     const labels = await Promise.all(items.map((item) => item.getLabel()));
     expect(labels).contains('app_flask.py');
