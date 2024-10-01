@@ -23,10 +23,9 @@ describe("mirrord sample flow test", function() {
   let browser: VSBrowser;
 
   const testWorkspace = join(__dirname, '../../test-workspace');
-  const fileName = "app_flask.py";
   const defaultTimeout = 40000; // = 40 seconds
 
-  before("open flask app in the editor", async function() {
+  before("open local app in the editor", async function() {
     console.log("podToSelect: " + podToSelect);
     console.log("kubeService: " + kubeService);
 
@@ -59,7 +58,7 @@ describe("mirrord sample flow test", function() {
 
     const view = new SideBarView();
 		const tree = await view.getContent().getSection('test-workspace');
-    await tree.openItem('app_flask.py');
+    await tree.openItem('http_server.py');
   });
 
   it("enable mirrord button", async function() {
@@ -133,7 +132,7 @@ describe("mirrord sample flow test", function() {
 
     await browser.driver.wait(async () => {
       const text = await terminal.getText();
-      return await terminal.isDisplayed() && text.includes("Press CTRL+C to quit");
+      return await terminal.isDisplayed() && text.includes("Local app started");
     }, 4 * defaultTimeout, "terminal text not found -- timed out");
 
     await sendTrafficToPod();
