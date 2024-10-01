@@ -1,6 +1,6 @@
 import { expect, assert } from "chai";
 import { join } from "path";
-import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView, SideBarView, DefaultTreeSection } from "vscode-extension-tester";
+import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView, SideBarView, DefaultTreeSection, TitleBar } from "vscode-extension-tester";
 import get from "axios";
 
 const kubeService = process.env.KUBE_SERVICE;
@@ -35,7 +35,15 @@ describe("mirrord sample flow test", function() {
 
     browser = VSBrowser.instance;
     await browser.waitForWorkbench();
-    await browser.openResources(testWorkspace, join(testWorkspace, fileName));
+
+    const titleBar = new TitleBar();
+    const item = await titleBar.getItem('File');
+    const fileMenu = await item!.select();
+    const openItem = (await fileMenu.getItems()).find(async item => (await item.getLabel()).startsWith("Open Folder..."))
+    await openItem!.select();
+    const input = await InputBox.create();
+    await input.setText(testWorkspace);
+    await input.confirm();
 
     (await new ActivityBar().getViewControl('Explorer'))?.openView();
     const view = new SideBarView();
