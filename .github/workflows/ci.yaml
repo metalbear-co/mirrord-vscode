@@ -18,18 +18,22 @@ concurrency:
 
 jobs:
   towncrier_check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+      - run: uv python install
+      - run: uv venv
       - name: install towncrier
-        run: pip install towncrier==23.11.0
+        run: uv pip install towncrier==23.11.0
       - name: verify newsfragment exist
-        run: towncrier check
+        run: uv run towncrier check
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,7 +54,7 @@ jobs:
     # We want this to run even if some of the required jobs got skipped
     if: always()
     needs: [towncrier_check, e2e, lint]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: CI succeeded
         # We have to do it in the shell since if it's in the if condition
