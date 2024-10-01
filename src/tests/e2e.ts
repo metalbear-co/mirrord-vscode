@@ -34,8 +34,8 @@ describe("mirrord sample flow test", function() {
     expect(kubeService).to.not.be.undefined;
 
     browser = VSBrowser.instance;
-    await browser.openResources(testWorkspace, join(testWorkspace, fileName));
     await browser.waitForWorkbench();
+    await browser.openResources(testWorkspace, join(testWorkspace, fileName));
 
     (await new ActivityBar().getViewControl('Explorer'))?.openView();
     const view = new SideBarView();
