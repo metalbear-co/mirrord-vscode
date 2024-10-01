@@ -39,7 +39,7 @@ describe("mirrord sample flow test", function() {
     const titleBar = new TitleBar();
     const item = await titleBar.getItem('File');
     const fileMenu = await item!.select();
-    const openItem = (await fileMenu.getItems()).find(async item => (await item.getLabel()).startsWith("Open Folder..."))
+    const openItem = await fileMenu.getItem("Add Folder to Workspace...");
     await openItem!.select();
     const input = await InputBox.create();
     await input.setText(testWorkspace);
@@ -51,11 +51,11 @@ describe("mirrord sample flow test", function() {
     expect(titlePart.toLowerCase()).equals('explorer');
 		const content = view.getContent();
     const sections = await content.getSections()
-    console.log(`explorer sectinos: ${await Promise.all(sections.map(section => section.getTitle()))}`)
-    const tree = await content.getSection('test-workspace') as DefaultTreeSection;
+    console.log(`explorer sections: ${await Promise.all(sections.map(section => section.getTitle()))}`)
+    const tree = sections[0] as DefaultTreeSection;
     const items = await tree.getVisibleItems();
-    console.log(`test-workspace section visible items: ${Promise.all(items.map(item => item.getLabel()))}`);
-    await tree.openItem('app_flask.py');
+    console.log(`tree visible items: ${await Promise.all(items.map(item => item.getLabel()))}`);
+    await tree.openItem('test-workspace', 'app_flask.py');
   });
 
   it("enable mirrord button", async function() {
