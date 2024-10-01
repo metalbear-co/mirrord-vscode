@@ -1,6 +1,6 @@
 import { expect, assert } from "chai";
 import { join } from "path";
-import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView } from "vscode-extension-tester";
+import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView, SideBarView, DefaultTreeSection } from "vscode-extension-tester";
 import get from "axios";
 
 const kubeService = process.env.KUBE_SERVICE;
@@ -26,7 +26,7 @@ describe("mirrord sample flow test", function() {
   const fileName = "app_flask.py";
   const defaultTimeout = 40000; // = 40 seconds
 
-  before(async function() {
+  before("open flask app in the editor", async function() {
     console.log("podToSelect: " + podToSelect);
     console.log("kubeService: " + kubeService);
 
@@ -38,7 +38,7 @@ describe("mirrord sample flow test", function() {
     await browser.waitForWorkbench();
     const ev = new EditorView();
 
-    const openEditors = await Promise.all((await ev.getOpenTabs()).map(editor => editor.getTitle()))
+    const openEditors = await Promise.all((await ev.getOpenTabs()).map(editor => editor.getTitle()));
     console.log(`open editor tabs: ${openEditors}`)
 
     if (openEditors.includes('Welcome')) {
@@ -47,7 +47,17 @@ describe("mirrord sample flow test", function() {
 
     await browser.openResources(testWorkspace, join(testWorkspace, fileName));
     await browser.waitForWorkbench();
-    await ev.openEditor('app_flask.py');
+
+    (await new ActivityBar().getViewControl('Explorer'))?.openView();
+    const view = new SideBarView();
+		const titlePart = await view.getTitlePart().getTitle();
+    expect(titlePart.toLowerCase()).equals('explorer');
+		const content = view.getContent();
+    const tree = (await content.getSection('test-workspace')) as DefaultTreeSection;
+    const items = await tree.getVisibleItems();
+    const labels = await Promise.all(items.map((item) => item.getLabel()));
+    expect(labels).contains('app_flask.py');
+    await tree.openItem('app_flask.py');
   });
 
   it("enable mirrord button", async function() {
