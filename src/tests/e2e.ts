@@ -39,12 +39,14 @@ describe("mirrord sample flow test", function() {
     await browser.waitForWorkbench();
 
     const ew = new EditorView();
-    try {
+
+    const openEditors = await Promise.all((await ew.getOpenTabs()).map(editor => editor.getTitle()))
+    console.log(`open editor tabs: ${openEditors}`)
+
+    if (openEditors.includes('Welcome')) {
       await ew.closeEditor('Welcome');
-    } catch (error) {
-      console.log("Welcome page is not displayed" + error);
-      // continue - Welcome page is not displayed
     }
+
     await ew.openEditor('app_flask.py');
   });
 
