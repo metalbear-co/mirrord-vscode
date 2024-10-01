@@ -1,6 +1,6 @@
 import { expect, assert } from "chai";
 import { join } from "path";
-import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView, SideBarView, DefaultTreeSection, TitleBar } from "vscode-extension-tester";
+import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView, SideBarView, DefaultTreeSection, TitleBar, Workbench, until } from "vscode-extension-tester";
 import get from "axios";
 
 const kubeService = process.env.KUBE_SERVICE;
@@ -36,26 +36,30 @@ describe("mirrord sample flow test", function() {
     browser = VSBrowser.instance;
     await browser.waitForWorkbench();
 
+    const workbench = new Workbench();
+
     const titleBar = new TitleBar();
     const item = await titleBar.getItem('File');
     const fileMenu = await item!.select();
-    const openItem = await fileMenu.getItem("Add Folder to Workspace...");
+    const items = await fileMenu.getItems();
+    let openItem = null;
+    for (const item of items) {
+      const label = await item.getLabel()
+      if (label.startsWith("Open Folder...")) {
+        openItem = item;
+      }
+    }
     await openItem!.select();
     const input = await InputBox.create();
     await input.setText(testWorkspace);
     await input.confirm();
 
-    (await new ActivityBar().getViewControl('Explorer'))?.openView();
+    await browser.driver.wait(until.stalenessOf(workbench));
+    await browser.waitForWorkbench();
+
     const view = new SideBarView();
-		const titlePart = await view.getTitlePart().getTitle();
-    expect(titlePart.toLowerCase()).equals('explorer');
-		const content = view.getContent();
-    const sections = await content.getSections()
-    console.log(`explorer sections: ${await Promise.all(sections.map(section => section.getTitle()))}`)
-    const tree = sections[0] as DefaultTreeSection;
-    const items = await tree.getVisibleItems();
-    console.log(`tree visible items: ${await Promise.all(items.map(item => item.getLabel()))}`);
-    await tree.openItem('test-workspace', 'app_flask.py');
+		const tree = await view.getContent().getSection('test-workspace');
+    await tree.openItem('app_flask.py');
   });
 
   it("enable mirrord button", async function() {
