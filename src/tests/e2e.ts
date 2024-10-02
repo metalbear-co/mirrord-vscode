@@ -1,6 +1,6 @@
 import { expect, assert } from "chai";
 import { join } from "path";
-import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView } from "vscode-extension-tester";
+import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView, SideBarView, DefaultTreeSection, TitleBar, Workbench, until } from "vscode-extension-tester";
 import get from "axios";
 
 const kubeService = process.env.KUBE_SERVICE;
@@ -23,10 +23,9 @@ describe("mirrord sample flow test", function() {
   let browser: VSBrowser;
 
   const testWorkspace = join(__dirname, '../../test-workspace');
-  const fileName = "app_flask.py";
   const defaultTimeout = 40000; // = 40 seconds
 
-  before(async function() {
+  before("open local app in the editor", async function() {
     console.log("podToSelect: " + podToSelect);
     console.log("kubeService: " + kubeService);
 
@@ -34,18 +33,32 @@ describe("mirrord sample flow test", function() {
     expect(kubeService).to.not.be.undefined;
 
     browser = VSBrowser.instance;
-
-    await browser.openResources(testWorkspace, join(testWorkspace, fileName));
     await browser.waitForWorkbench();
 
-    const ew = new EditorView();
-    try {
-      await ew.closeEditor('Welcome');
-    } catch (error) {
-      console.log("Welcome page is not displayed" + error);
-      // continue - Welcome page is not displayed
+    const workbench = new Workbench();
+
+    const titleBar = new TitleBar();
+    const item = await titleBar.getItem('File');
+    const fileMenu = await item!.select();
+    const items = await fileMenu.getItems();
+    let openItem = null;
+    for (const item of items) {
+      const label = await item.getLabel();
+      if (label.startsWith("Open Folder...")) {
+        openItem = item;
+      }
     }
-    await ew.openEditor('app_flask.py');
+    await openItem!.select();
+    const input = await InputBox.create();
+    await input.setText(testWorkspace);
+    await input.confirm();
+
+    await browser.driver.wait(until.stalenessOf(workbench));
+    await browser.waitForWorkbench();
+
+    const view = new SideBarView();
+		const tree = await view.getContent().getSection('test-workspace');
+    await tree.openItem('http_server.py');
   });
 
   it("enable mirrord button", async function() {
@@ -119,7 +132,7 @@ describe("mirrord sample flow test", function() {
 
     await browser.driver.wait(async () => {
       const text = await terminal.getText();
-      return await terminal.isDisplayed() && text.includes("Press CTRL+C to quit");
+      return await terminal.isDisplayed() && text.includes("Local app started");
     }, 4 * defaultTimeout, "terminal text not found -- timed out");
 
     await sendTrafficToPod();

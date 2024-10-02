@@ -9,7 +9,7 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,7 +42,7 @@ jobs:
 
   release_gh:
     needs: [release]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event_name != 'workflow_dispatch'
     permissions:
       packages: write
@@ -67,7 +67,7 @@ jobs:
           files: /tmp/release/**
 
   update_latest:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: release_gh
     if: github.event_name != 'workflow_dispatch'
     steps:

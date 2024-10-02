@@ -1,0 +1,1 @@
+Pinned worker to `ubuntu-24.04`, changed towncrier check to run inside `uv`, fixed E2E test suite.
