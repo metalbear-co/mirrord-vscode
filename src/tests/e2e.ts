@@ -43,7 +43,7 @@ describe("mirrord sample flow test", function() {
     const items = await fileMenu.getItems();
     let openItem = null;
     for (const item of items) {
-      const label = await item.getLabel()
+      const label = await item.getLabel();
       if (label.startsWith("Open Folder...")) {
         openItem = item;
       }
