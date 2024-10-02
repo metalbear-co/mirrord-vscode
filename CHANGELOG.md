@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.62.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.62.1) - 2024-10-02
+
+
+### Internal
+
+- Pinned worker to `ubuntu-24.04`, changed towncrier check to run inside `uv`,
+  fixed E2E test suite.
+
 ## [3.62.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.62.0) - 2024-09-16
 
 
