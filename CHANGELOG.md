@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.63.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.63.0) - 2024-11-20
+
+
+### Added
+
+- Setting `MIRRORD_ACTIVE=0` environment variable will explicitly disable
+  mirrord for the run configuration.
+
 ## [3.62.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.62.1) - 2024-10-02
 
 
