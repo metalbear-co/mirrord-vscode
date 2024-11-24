@@ -18,6 +18,13 @@ export class MirrordStatus {
     }
 
     draw() {
+        const showStatusBar = vscode.workspace.getConfiguration('mirrord').get('showStatusBarButton', true);
+        
+        if (!showStatusBar) {
+            this.statusBar.hide();
+            return;
+        }
+
         const {
             enabled,
             statusBar,
