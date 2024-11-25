@@ -149,6 +149,11 @@
 					],
 					"default": false,
 					"description": "Enable mirrord by default on startup."
+				},
+				"mirrord.showStatusBarButton": {
+					"type": "boolean",
+					"default": true,
+					"description": "Controls whether the mirrord status bar button is visible"
 				}
 			}
 		},
