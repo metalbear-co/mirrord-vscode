@@ -171,6 +171,10 @@ async function main(
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "debugpy";
   } else if (config.type === "java") {
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "javaagent";
+  } else if (config.type === "node") {
+    // if any of the --inspect flags are used with node, the port for inspection should be ignored
+    // see: https://nodejs.org/en/learn/getting-started/debugging#enable-inspector
+    config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "nodeinspector";
   }
 
   // Add a fixed range of ports that VS Code uses for debugging.
