@@ -8,6 +8,20 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.64.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.64.0) - 2024-12-19
+
+
+### Added
+
+- Added an option to control mirrord status bar button visibility.
+  [#157](https://github.com/metalbear-co/mirrord-vscode/issues/157)
+
+
+### Fixed
+
+- Added debugger port detection type for node's `--inspect`, `--inspect-wait`
+  and `--inspect-brk` flags.
+
 ## [3.63.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.63.0) - 2024-11-20
 
 
