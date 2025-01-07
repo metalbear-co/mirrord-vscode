@@ -12,6 +12,7 @@ export class MirrordStatus {
     static readonly mirrordForTeamsCommandId = 'mirrord.mirrordForTeams';
     static readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
     static readonly helpCommandId = 'mirrord.help';
+    static readonly documentationCommandId = 'mirrord.documentation';
 
     constructor(statusBar: vscode.StatusBarItem) {
         this.statusBar = statusBar;
@@ -49,6 +50,7 @@ export class MirrordStatus {
         if (!getOperatorUsed()) {
             statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams](command:${MirrordStatus.mirrordForTeamsCommandId})`);
         }
+        statusBar.tooltip.appendMarkdown(`\n\n[Documentation](command:${MirrordStatus.documentationCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Get help on Discord](command:${MirrordStatus.joinDiscordCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Walkthrough](command:${MirrordStatus.helpCommandId})`);
 
@@ -71,6 +73,7 @@ export class MirrordStatus {
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.helpCommandId, async () => {
             vscode.commands.executeCommand(`workbench.action.openWalkthrough`, `MetalBear.mirrord#mirrord.welcome`, false);
         }));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.documentationCommandId, this.documentation.bind(this)));
 
         globalContext.subscriptions.push(this.statusBar);
 
@@ -103,6 +106,10 @@ export class MirrordStatus {
     }
 
     mirrordForTeams() {
-        vscode.env.openExternal(vscode.Uri.parse('https://app.metalbear.co/'));
+        vscode.env.openExternal(vscode.Uri.parse('https://app.metalbear.co/?utm_medium=vscode&utm_source=ui_action'));
+    }
+
+    documentation() {
+        vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/docs/using-mirrord/vscode-extension/?utm_medium=vscode&utm_source=ui_action'));
     }
 }
