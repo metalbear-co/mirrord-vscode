@@ -18,11 +18,11 @@ const ALL_QUICK_PICK_PAGES: TargetQuickPickPage[] = [
     },
     {
         label: 'Show Rollouts',
-        targetType: 'rollouts',
+        targetType: 'rollout',
     },
     {
         label: 'Show Pods',
-        targetType: 'pods',
+        targetType: 'pod',
     },
     {
         label: 'Switch Namespace',
@@ -57,7 +57,6 @@ export class TargetQuickPick {
         this.lastTarget = globalContext.workspaceState.get(LAST_TARGET_KEY) || globalContext.globalState.get(LAST_TARGET_KEY);
         this.lsOutput = lsOutput;
         this.getTargets = getTargets;
-        this.activePage = this.getDefaultPage();
     }
 
     static async new(getTargets: (namespace?: string) => Thenable<MirrordLsOutput>): Promise<TargetQuickPick> {
@@ -78,11 +77,15 @@ export class TargetQuickPick {
         return new TargetQuickPick(getFilteredTargets, lsOutput);
     }
 
-    getDefaultPage(): TargetQuickPickPage | undefined {
+    private hasTargetOfType(targetType: string): boolean {
+        return this.lsOutput.targets.find(t => t.path.startsWith(`${targetType}/`)) !== undefined;
+    }
+
+    private getDefaultPage(): TargetQuickPickPage | undefined {
         let page: TargetQuickPickPage | undefined;
 
         const lastTargetType = this.lastTarget?.split('/')[0];
-        if (lastTargetType !== undefined) {
+        if (lastTargetType !== undefined && this.hasTargetOfType(lastTargetType)) {
             page = ALL_QUICK_PICK_PAGES.find(p => p.targetType === lastTargetType);
         }
 
@@ -100,11 +103,17 @@ export class TargetQuickPick {
         return page;
     }
 
-    prepareQuickPick(): [string, TargetQuickPickItem[]] {
+    private prepareQuickPick(): [string, TargetQuickPickItem[]] {
+        if (this.activePage === undefined) {
+            this.activePage = this.getDefaultPage();
+        }
+
         let items: TargetQuickPickItem[];
         let placeholder: string;
 
         if (this.activePage === undefined) {
+            placeholder = "No available targets";
+
             items = [TARGETLESS_ITEM];
 
             if (this.lsOutput.namespaces !== undefined) {
@@ -115,9 +124,9 @@ export class TargetQuickPick {
                     label: switchNamespacePage.label,
                 });
             }
-
-            placeholder = "No available targets";
         } else if (this.activePage.targetType === undefined) {
+            placeholder = "Switch to another namespace";
+
             items = this
                 .lsOutput
                 .namespaces
@@ -131,10 +140,7 @@ export class TargetQuickPick {
                 }) ?? [];
 
             ALL_QUICK_PICK_PAGES
-                .filter(p => {
-                    p.targetType !== undefined
-                        && this.lsOutput.targets.find(t => t.path.startsWith(`${p.targetType}/`)) !== undefined;
-                })
+                .filter(p => p.targetType !== undefined && this.hasTargetOfType(p.targetType))
                 .forEach(p => {
                     items.push({
                         type: 'page',
@@ -142,8 +148,6 @@ export class TargetQuickPick {
                         label: p.label,
                     });
                 });
-
-            placeholder = "Switch to another namespace";
         } else {
             items = this
                 .lsOutput
@@ -165,10 +169,19 @@ export class TargetQuickPick {
                 }
             }
 
-            const redirects = ALL_QUICK_PICK_PAGES
+            items.push(TARGETLESS_ITEM);
+
+            ALL_QUICK_PICK_PAGES
                 .filter(p => {
-                    p.targetType === undefined
-                        || this.lsOutput.targets.find(t => t.path.startsWith(`${p.targetType}/`)) !== undefined;
+                    if (p.targetType === undefined) {
+                        return this.lsOutput.namespaces !== undefined;
+                    }
+
+                    if (p.targetType === this.activePage?.targetType) {
+                        return false;
+                    }
+
+                    return this.hasTargetOfType(p.targetType);
                 })
                 .forEach(p => {
                     items.push({
@@ -191,7 +204,6 @@ export class TargetQuickPick {
     async showAndGet(): Promise<UserSelection> {
         while (true) {
             const [placeHolder, items] = this.prepareQuickPick();
-
             const newSelection = await vscode.window.showQuickPick(items, { placeHolder });
 
             switch (newSelection?.type) {
@@ -205,7 +217,7 @@ export class TargetQuickPick {
 
                 case 'namespace':
                     this.lsOutput = await this.getTargets(newSelection.value);
-                    this.activePage = this.getDefaultPage();
+                    this.activePage = undefined;
                     break;
 
                 case 'page':

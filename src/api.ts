@@ -111,22 +111,17 @@ function handleIdeMessage(message: IdeMessage) {
   }
 }
 
-export class FoundTarget {
-  public path: string;
-  public available: boolean;
+export type FoundTarget = {
+  path: string;
+  available: boolean;
+};
 
-  constructor(path: string, available: boolean) {
-    this.path = path;
-    this.available = available;
-  }
-}
-
-export class MirrordLsOutput {
-  public targets: FoundTarget[] = [];
+export type MirrordLsOutput = {
+  targets: FoundTarget[];
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  public current_namespace?: string;
-  public namespaces?: string[];
-}
+  current_namespace?: string;
+  namespaces?: string[];
+};
 
 function isRichMirrordLsOutput(output: any): output is MirrordLsOutput {
   return "targets" in output && "current_namespace" in output && "namespaces" in output;
@@ -307,12 +302,15 @@ export class MirrordAPI {
     const stdout = await this.exec(args, configEnv);
 
     const targets = JSON.parse(stdout);
-    let mirrordLsOutput;
+    let mirrordLsOutput: MirrordLsOutput;
     if (isRichMirrordLsOutput(targets)) {
       mirrordLsOutput = targets;
     } else {
-      mirrordLsOutput = new MirrordLsOutput();
-      mirrordLsOutput.targets = (targets as string[]).map(path => new FoundTarget(path, true));
+      mirrordLsOutput = {
+        targets: (targets as string[]).map(path => {
+          return {path, available: true };
+        }),
+      };
     }
 
     return mirrordLsOutput;
@@ -356,7 +354,7 @@ export class MirrordAPI {
           reject("timeout");
         }, 120 * 1000);
 
-        const args = makeMirrordArgs(target.path, configFile, executable);
+        const args = makeMirrordArgs(target.path ?? "targetless", configFile, executable);
         let env: EnvVars;
         if (target.namespace) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
