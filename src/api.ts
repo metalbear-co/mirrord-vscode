@@ -123,6 +123,7 @@ export class FoundTarget {
 
 export class MirrordLsOutput {
   public targets: FoundTarget[] = [];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public current_namespace?: string;
   public namespaces?: string[];
 }
@@ -358,6 +359,7 @@ export class MirrordAPI {
         const args = makeMirrordArgs(target.path, configFile, executable);
         let env: EnvVars;
         if (target.namespace) {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           env = { MIRRORD_TARGET_NAMESPACE: target.namespace, ...configEnv };
         } else {
           env = configEnv;
