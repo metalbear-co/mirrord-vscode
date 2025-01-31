@@ -122,13 +122,13 @@ export class FoundTarget {
 }
 
 export class MirrordLsOutput {
-  public targets: FoundTarget[] = []
-  public current_namespace?: string
-  public namespaces?: string[]
+  public targets: FoundTarget[] = [];
+  public current_namespace?: string;
+  public namespaces?: string[];
 }
 
 function isRichMirrordLsOutput(output: any): output is MirrordLsOutput {
-  return "targets" in output && "current_namespace" in output && "namespaces" in output
+  return "targets" in output && "current_namespace" in output && "namespaces" in output;
 }
 
 // Display error message with help

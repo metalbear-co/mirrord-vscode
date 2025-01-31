@@ -119,7 +119,7 @@ async function main(
   if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
     const getTargets = async (namespace?: string) => {
       return mirrordApi.listTargets(configPath?.path, config.env, namespace);
-    }
+    };
 
     try {
       const quickPick = await TargetQuickPick.new(getTargets);
