@@ -111,18 +111,48 @@ function handleIdeMessage(message: IdeMessage) {
   }
 }
 
+/**
+ * A mirrord target found in the cluster.
+ */
 export type FoundTarget = {
+  /**
+   * The path of this target, as in the mirrord config.
+   */
   path: string;
+  /**
+   * Whether this target is available.
+   */
   available: boolean;
 };
 
+/**
+ * The new format of `mirrord ls`, including target availability and namespaces info.
+ */
 export type MirrordLsOutput = {
+  /**
+   * The targets found in the current namespace.
+   */
   targets: FoundTarget[];
+  /**
+   * The namespace where the lookup was done.
+   * 
+   * If the CLI does not support listing namespaces, this is undefined.
+   */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   current_namespace?: string;
+  /**
+   * All namespaces visible to the user.
+   * 
+   * If the CLI does not support listing namespaces, this is undefined.
+   */
   namespaces?: string[];
 };
 
+/**
+ * Checks whether the JSON value is in the @see MirrordLsOutput format.
+ * 
+ * @param output JSON parsed from `mirrord ls` stdout
+ */
 function isRichMirrordLsOutput(output: any): output is MirrordLsOutput {
   return "targets" in output && "current_namespace" in output && "namespaces" in output;
 }
@@ -287,7 +317,10 @@ export class MirrordAPI {
 
   /**
   * Uses `mirrord ls` to get lists of targets and namespaces.
-  * Targets come sorted.
+  * 
+  * Note that old CLI versions return only targets.
+  * 
+  * @see MirrordLsOutput
   */
   async listTargets(configPath: string | null | undefined, configEnv: EnvVars, namespace?: string): Promise<MirrordLsOutput> {
     const args = ['ls'];
