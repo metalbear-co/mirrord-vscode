@@ -1,13 +1,14 @@
 import * as vscode from 'vscode';
 import { globalContext } from './extension';
 import { isTargetSet, MirrordConfigManager } from './config';
-import { LAST_TARGET_KEY, MirrordAPI, mirrordFailure, MirrordExecution } from './api';
+import { MirrordAPI, mirrordFailure, MirrordExecution } from './api';
 import { updateTelemetries } from './versionCheck';
 import { getMirrordBinary } from './binaryManager';
 import { platform } from 'node:os';
 import { NotificationBuilder } from './notification';
 import { setOperatorUsed } from './mirrordForTeams';
 import fs from 'fs';
+import { TargetQuickPick, UserSelection } from './targetQuickPick';
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
@@ -109,59 +110,23 @@ async function main(
   let mirrordApi = new MirrordAPI(cliPath);
 
   config.env ||= {};
-  let target = null;
+  let target: UserSelection = {};
 
   let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
   const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
   if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
-    let targets;
+    const getTargets = async (namespace?: string) => {
+      return mirrordApi.listTargets(configPath?.path, config.env, namespace);
+    };
+
     try {
-      targets = await mirrordApi.listTargets(configPath?.path);
+      const quickPick = await TargetQuickPick.new(getTargets);
+      target = await quickPick.showAndGet();
     } catch (err) {
       mirrordFailure(`mirrord failed to list targets: ${err}`);
       return null;
-    }
-    if (targets.length === 0) {
-      new NotificationBuilder()
-        .withMessage(
-          "No mirrord target available in the configured namespace. " +
-          "You can run targetless, or set a different target namespace or kubeconfig in the mirrord configuration file.",
-        )
-        .info();
-    }
-
-    let selected = false;
-
-    while (!selected) {
-      let targetPick = await vscode.window.showQuickPick(targets.quickPickItems(), {
-        placeHolder: 'Select a target path to mirror'
-      });
-
-      if (targetPick) {
-        if (targetPick.type === 'page') {
-          targets.switchPage(targetPick);
-
-          continue;
-        }
-
-        if (targetPick.type !== 'targetless') {
-          target = targetPick.value;
-        }
-
-        globalContext.globalState.update(LAST_TARGET_KEY, target);
-        globalContext.workspaceState.update(LAST_TARGET_KEY, target);
-      }
-
-      selected = true;
-    }
-
-    if (!target) {
-      new NotificationBuilder()
-        .withMessage("mirrord running targetless")
-        .withDisableAction("promptTargetless")
-        .info();
     }
   }
 

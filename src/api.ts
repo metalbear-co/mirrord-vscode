@@ -6,6 +6,7 @@ import { NotificationBuilder } from './notification';
 import { MirrordStatus } from './status';
 import { EnvVars, VerifiedConfig } from './config';
 import { PathLike } from 'fs';
+import { UserSelection } from './targetQuickPick';
 
 /**
 * Key to access the feedback counter (see `tickFeedbackCounter`) from the global user config.
@@ -26,18 +27,6 @@ const DISCORD_COUNTER = 'mirrord-discord-counter';
 * Amount of times we run mirrord before inviting the user to join the Discord server.
 */
 const DISCORD_COUNTER_PROMPT_AFTER = 10;
-
-const TARGET_TYPE_DISPLAY: Record<string, string> = {
-  pod: 'Pod',
-  deployment: 'Deployment',
-  rollout: 'Rollout',
-};
-
-// Option in the target selector that represents no target.
-const TARGETLESS_TARGET: TargetQuickPick = {
-  label: "No Target (\"targetless\")",
-  type: 'targetless'
-};
 
 /**
 * Level of the notification, different levels map to different notification boxes.
@@ -122,76 +111,51 @@ function handleIdeMessage(message: IdeMessage) {
   }
 }
 
-type TargetQuickPick = vscode.QuickPickItem & (
-  { type: 'targetless' } |
-  { type: 'target' | 'page', value: string }
-);
+/**
+ * A mirrord target found in the cluster.
+ */
+export type FoundTarget = {
+  /**
+   * The path of this target, as in the mirrord config.
+   */
+  path: string;
+  /**
+   * Whether this target is available.
+   */
+  available: boolean;
+};
 
-export class Targets {
-  private activePage: string;
+/**
+ * The new format of `mirrord ls`, including target availability and namespaces info.
+ */
+export type MirrordLsOutput = {
+  /**
+   * The targets found in the current namespace.
+   */
+  targets: FoundTarget[];
+  /**
+   * The namespace where the lookup was done.
+   * 
+   * If the CLI does not support listing namespaces, this is undefined.
+   */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  current_namespace?: string;
+  /**
+   * All namespaces visible to the user.
+   * 
+   * If the CLI does not support listing namespaces, this is undefined.
+   */
+  namespaces?: string[];
+};
 
-  private readonly inner: Record<string, TargetQuickPick[] | undefined>;
-  readonly length: number;
-
-  constructor(targets: string[], lastTarget?: string) {
-    this.length = targets.length;
-
-    this.inner = targets.reduce((acc, value) => {
-      const targetType = value.split('/')[0];
-      const target: TargetQuickPick = {
-        label: value,
-        type: 'target',
-        value
-      };
-
-      if (Array.isArray(acc[targetType])) {
-        acc[targetType]!.push(target);
-      } else {
-        acc[targetType] = [target];
-      }
-
-      return acc;
-    }, {} as Targets['inner']);
-
-
-    const types = Object.keys(this.inner);
-    const lastPage = lastTarget?.split("/")?.[0] ?? '';
-
-    if (types.includes(lastPage)) {
-      this.activePage = lastPage;
-    } else {
-      this.activePage = types[0] ?? '';
-    }
-  }
-
-  private quickPickSelects(): TargetQuickPick[] {
-    return Object.keys(this.inner)
-      .filter((value) => value !== this.activePage)
-      .map((value) => ({
-        label: `Show ${TARGET_TYPE_DISPLAY[value] ?? value}s`,
-        type: 'page',
-        value
-      }));
-  }
-
-
-  quickPickItems(): TargetQuickPick[] {
-    return [
-      ...(this.inner[this.activePage] ?? []),
-      TARGETLESS_TARGET,
-      ...this.quickPickSelects()
-    ];
-  }
-
-  switchPage(nextPage: TargetQuickPick) {
-    if (nextPage.type === 'page') {
-      this.activePage = nextPage.value;
-    }
-  }
+/**
+ * Checks whether the JSON value is in the @see MirrordLsOutput format.
+ * 
+ * @param output JSON parsed from `mirrord ls` stdout
+ */
+function isRichMirrordLsOutput(output: any): output is MirrordLsOutput {
+  return "targets" in output && "current_namespace" in output && "namespaces" in output;
 }
-
-/// Key used to store the last selected target in the persistent state.
-export const LAST_TARGET_KEY = "mirrord-last-target";
 
 // Display error message with help
 export function mirrordFailure(error: string) {
@@ -239,7 +203,7 @@ export class MirrordExecution {
 /**
 * Sets up the args that are going to be passed to the mirrord cli.
 */
-const makeMirrordArgs = (target: string | null, configFilePath: PathLike | null, userExecutable: PathLike | null): readonly string[] => {
+const makeMirrordArgs = (target: string | undefined, configFilePath: PathLike | null, userExecutable: PathLike | null): readonly string[] => {
   let args = ["ext"];
 
   if (target) {
@@ -280,7 +244,10 @@ export class MirrordAPI {
       "MIRRORD_PROGRESS_MODE": "json",
       // to have "advanced" progress in IDE
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      "MIRRORD_PROGRESS_SUPPORT_IDE": "true"
+      "MIRRORD_PROGRESS_SUPPORT_IDE": "true",
+      // to have namespaces in the `mirrord ls` output
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      "MIRRORD_LS_RICH_OUTPUT": "true"
     };
   }
 
@@ -345,35 +312,41 @@ export class MirrordAPI {
   async getBinaryVersion(): Promise<string | undefined> {
     const stdout = await this.exec(["--version"], {});
     // parse mirrord x.y.z
-    return stdout.split(" ")[1].trim();
+    return stdout.split(" ")[1]?.trim();
   }
 
   /**
-  * Uses `mirrord ls` to get a list of all targets.
-  * Targets come sorted, with an exception of the last used target being the first on the list.
+  * Uses `mirrord ls` to get lists of targets and namespaces.
+  * 
+  * Note that old CLI versions return only targets.
+  * 
+  * @see MirrordLsOutput
   */
-  async listTargets(configPath: string | null | undefined): Promise<Targets> {
+  async listTargets(configPath: string | null | undefined, configEnv: EnvVars, namespace?: string): Promise<MirrordLsOutput> {
     const args = ['ls'];
     if (configPath) {
       args.push('-f', configPath);
     }
 
-    const stdout = await this.exec(args, {});
-
-    const targets: string[] = JSON.parse(stdout);
-
-    let lastTarget: string | undefined = globalContext.workspaceState.get(LAST_TARGET_KEY)
-      || globalContext.globalState.get(LAST_TARGET_KEY);
-
-    if (lastTarget !== undefined) {
-      const idx = targets.indexOf(lastTarget);
-      if (idx !== -1) {
-        targets.splice(idx, 1);
-        targets.unshift(lastTarget);
-      }
+    if (namespace !== undefined) {
+      args.push('-n', namespace);
     }
 
-    return new Targets(targets, lastTarget);
+    const stdout = await this.exec(args, configEnv);
+
+    const targets = JSON.parse(stdout);
+    let mirrordLsOutput: MirrordLsOutput;
+    if (isRichMirrordLsOutput(targets)) {
+      mirrordLsOutput = targets;
+    } else {
+      mirrordLsOutput = {
+        targets: (targets as string[]).map(path => {
+          return {path, available: true };
+        }),
+      };
+    }
+
+    return mirrordLsOutput;
   }
 
   /**
@@ -398,7 +371,7 @@ export class MirrordAPI {
   *
   * Has 60 seconds timeout
   */
-  async binaryExecute(target: string | null, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
+  async binaryExecute(target: UserSelection, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
     tickMirrordForTeamsCounter();
     tickFeedbackCounter();
     tickDiscordCounter();
@@ -414,9 +387,16 @@ export class MirrordAPI {
           reject("timeout");
         }, 120 * 1000);
 
-        const args = makeMirrordArgs(target, configFile, executable);
+        const args = makeMirrordArgs(target.path ?? "targetless", configFile, executable);
+        let env: EnvVars;
+        if (target.namespace) {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          env = { MIRRORD_TARGET_NAMESPACE: target.namespace, ...configEnv };
+        } else {
+          env = configEnv;
+        }
 
-        const child = this.spawnCliWithArgsAndEnv(args, configEnv);
+        const child = this.spawnCliWithArgsAndEnv(args, env);
 
         let stderrData = "";
         child.stderr.on("data", (data) => stderrData += data.toString());
