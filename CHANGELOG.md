@@ -8,6 +8,16 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.65.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.0) - 2025-02-03
+
+
+### Added
+
+- Added dropdown menu action that redirects to extension docs.
+  [#161](https://github.com/metalbear-co/mirrord-vscode/issues/161)
+- mirrord target quick pick now allows for switching between the Kubernetes
+  namespaces.
+
 ## [3.64.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.64.0) - 2024-12-19
 
 
