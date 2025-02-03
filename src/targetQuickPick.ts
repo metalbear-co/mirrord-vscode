@@ -17,15 +17,22 @@ type TargetQuickPickPage = {
     /**
      * Prefix of targets visible on this page, mirrord config format.
      * 
-     * undefined for namespace selection page.
+     * undefined **only** for namespace selection page.
      */
     targetType?: string,
 };
 
 /**
- * All pages in the @see TargetQuickPick.
+ * Namespace selection page in the @see TargetQuickPick.
  */
-const ALL_QUICK_PICK_PAGES: TargetQuickPickPage[] = [
+const NAMESPACE_SELECTION_PAGE: TargetQuickPickPage = {
+    label: 'Select Another Namespace',
+};
+
+/**
+ * Target selection pages in the @see TargetQuickPick.
+ */
+const TARGET_SELECTION_PAGES: (TargetQuickPickPage & {targetType: string})[] = [
     {
         label: 'Show Deployments',
         targetType: 'deployment',
@@ -37,9 +44,6 @@ const ALL_QUICK_PICK_PAGES: TargetQuickPickPage[] = [
     {
         label: 'Show Pods',
         targetType: 'pod',
-    },
-    {
-        label: 'Select Another Namespace',
     },
 ];
 
@@ -130,7 +134,7 @@ export class TargetQuickPick {
                     return false;
                 }
                 const targetType = t.path.split('/')[0];
-                return ALL_QUICK_PICK_PAGES.find(p => p.targetType === targetType) !== undefined;
+                return TARGET_SELECTION_PAGES.find(p => p.targetType === targetType) !== undefined;
             });
             return output;
         };
@@ -155,7 +159,7 @@ export class TargetQuickPick {
 
         const lastTargetType = this.lastTarget?.split('/')[0];
         if (lastTargetType !== undefined && this.hasTargetOfType(lastTargetType)) {
-            page = ALL_QUICK_PICK_PAGES.find(p => p.targetType === lastTargetType);
+            page = TARGET_SELECTION_PAGES.find(p => p.targetType === lastTargetType);
         }
 
         if (page === undefined) {
@@ -164,7 +168,7 @@ export class TargetQuickPick {
                 .targets
                 .map(t => {
                     const targetType = t.path.split('/')[0] ?? '';
-                    return ALL_QUICK_PICK_PAGES.find(p => p.targetType === targetType);
+                    return TARGET_SELECTION_PAGES.find(p => p.targetType === targetType);
                 })
                 .find(p => p !== undefined);
         }
@@ -192,11 +196,10 @@ export class TargetQuickPick {
             items = [TARGETLESS_ITEM];
 
             if (this.lsOutput.namespaces !== undefined) {
-                const switchNamespacePage = ALL_QUICK_PICK_PAGES.find(p => p.targetType === undefined)!;
                 items.push({
                     type: 'page',
-                    value: switchNamespacePage,
-                    label: switchNamespacePage.label,
+                    value: NAMESPACE_SELECTION_PAGE,
+                    label: NAMESPACE_SELECTION_PAGE.label,
                 });
             }
         } else if (this.activePage.targetType === undefined) {
@@ -217,8 +220,8 @@ export class TargetQuickPick {
                     };
                 }) ?? [];
 
-            ALL_QUICK_PICK_PAGES
-                .filter(p => p.targetType !== undefined && this.hasTargetOfType(p.targetType))
+            TARGET_SELECTION_PAGES
+                .filter(p => this.hasTargetOfType(p.targetType))
                 .forEach(p => {
                     items.push({
                         type: 'page',
@@ -254,18 +257,8 @@ export class TargetQuickPick {
 
             items.push(TARGETLESS_ITEM);
 
-            ALL_QUICK_PICK_PAGES
-                .filter(p => {
-                    if (p.targetType === undefined) {
-                        return this.lsOutput.namespaces !== undefined;
-                    }
-
-                    if (p.targetType === this.activePage?.targetType) {
-                        return false;
-                    }
-
-                    return this.hasTargetOfType(p.targetType);
-                })
+            TARGET_SELECTION_PAGES
+                .filter(p => (p.targetType !== this.activePage?.targetType) && this.hasTargetOfType(p.targetType))
                 .forEach(p => {
                     items.push({
                         type: 'page',
@@ -273,6 +266,14 @@ export class TargetQuickPick {
                         label: p.label,
                     });
                 });
+
+            if (this.lsOutput.namespaces !== undefined) {
+                items.push({
+                    type: 'page',
+                    value: NAMESPACE_SELECTION_PAGE,
+                    label: NAMESPACE_SELECTION_PAGE.label,
+                });
+            }
         }
 
         return [placeholder, items];
