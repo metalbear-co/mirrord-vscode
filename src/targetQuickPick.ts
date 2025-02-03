@@ -39,7 +39,7 @@ const ALL_QUICK_PICK_PAGES: TargetQuickPickPage[] = [
         targetType: 'pod',
     },
     {
-        label: 'Switch Namespace',
+        label: 'Select Another Namespace',
     },
 ];
 
@@ -185,6 +185,9 @@ export class TargetQuickPick {
 
         if (this.activePage === undefined) {
             placeholder = "No available targets";
+            if (this.lsOutput.current_namespace !== undefined) {
+                placeholder += ` in ${this.lsOutput.current_namespace}`;
+            }
 
             items = [TARGETLESS_ITEM];
 
@@ -197,7 +200,10 @@ export class TargetQuickPick {
                 });
             }
         } else if (this.activePage.targetType === undefined) {
-            placeholder = "Switch to another namespace";
+            placeholder = "Select another namespace";
+            if (this.lsOutput.current_namespace !== undefined) {
+                placeholder += ` (current: ${this.lsOutput.current_namespace})`;
+            }
 
             items = this
                 .lsOutput
@@ -221,6 +227,11 @@ export class TargetQuickPick {
                     });
                 });
         } else {
+            placeholder = "Select a target";
+            if (this.lsOutput.current_namespace !== undefined) {
+                placeholder += ` from ${this.lsOutput.current_namespace}`;
+            }
+
             items = this
                 .lsOutput
                 .targets
@@ -262,12 +273,6 @@ export class TargetQuickPick {
                         label: p.label,
                     });
                 });
-
-            placeholder = "Select a target";
-        }
-
-        if (this.lsOutput.current_namespace !== undefined) {
-            placeholder += ` (current namespace: ${this.lsOutput.current_namespace})`;
         }
 
         return [placeholder, items];
