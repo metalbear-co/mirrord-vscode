@@ -98,7 +98,7 @@ export class TargetQuickPick {
      */
     private activePage?: TargetQuickPickPage;
     /**
-     * Last target that was ever selected by the user.
+     * Target that was selected most recently by the user.
      * 
      * This target, if present in @see lsOutput, is put first on its page.
      * Also, determines initial page.
