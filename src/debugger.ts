@@ -110,7 +110,7 @@ async function main(
   let mirrordApi = new MirrordAPI(cliPath);
 
   config.env ||= {};
-  let target: UserSelection = {};
+  let target: UserSelection | undefined = undefined;
 
   let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
   const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);

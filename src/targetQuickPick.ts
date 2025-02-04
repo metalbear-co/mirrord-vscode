@@ -51,7 +51,7 @@ const TARGET_SELECTION_PAGES: (TargetQuickPickPage & {targetType: string})[] = [
  * An item in the @see TargetQuickPick.
  */
 type TargetQuickPickItem = vscode.QuickPickItem & (
-    { type: 'target', value?: string } | // select target
+    { type: 'target', value: string } | // select target
     { type: 'namespace', value: string } | // switch to another namespace
     { type: 'page', value: TargetQuickPickPage } // switch to another page (e.g select pod -> select deployment)
 );
@@ -62,6 +62,7 @@ type TargetQuickPickItem = vscode.QuickPickItem & (
 const TARGETLESS_ITEM: TargetQuickPickItem = {
     type: 'target',
     label: 'No Target (\"targetless\")',
+    value: 'targetless',
 };
 
 /**
@@ -75,10 +76,8 @@ export type TargetFetcher = (namespace?: string) => Thenable<MirrordLsOutput>;
 export type UserSelection = {
     /**
      * Selected target.
-     * 
-     * undefined if targetless.
      */
-    path?: string,
+    path: string,
     /**
      * Selected namespace.
      * 
@@ -313,7 +312,7 @@ export class TargetQuickPick {
                         .withDisableAction("promptTargetless")
                         .info();
 
-                    return { namespace: this.lsOutput.current_namespace };
+                    return { path: 'targetless', namespace: this.lsOutput.current_namespace };
             }
         }
     }

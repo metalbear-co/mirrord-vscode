@@ -371,7 +371,7 @@ export class MirrordAPI {
   *
   * Has 60 seconds timeout
   */
-  async binaryExecute(target: UserSelection, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
+  async binaryExecute(target: UserSelection | undefined, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
     tickMirrordForTeamsCounter();
     tickFeedbackCounter();
     tickDiscordCounter();
@@ -387,9 +387,9 @@ export class MirrordAPI {
           reject("timeout");
         }, 120 * 1000);
 
-        const args = makeMirrordArgs(target.path ?? "targetless", configFile, executable);
+        const args = makeMirrordArgs(target?.path, configFile, executable);
         let env: EnvVars;
-        if (target.namespace) {
+        if (target?.namespace) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           env = { MIRRORD_TARGET_NAMESPACE: target.namespace, ...configEnv };
         } else {
