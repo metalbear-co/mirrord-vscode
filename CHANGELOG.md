@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.65.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.1) - 2025-02-04
+
+
+### Fixed
+
+- Fixed a bug where mirrord was not respecting target specified in the mirrord
+  config.
+
 ## [3.65.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.0) - 2025-02-03
 
 
