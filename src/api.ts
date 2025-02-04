@@ -370,8 +370,12 @@ export class MirrordAPI {
   * setting env vars, both from system, and from `launch.json` (`configEnv`).
   *
   * Has 60 seconds timeout
+  * 
+  * @param quickPickSelection target selected by the user from the quick pick widget.
+  *                             `undefined` if we found the target in the config,
+  *                             and the widget was not shown.
   */
-  async binaryExecute(target: UserSelection, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
+  async binaryExecute(quickPickSelection: UserSelection | undefined, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
     tickMirrordForTeamsCounter();
     tickFeedbackCounter();
     tickDiscordCounter();
@@ -387,11 +391,11 @@ export class MirrordAPI {
           reject("timeout");
         }, 120 * 1000);
 
-        const args = makeMirrordArgs(target.path ?? "targetless", configFile, executable);
+        const args = makeMirrordArgs(quickPickSelection?.path, configFile, executable);
         let env: EnvVars;
-        if (target.namespace) {
+        if (quickPickSelection?.namespace) {
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          env = { MIRRORD_TARGET_NAMESPACE: target.namespace, ...configEnv };
+          env = { MIRRORD_TARGET_NAMESPACE: quickPickSelection.namespace, ...configEnv };
         } else {
           env = configEnv;
         }

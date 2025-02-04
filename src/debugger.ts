@@ -110,7 +110,7 @@ async function main(
   let mirrordApi = new MirrordAPI(cliPath);
 
   config.env ||= {};
-  let target: UserSelection = {};
+  let quickPickSelection: UserSelection | undefined = undefined;
 
   let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
   const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
@@ -123,7 +123,7 @@ async function main(
 
     try {
       const quickPick = await TargetQuickPick.new(getTargets);
-      target = await quickPick.showAndGet();
+      quickPickSelection = await quickPick.showAndGet();
     } catch (err) {
       mirrordFailure(`mirrord failed to list targets: ${err}`);
       return null;
@@ -152,7 +152,7 @@ async function main(
 
   let executionInfo;
   try {
-    executionInfo = await mirrordApi.binaryExecute(target, configPath?.path || null, executable, config.env);
+    executionInfo = await mirrordApi.binaryExecute(quickPickSelection, configPath?.path || null, executable, config.env);
   } catch (err) {
     mirrordFailure(`mirrord preparation failed: ${err}`);
     return null;
