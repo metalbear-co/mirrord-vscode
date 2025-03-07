@@ -9,7 +9,7 @@ mirrord lets developers [run local processes in the context of their cloud envir
 
 <p align="center">
 <!-- TODO: use absolute link when merging: https://raw.githubusercontent.com/metalbear-co/mirrord-vscode/images/mirrord_ext_demo.gif -->
-  <img src="/images/mirrord_ext_demo.gif" width="80%" alt="A gif showing mirrord being used to steal traffic from a kubernetes cluster in the VSCode UI">
+  <img src="/images/mirrord_ext_demo.gif" width="90%" alt="A gif showing mirrord being used to steal traffic from a kubernetes cluster in the VSCode UI">
 </p>
 
 This repository is for the VSCode extension.
@@ -40,7 +40,7 @@ mirrord's main repository can be found [here](https://github.com/metalbear-co/mi
 
 > By default, mirrord is disabled when you open a VSCode window. To change this behaviour, set the `enabledByDefault` setting to `true`.
 
-## Settings
+## Configuring mirrord for VSCode
 
 mirrord allows for rich configuration of the environment it provides. The schema for it is documented [here](https://mirrord.dev/docs/reference/configuration/). The extension supports autocomplete for `json` files, but you can also use `toml` or `yaml` format.
 
@@ -53,5 +53,12 @@ mirrord reads its configuration from the following locations:
 You can use the `changeSettings` command or the link in the dropdown menu to quickly edit detected configs.
 
 ## Helpful Links
+
 * [Official documentation for this extension](https://mirrord.dev/docs/using-mirrord/vscode-extension/)
 * [Official language-specific guides for debugging](https://metalbear.co/guides/)
+
+## Contributions, feature requests, issues and support
+
+* Feel free to join to our [Discord channel](https://discord.gg/metalbear) if you need help using mirrord, or if you encounter an issue while using the extension.
+* Check our open issues for [the VSCode extension](https://github.com/metalbear-co/mirrord-vscode/issues) and [mirrord's core code](https://github.com/metalbear-co/mirrord/issues), and 👍 react to any that you would like to see addressed.
+* Before submitting a pull request for new features, please discuss it with us first by opening an issue or a discussion.
