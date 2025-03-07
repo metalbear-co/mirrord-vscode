@@ -1,7 +1,4 @@
-<p align="center">
-  <img src="images/icon.png" width="20%">
-</p>
-<h1 align="center">mirrord</h1>
+# mirrord for VSCode
 
 [![Discord](https://img.shields.io/discord/933706914808889356?color=5865F2&label=Discord&logo=discord&logoColor=white)](https://discord.gg/metalbear)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -13,29 +10,47 @@ mirrord lets developers [run local processes in the context of their cloud envir
 This repository is for the VSCode extension.
 mirrord's main repository can be found [here](https://github.com/metalbear-co/mirrord).
 
-## How to use
-
-* Click mirrord status bar item to switch mirrord from `Disabled` to `Enabled`
-* Start debugging your project
-* Choose pod to impersonate
-* The debugged process will start with mirrord, and receive the context of the impersonated pod. It will receive its environment variables and incoming traffic, will read and write files to it, and send outgoing traffic through it.
-
+<!-- TODO: change GIF to wide -->
 <p align="center">
   <img src="https://i.imgur.com/FFiir2G.gif" width="60%">
 </p>
+
+## How to use
+
+* Click the mirrord status bar item to switch mirrord from `Disabled` to `Enabled`
+
+<p align="center">
+  <img src="/images/mirrord_enable_demo.gif" width="60%">
+</p>
+
+* Start debugging your project **(shortcut: F5)**
+
+* Choose a target to impersonate
+
+<p align="center">
+  <img src="/images/target_selection_popup.png" width="60%">
+</p>
+
+* The debugged process will start with mirrord, and receive the context of the impersonated pod. It will receive its environment variables and incoming traffic, will read and write files to it, and send outgoing traffic through it.
 
 > mirrord uses your machine's default kubeconfig for access to the Kubernetes API.
 
 > For incoming traffic, make sure your local process is listening on the same port as the remote pod.
 
+> By default, mirrord is disabled when you open a VSCode window. To change this behaviour, set the `enabledByDefault` setting to `true`.
+
 ## Settings
 
-mirrord allows for rich configuration of the environment it provides. The schema for it is documented [here](https://mirrord.dev/docs/reference/configuration/). You can also use `toml` or `yaml` format. However, the extension supports autocomplete only for `json` files.
+mirrord allows for rich configuration of the environment it provides. The schema for it is documented [here](https://mirrord.dev/docs/reference/configuration/). The extension supports autocomplete for `json` files, but you can also use `toml` or `yaml` format.
 
 mirrord reads its configuration from the following locations:
 
-1. Active config can be set for the whole workspace using the `selectActiveConfig` command or the link in the dropdown menu. If active config is set, mirrord always uses it.
-2. If active config is not set, mirrord searches process environment (specified in launch configuration) for `MIRRORD_CONFIG_FILE` variable. This path can use the `${workspaceFolder}` variable.
-3. If no config is specified, mirrord looks for a default project config file in the `.mirrord` directory with a name ending with `mirrord.{json,toml,yaml,yml}`. If there is no default config file, mirrord uses default configuration values for everything. If there are many candidates for the default config file, mirrord sorts them alphabetically and uses the first one.
+1. An active config can be set for the whole workspace using the `selectActiveConfig` command or the link in the status bar menu. If an active config is set, mirrord always uses it.
+2. If an active config is not set, mirrord searches the process environment (specified in the launch configuration) for the `MIRRORD_CONFIG_FILE` variable. This path can use the `${workspaceFolder}` variable.
+3. If no config is specified, mirrord looks for a default project config file in the `.mirrord` directory with a name ending with `mirrord.{json,toml,yaml,yml}`. If there is no default config file, mirrord uses default configuration values for everything. If there are multiple candidates for the default config file, mirrord sorts them alphabetically and uses the first one.
 
 You can use the `changeSettings` command or the link in the dropdown menu to quickly edit detected configs.
+
+## Helpful Links
+* [Official documentation for this extension](https://mirrord.dev/docs/using-mirrord/vscode-extension/)
+* [Official language-specific guides for debugging](https://metalbear.co/guides/)
