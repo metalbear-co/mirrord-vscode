@@ -11,16 +11,17 @@ This repository is for the VSCode extension.
 mirrord's main repository can be found [here](https://github.com/metalbear-co/mirrord).
 
 <!-- TODO: change GIF to wide -->
-<p align="center">
+<!-- <p align="center">
   <img src="https://i.imgur.com/FFiir2G.gif" width="60%">
-</p>
+</p> -->
 
 ## How to use
 
 * Click the mirrord status bar item to switch mirrord from `Disabled` to `Enabled`
 
 <p align="center">
-  <img src="/images/mirrord_enable_demo.gif" width="60%">
+<!-- TODO: use absolute link when merging: https://raw.githubusercontent.com/metalbear-co/mirrord-vscode/images/mirrord_enable_demo.gif -->
+  <img src="/images/mirrord_enable_demo.gif" width="60%" alt="A gif showing mirrord being enabled via a click in the VSCode UI">
 </p>
 
 * Start debugging your project **(shortcut: F5)**
@@ -28,7 +29,7 @@ mirrord's main repository can be found [here](https://github.com/metalbear-co/mi
 * Choose a target to impersonate
 
 <p align="center">
-  <img src="/images/target_selection_popup.png" width="60%">
+  <img src="/images/target_selection_popup.png" width="60%" alt="A screenshot of mirrord's target selection pop up in the VSCode UI">
 </p>
 
 * The debugged process will start with mirrord, and receive the context of the impersonated pod. It will receive its environment variables and incoming traffic, will read and write files to it, and send outgoing traffic through it.
