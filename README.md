@@ -35,7 +35,7 @@ mirrord's main repository can be found [here](https://github.com/metalbear-co/mi
 
 * The debugged process will start with mirrord, and receive the context of the impersonated pod. It will receive its environment variables and incoming traffic, will read and write files to it, and send outgoing traffic through it.
 
-> mirrord uses your machine's default kubeconfig for access to the Kubernetes API.
+> Unless explicitly set [in the config](https://mirrord.dev/docs/reference/configuration/#root-kubeconfig), mirrord uses your machine's default kubeconfig for access to the Kubernetes API.
 
 > For incoming traffic, make sure your local process is listening on the same port as the remote pod.
 
