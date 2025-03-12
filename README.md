@@ -45,11 +45,19 @@ mirrord's main repository can be found [here](https://github.com/metalbear-co/mi
 
 mirrord allows for rich configuration of the environment it provides. The schema for it is documented [here](https://mirrord.dev/docs/reference/configuration/). The extension supports autocomplete for `json` files, but you can also use `toml` or `yaml` format.
 
-mirrord reads its configuration from the following locations:
+_Quick start: the easiest way to start configuring mirrord is to choose_ "Settings" _from the status bar menu, which will open a new `mirrord.json`._
+
+<p align="center">
+  <img src="/images/settings_opt.png" width="20%" alt="A screenshot of mirrord's status bar menu in the VSCode UI, with 'Settings' highlighted">
+</p>
+
+mirrord can read its configuration from multiple places. For more details, see [the documentation on setting up the mirrord config](https://mirrord.dev/docs/using-mirrord/vscode-extension/#using-the-mirrord-config).
+
+<!-- mirrord reads its configuration from the following locations:
 
 1. An active config can be set for the whole workspace using the `selectActiveConfig` command or the link in the status bar menu. If an active config is set, mirrord always uses it.
 2. If an active config is not set, mirrord searches the process environment (specified in the launch configuration) for the `MIRRORD_CONFIG_FILE` variable. This path can use the `${workspaceFolder}` variable.
-3. If no config is specified, mirrord looks for a default project config file in the `.mirrord` directory with a name ending with `mirrord.{json,toml,yaml,yml}`. If there is no default config file, mirrord uses default configuration values for everything. If there are multiple candidates for the default config file, mirrord sorts them alphabetically and uses the first one.
+3. If no config is specified, mirrord looks for a default project config file in the `.mirrord` directory with a name ending with `mirrord.{json,toml,yaml,yml}`. If there is no default config file, mirrord uses default configuration values for everything. If there are multiple candidates for the default config file, mirrord sorts them alphabetically and uses the first one. -->
 
 You can use the `changeSettings` command or the link in the dropdown menu to quickly edit detected configs.
 
