@@ -9,8 +9,7 @@
 mirrord lets developers [run local processes in the context of their cloud environment](https://mirrord.dev). It’s meant to provide the benefits of running your service on a cloud environment (e.g. staging) without actually going through the hassle of deploying it there, and without disrupting the environment by deploying untested code. It comes as a Visual Studio Code extension, an IntelliJ plugin and a CLI tool. You can read more about what mirrord does [in our official docs](https://mirrord.dev/docs/overview/introduction/).
 
 <p align="center">
-<!-- TODO: use absolute link when merging: https://raw.githubusercontent.com/metalbear-co/mirrord-vscode/images/mirrord_ext_demo.gif -->
-  <img src="/images/mirrord_ext_demo.gif" width="90%" alt="A gif showing mirrord being used to steal traffic from a kubernetes cluster in the VSCode UI">
+  <img src="/media/readme/demo_gif_cropped.gif" width="90%" alt="A gif showing mirrord being used to steal traffic from a kubernetes cluster in the VSCode UI">
 </p>
 
 This repository is for the VSCode extension.
@@ -21,8 +20,7 @@ mirrord's main repository can be found [here](https://github.com/metalbear-co/mi
 * Click the mirrord status bar item to switch mirrord from `Disabled` to `Enabled`
 
 <p align="center">
-<!-- TODO: use absolute link when merging: https://raw.githubusercontent.com/metalbear-co/mirrord-vscode/images/mirrord_enable_demo.gif -->
-  <img src="/images/mirrord_enable_demo.gif" width="60%" alt="A gif showing mirrord being enabled via a click in the VSCode UI">
+  <img src="/media/readme/mirrord_enable_demo.gif" width="60%" alt="A gif showing mirrord being enabled via a click in the VSCode UI">
 </p>
 
 * Start debugging your project **(shortcut: F5)**
@@ -30,7 +28,7 @@ mirrord's main repository can be found [here](https://github.com/metalbear-co/mi
 * Choose a target to impersonate
 
 <p align="center">
-  <img src="/images/target_selection_popup.png" width="60%" alt="A screenshot of mirrord's target selection pop up in the VSCode UI">
+  <img src="/media/readme/target_selection_popup.png" width="60%" alt="A screenshot of mirrord's target selection pop up in the VSCode UI">
 </p>
 
 * The debugged process will start with mirrord, and receive the context of the impersonated pod. It will receive its environment variables and incoming traffic, will read and write files to it, and send outgoing traffic through it.
@@ -48,7 +46,7 @@ mirrord allows for rich configuration of the environment it provides. The schema
 _Quick start: the easiest way to start configuring mirrord is to choose_ "Settings" _from the status bar menu, which will open a new `mirrord.json`._
 
 <p align="center">
-  <img src="/images/settings_opt.png" width="20%" alt="A screenshot of mirrord's status bar menu in the VSCode UI, with 'Settings' highlighted">
+  <img src="/media/readme/settings_opt.png" width="20%" alt="A screenshot of mirrord's status bar menu in the VSCode UI, with 'Settings' highlighted">
 </p>
 
 mirrord can read its configuration from multiple places. For more details, see [the documentation on setting up the mirrord config](https://mirrord.dev/docs/using-mirrord/vscode-extension/#using-the-mirrord-config).
