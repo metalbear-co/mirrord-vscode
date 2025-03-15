@@ -41,7 +41,7 @@ export async function getLocalMirrordBinary(version: string | null): Promise<[st
             return [mirrordPath, true];
         }
     } catch (e) {
-        console.debug("couldn't find mirrord in path");
+        console.debug("couldn't find mirrord in path", e);
     }
 
     try {
@@ -57,7 +57,7 @@ export async function getLocalMirrordBinary(version: string | null): Promise<[st
             return [mirrordPath.fsPath, false];
         }
     } catch (e) {
-        console.log("couldn't find mirrord in extension storage");
+        console.log("couldn't find mirrord in extension storage", e);
     }
 
     return null;
@@ -117,7 +117,7 @@ export async function getMirrordBinary(background: boolean): Promise<string | nu
 
     try {
         latestVersion = await getLatestSupportedVersion(background);
-    } catch (err) {
+    } catch {
         latestVersion = null;
     }
 
@@ -168,7 +168,7 @@ export async function getMirrordBinary(background: boolean): Promise<string | nu
     }
 
     if (!wantedVersion) {
-        let anyVersion = await getLocalMirrordBinary(null);
+        const anyVersion = await getLocalMirrordBinary(null);
         if (anyVersion) {
             const message = `Version check not available/allowed and no wanted version set. \
             Using mirrord binary found in ${anyVersion[1] ? 'path' : 'extension storage'}: ${anyVersion[0]}`;
@@ -236,30 +236,27 @@ async function downloadMirrordBinary(destPath: Uri, version: string): Promise<vo
         title: "mirrord",
         cancellable: false
     }, async (progress) => {
-        return new Promise<void>(async (resolve, reject) => {
-            fs.mkdirSync(Utils.dirname(destPath).fsPath, { recursive: true });
-            try {
-                const response: AxiosResponse = await axios.get(
-                    getMirrordDownloadUrl(version),
-                    {
-                        onDownloadProgress: function (progressEvent) {
-                            progress.report({ increment: progressEvent.progress, "message": "Downloading mirrord binary..." });
-                        },
-                        responseType: 'arraybuffer',
-                    });
+        fs.mkdirSync(Utils.dirname(destPath).fsPath, { recursive: true });
+        try {
+            const response: AxiosResponse = await axios.get(
+                getMirrordDownloadUrl(version),
+                {
+                    onDownloadProgress: function (progressEvent) {
+                        progress.report({ increment: progressEvent.progress, "message": "Downloading mirrord binary..." });
+                    },
+                    responseType: 'arraybuffer',
+                });
 
-                fs.writeFileSync(destPath.fsPath, response.data);
-                fs.chmodSync(destPath.fsPath, 0o755);
-                new NotificationBuilder()
-                    .withMessage(`Downloaded mirrord binary version ${version}`)
-                    .info();
-                resolve();
-            } catch (error) {
-                new NotificationBuilder()
-                    .withMessage(`Error downloading mirrord binary: ${error}`)
-                    .error();
-                reject(error);
-            }
-        });
+            fs.writeFileSync(destPath.fsPath, response.data);
+            fs.chmodSync(destPath.fsPath, 0o755);
+            new NotificationBuilder()
+                .withMessage(`Downloaded mirrord binary version ${version}`)
+                .info();
+        } catch (error) {
+            new NotificationBuilder()
+                .withMessage(`Error downloading mirrord binary: ${error}`)
+                .error();
+            throw error;
+        }
     });
 }

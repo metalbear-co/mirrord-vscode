@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { expect, assert } from "chai";
 import { join } from "path";
-import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, EditorView, SideBarView, DefaultTreeSection, TitleBar, Workbench, until } from "vscode-extension-tester";
+import { VSBrowser, StatusBar, ActivityBar, DebugView, InputBox, DebugToolbar, BottomBarPanel, SideBarView, TitleBar, Workbench, until } from "vscode-extension-tester";
 import get from "axios";
 
 const kubeService = process.env.KUBE_SERVICE;
@@ -74,7 +75,7 @@ describe("mirrord sample flow test", function() {
       let retries = 0;
       while (retries < 3) {
         try {
-          for (let button of await statusBar.getItems()) {
+          for (const button of await statusBar.getItems()) {
             if ((await button.getText()).startsWith('mirrord')) {
               await button.click();
               return true;
@@ -103,7 +104,7 @@ describe("mirrord sample flow test", function() {
       }
 
       for (const pick of await inputBox.getQuickPicks()) {
-        let label = await pick.getLabel();
+        const label = await pick.getLabel();
 
         if (label === podToSelect) {
           return true;
@@ -128,7 +129,7 @@ describe("mirrord sample flow test", function() {
 
     const panel = new BottomBarPanel();
 
-    let terminal = await panel.openTerminalView();
+    const terminal = await panel.openTerminalView();
 
     await browser.driver.wait(async () => {
       const text = await terminal.getText();
@@ -150,7 +151,7 @@ describe("mirrord sample flow test", function() {
  * sends a GET request to the pod's nodePort
  */
 async function sendTrafficToPod() {
-  const response = await get(kubeService!!);
+  const response = await get(kubeService!);
   expect(response.status).to.equal(200);
   expect(response.data).to.equal("OK - GET: Request completed\n");
 }
@@ -159,7 +160,7 @@ async function sendTrafficToPod() {
  * starts debugging the current file with the provided configuration
  * debugging starts from the "Run and Debug" button in the activity bar
 */
-async function startDebugging(configurationFile: string = "Python: Current File") {
+async function startDebugging(configurationFile = "Python: Current File") {
   const activityBar = await new ActivityBar().getViewControl("Run and Debug");
   expect(activityBar).to.not.be.undefined;
   const debugView = await activityBar?.openView() as DebugView;

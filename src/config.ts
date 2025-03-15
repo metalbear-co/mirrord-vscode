@@ -16,7 +16,7 @@ const DEFAULT_CONFIG = `{
 }
 `;
 
-export type EnvVars = { [key: string]: string };
+export type EnvVars = Record<string, string>;
 
 interface LaunchConfig {
   name: string,
@@ -31,12 +31,12 @@ export type VerifiedConfig = ConfigSuccess | ConfigFail;
 /**
 * When `mirrord verify-config` results in a `"Success"`.
 */
-type ConfigSuccess = { 'type': 'Success', config: Config, warnings: string[] };
+interface ConfigSuccess { 'type': 'Success', config: Config, warnings: string[] }
 
 /**
 * When `mirrord verify-config` results in a `"Fail"`.
 */
-type ConfigFail = { 'type': 'Fail', errors: string[] };
+interface ConfigFail { 'type': 'Fail', errors: string[] }
 
 
 /**
@@ -72,9 +72,10 @@ export function isTargetSet(verifiedConfig: VerifiedConfig): boolean {
     case 'Fail':
       verifiedConfig.errors.forEach((fail) => new NotificationBuilder().withMessage(fail).error());
       throw new Error('mirrord verify-config detected an invalid configuration!');
-    default:
-      let _guard: never = verifiedConfig;
+    default: {
+      const _guard: never = verifiedConfig;
       return _guard;
+    }
   }
 }
 
@@ -89,6 +90,7 @@ export class MirrordConfigManager {
   /**
    * All will be called when the active config changes.
    */
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   private activeConfigListeners: ((active?: vscode.Uri) => Thenable<any>)[];
 
   private constructor() {
@@ -147,6 +149,7 @@ export class MirrordConfigManager {
     this.fileListeners.forEach(fl => fl.dispose());
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   public onActiveConfigChange(listener: (active?: vscode.Uri) => Thenable<any>) {
     this.activeConfigListeners.push(listener);
   }
@@ -172,7 +175,7 @@ export class MirrordConfigManager {
    * Any path across the workspace is available, as long as its name ends with `mirrord.{json,toml,yml,yaml}`.
    */
   public async selectActiveConfig() {
-    const options: Map<string, vscode.Uri> = new Map();
+    const options = new Map<string, vscode.Uri>();
 
     const filePatterns = [
       "**/*mirrord.{json,toml,yml,yaml}", // known extensions, names ending with `mirrord`
@@ -190,7 +193,7 @@ export class MirrordConfigManager {
     if (selected === "<unset active config>") {
       this.setActiveConfig(undefined);
     } else if (selected) {
-      let path = options.get(selected)!!;
+      const path = options.get(selected)!;
       this.setActiveConfig(path);
     }
   }
@@ -203,8 +206,8 @@ export class MirrordConfigManager {
    * @returns path to the found config
    */
   private static async getDefaultConfig(folder: vscode.WorkspaceFolder): Promise<vscode.Uri | undefined> {
-    let pattern = new vscode.RelativePattern(folder, ".mirrord/*mirrord.{toml,json,yml,yaml}");
-    let files = await vscode.workspace.findFiles(pattern);
+    const pattern = new vscode.RelativePattern(folder, ".mirrord/*mirrord.{toml,json,yml,yaml}");
+    const files = await vscode.workspace.findFiles(pattern);
     files.sort((f1, f2) => f1.path.localeCompare(f2.path));
     return files[0];
   }
@@ -216,7 +219,7 @@ export class MirrordConfigManager {
    * @returns path to the created config
    */
   private static async createDefaultConfig(folder: vscode.WorkspaceFolder): Promise<vscode.Uri> {
-    let path = vscode.Uri.joinPath(folder.uri, ".mirrord", "mirrord.json");
+    const path = vscode.Uri.joinPath(folder.uri, ".mirrord", "mirrord.json");
     await vscode.workspace.fs.writeFile(path, Buffer.from(DEFAULT_CONFIG));
     return path;
   }
@@ -230,7 +233,7 @@ export class MirrordConfigManager {
    *  - default configs across the workspace
    */
   public async changeSettings() {
-    const options: Map<string, vscode.Uri> = new Map();
+    const options = new Map<string, vscode.Uri>();
 
     // Active config first.
     if (this.active) {
@@ -240,9 +243,9 @@ export class MirrordConfigManager {
     // Then all configs found in launch configurations across the workspace.
     const folders = vscode.workspace.workspaceFolders || [];
     for (const folder of folders) {
-      let launchConfigs = vscode.workspace.getConfiguration("launch", folder)?.get<LaunchConfig[]>("configurations") || [];
+      const launchConfigs = vscode.workspace.getConfiguration("launch", folder)?.get<LaunchConfig[]>("configurations") || [];
       for (const launchConfig of launchConfigs) {
-        let rawPath = launchConfig.env?.["MIRRORD_CONFIG_FILE"];
+        const rawPath = launchConfig.env?.["MIRRORD_CONFIG_FILE"];
         if (!rawPath) {
           continue;
         }
@@ -265,17 +268,17 @@ export class MirrordConfigManager {
 
     // Then all default configurations across the workspace.
     for (const folder of folders) {
-      let path = await MirrordConfigManager.getDefaultConfig(folder);
+      const path = await MirrordConfigManager.getDefaultConfig(folder);
       if (path) {
         options.set(`(default) ${vscode.workspace.asRelativePath(path)}`, path);
       } else {
-        let path = vscode.Uri.joinPath(folder.uri, ".mirrord/mirrord.json");
+        const path = vscode.Uri.joinPath(folder.uri, ".mirrord/mirrord.json");
         options.set(`(create default) ${vscode.workspace.asRelativePath(path)}`, path);
       }
     }
 
-    let quickPickOptions = [...options.keys()];
-    let selected = quickPickOptions.length > 1
+    const quickPickOptions = [...options.keys()];
+    const selected = quickPickOptions.length > 1
       ? await vscode.window.showQuickPick(quickPickOptions, { placeHolder: "Select mirrord config to open" })
       : quickPickOptions[0];
 
@@ -283,12 +286,12 @@ export class MirrordConfigManager {
       return;
     }
 
-    let path = options.get(selected)!!;
+    const path = options.get(selected)!;
     if (selected.startsWith("(create default)")) {
-      await MirrordConfigManager.createDefaultConfig(vscode.workspace.getWorkspaceFolder(path)!!);
+      await MirrordConfigManager.createDefaultConfig(vscode.workspace.getWorkspaceFolder(path)!);
     }
 
-    let doc = await vscode.workspace.openTextDocument(path.path);
+    const doc = await vscode.workspace.openTextDocument(path.path);
     vscode.window.showTextDocument(doc);
   }
 

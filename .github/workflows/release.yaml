@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18.15.x
+          node-version: 20.x
           cache: "npm"
           cache-dependency-path: package-lock.json
       - name: Get release version
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: /tmp/artifacts
-      - uses: montudor/action-zip@v1
+      - uses: metalbear-co/action-zip@0852c26906e00f8a315c704958823928d8018b28
       - name: Prepare binaries for upload
         run: |
           mkdir /tmp/release

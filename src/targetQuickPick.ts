@@ -9,7 +9,7 @@ const LAST_TARGET_KEY = "mirrord-last-target";
 /**
  * A page in the @see TargetQuickPick.
  */
-type TargetQuickPickPage = {
+interface TargetQuickPickPage {
     /**
      * Label to display in the widget.
      */
@@ -20,7 +20,7 @@ type TargetQuickPickPage = {
      * undefined **only** for namespace selection page.
      */
     targetType?: string,
-};
+}
 
 /**
  * Namespace selection page in the @see TargetQuickPick.
@@ -61,7 +61,7 @@ type TargetQuickPickItem = vscode.QuickPickItem & (
  */
 const TARGETLESS_ITEM: TargetQuickPickItem = {
     type: 'target',
-    label: 'No Target (\"targetless\")',
+    label: 'No Target ("targetless")',
     value: 'targetless',
 };
 
@@ -73,7 +73,7 @@ export type TargetFetcher = (namespace?: string) => Thenable<MirrordLsOutput>;
 /**
  * Describes what the user has selected with the @see TargetQuickPick.
  */
-export type UserSelection = {
+export interface UserSelection {
     /**
      * Selected target.
      */
@@ -84,7 +84,7 @@ export type UserSelection = {
      * undefined if the CLI does not support listing namespaces.
      */
     namespace?: string,
-};
+}
 
 /**
  * A quick pick allowing the user to select the target and, if the CLI supports listing namepaces, switch the namespace.
