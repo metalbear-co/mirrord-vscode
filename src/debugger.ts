@@ -100,19 +100,19 @@ async function main(
   updateTelemetries();
 
   //TODO: add progress bar maybe ?
-  let cliPath = await getMirrordBinary(false);
+  const cliPath = await getMirrordBinary(false);
 
   if (!cliPath) {
     mirrordFailure(`Couldn't download mirrord binaries or find local one in path`);
     return null;
   }
 
-  let mirrordApi = new MirrordAPI(cliPath);
+  const mirrordApi = new MirrordAPI(cliPath);
 
   config.env ||= {};
   let quickPickSelection: UserSelection | undefined = undefined;
 
-  let configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
+  const configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
   const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
@@ -146,9 +146,9 @@ async function main(
   // TODO: find a way to use MIRRORD_DETECT_DEBUGGER_PORT for other debuggers.
   config.env["MIRRORD_IGNORE_DEBUGGER_PORTS"] = "45000-65535";
 
-  let isMac = platform() === "darwin";
+  const isMac = platform() === "darwin";
 
-  let [executableFieldName, executable] = isMac ? getFieldAndExecutable(config) : [null, null];
+  const [executableFieldName, executable] = isMac ? getFieldAndExecutable(config) : [null, null];
 
   let executionInfo;
   try {
@@ -166,12 +166,12 @@ async function main(
     changeConfigForSip(config, executableFieldName as string, executionInfo);
   }
 
-  let env = executionInfo?.env;
+  const env = executionInfo?.env;
 
   config.env = Object.assign({}, config.env, Object.fromEntries(env));
 
   if (executionInfo.envToUnset) {
-    for (let key of executionInfo.envToUnset) {
+    for (const key of executionInfo.envToUnset) {
       delete config.env[key];
     }
   }

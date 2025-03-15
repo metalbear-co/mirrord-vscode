@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import { globalContext } from './extension';
-import { setOperatorUsed, tickMirrordForTeamsCounter } from './mirrordForTeams';
+import { tickMirrordForTeamsCounter } from './mirrordForTeams';
 import { NotificationBuilder } from './notification';
 import { MirrordStatus } from './status';
 import { EnvVars, VerifiedConfig } from './config';
@@ -36,7 +36,11 @@ type NotificationLevel = "Info" | "Warning";
 /**
 * Represents an [`IdeAction`] that is a link button in the pop-up box.
 */
-type Link = { kind: "Link", label: string, link: string };
+interface Link {
+  kind: "Link";
+  label: string;
+  link: string;
+}
 
 /**
 * The actions of an [`IdeMessage`].
@@ -85,7 +89,7 @@ function changeQueryParam(link: string): string {
 * These messages contain more information than just text, see [`IdeMessage`].
 */
 function handleIdeMessage(message: IdeMessage) {
-  let notificationBuilder = new NotificationBuilder().withMessage(message.text);
+  const notificationBuilder = new NotificationBuilder().withMessage(message.text);
 
   // Prepares each action.
   message.actions.forEach((action) => {
@@ -114,7 +118,7 @@ function handleIdeMessage(message: IdeMessage) {
 /**
  * A mirrord target found in the cluster.
  */
-export type FoundTarget = {
+export interface FoundTarget {
   /**
    * The path of this target, as in the mirrord config.
    */
@@ -128,7 +132,7 @@ export type FoundTarget = {
 /**
  * The new format of `mirrord ls`, including target availability and namespaces info.
  */
-export type MirrordLsOutput = {
+export interface MirrordLsOutput {
   /**
    * The targets found in the current namespace.
    */
@@ -138,7 +142,6 @@ export type MirrordLsOutput = {
    * 
    * If the CLI does not support listing namespaces, this is undefined.
    */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   current_namespace?: string;
   /**
    * All namespaces visible to the user.
@@ -153,7 +156,7 @@ export type MirrordLsOutput = {
  * 
  * @param output JSON parsed from `mirrord ls` stdout
  */
-function isRichMirrordLsOutput(output: any): output is MirrordLsOutput {
+function isRichMirrordLsOutput(output: MirrordLsOutput | string[]): output is MirrordLsOutput {
   return "targets" in output && "current_namespace" in output && "namespaces" in output;
 }
 
@@ -204,7 +207,7 @@ export class MirrordExecution {
 * Sets up the args that are going to be passed to the mirrord cli.
 */
 const makeMirrordArgs = (target: string | undefined, configFilePath: PathLike | null, userExecutable: PathLike | null): readonly string[] => {
-  let args = ["ext"];
+  const args = ["ext"];
 
   if (target) {
     console.log(`target ${target}`);
@@ -240,13 +243,10 @@ export class MirrordAPI {
     return {
       ...process.env,
       ...configEnv,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       "MIRRORD_PROGRESS_MODE": "json",
       // to have "advanced" progress in IDE
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       "MIRRORD_PROGRESS_SUPPORT_IDE": "true",
       // to have namespaces in the `mirrord ls` output
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       "MIRRORD_LS_RICH_OUTPUT": "true"
     };
   }
@@ -334,13 +334,13 @@ export class MirrordAPI {
 
     const stdout = await this.exec(args, configEnv);
 
-    const targets = JSON.parse(stdout);
+    const targets = JSON.parse(stdout) as MirrordLsOutput | string[];
     let mirrordLsOutput: MirrordLsOutput;
     if (isRichMirrordLsOutput(targets)) {
       mirrordLsOutput = targets;
     } else {
       mirrordLsOutput = {
-        targets: (targets as string[]).map(path => {
+        targets: targets.map(path => {
           return {path, available: true };
         }),
       };
@@ -394,7 +394,7 @@ export class MirrordAPI {
         const args = makeMirrordArgs(quickPickSelection?.path, configFile, executable);
         let env: EnvVars;
         if (quickPickSelection?.namespace) {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
+           
           env = { MIRRORD_TARGET_NAMESPACE: quickPickSelection.namespace, ...configEnv };
         } else {
           env = configEnv;
@@ -441,7 +441,7 @@ export class MirrordAPI {
           console.log(`mirrord: ${data}`);
           buffer += data;
           // fml - AH
-          let messages = buffer.split("\n");
+          const messages = buffer.split("\n");
           for (const rawMessage of messages.slice(0, -1)) {
             if (!rawMessage) {
               break;
@@ -453,7 +453,7 @@ export class MirrordAPI {
             try {
               message = JSON.parse(rawMessage);
             } catch (e) {
-              console.error("Failed to parse message from mirrord: " + data);
+              console.error("Failed to parse message from mirrord: " + data, e);
               return;
             }
 

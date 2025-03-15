@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 export class NotificationBuilder {
   private message: string;
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   private actions: [string, () => Thenable<any>][];
   private configEntry?: string;
 
@@ -38,6 +39,7 @@ export class NotificationBuilder {
     return this;
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   withGenericAction(name: string, handler: () => Thenable<any>): NotificationBuilder {
     this.actions.push([name, handler]);
     return this;
@@ -47,7 +49,7 @@ export class NotificationBuilder {
     this.actions.push([
       "Open",
       async () => {
-        let doc = await vscode.workspace.openTextDocument(uri);
+        const doc = await vscode.workspace.openTextDocument(uri);
         await vscode.window.showTextDocument(doc);
       }
     ]);
