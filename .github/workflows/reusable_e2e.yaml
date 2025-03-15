@@ -72,7 +72,7 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/install.sh | bash
 
       - name: Start minikube
-        uses: medyagh/setup-minikube@master
+        uses: metalbear-co/setup-minikube@3fa06c2257eb48a3ca8e24fedece59ee2479255a
         with:
           container-runtime: docker
       - run: |
