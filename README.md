@@ -6,7 +6,7 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/metalbearco?style=social)](https://twitter.com/metalbearco)
 [![VSCode Marketplace](https://img.shields.io/badge/VSCode%20Extension%20Page-756df3)](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord)
 
-mirrord lets developers [run local processes in the context of their cloud environment](https://mirrord.dev). It’s meant to provide the benefits of running your service on a cloud environment (e.g. staging) without actually going through the hassle of deploying it there, and without disrupting the environment by deploying untested code. It comes as a Visual Studio Code extension, an IntelliJ plugin and a CLI tool. You can read more about what mirrord does [in our official docs](https://mirrord.dev/docs/overview/introduction/).
+mirrord lets developers [run local processes in the context of their cloud environment](https://mirrord.dev). It provides the benefits of running your service on a cloud environment (e.g. staging) without going through the hassle of deploying it there, and without disrupting the environment by deploying untested code. It comes as a Visual Studio Code extension, an IntelliJ plugin and a CLI tool. You can read more about what mirrord does [in our official docs](https://mirrord.dev/docs/overview/introduction/).
 
 <p align="center">
   <img src="/media/readme/demo_gif_cropped.gif" width="90%" alt="A gif showing mirrord being used to steal traffic from a kubernetes cluster in the VSCode UI">
@@ -33,11 +33,9 @@ mirrord's main repository can be found [here](https://github.com/metalbear-co/mi
 
 * The debugged process will start with mirrord, and receive the context of the impersonated pod. It will receive its environment variables and incoming traffic, will read and write files to it, and send outgoing traffic through it.
 
-> Unless explicitly set [in the config](https://mirrord.dev/docs/reference/configuration/#root-kubeconfig), mirrord uses your machine's default kubeconfig for access to the Kubernetes API.
+> Unless explicitly set [in the config](https://mirrord.dev/docs/reference/configuration/#root-kubeconfig), mirrord uses your machine's default kubeconfig for access to the Kubernetes API. Alternatively, use the [port mapping configuration](https://mirrord.dev/docs/reference/configuration/#feature-network-incoming-port_mapping).
 
 > For incoming traffic, make sure your local process is listening on the same port as the remote pod.
-
-> By default, mirrord is disabled when you open a VSCode window. To change this behaviour, set the `enabledByDefault` setting to `true`.
 
 ## Configuring mirrord for VSCode
 
@@ -49,16 +47,6 @@ _Quick start: the easiest way to start configuring mirrord is to choose_ "Settin
   <img src="/media/readme/settings_opt.png" width="20%" alt="A screenshot of mirrord's status bar menu in the VSCode UI, with 'Settings' highlighted">
 </p>
 
-mirrord can read its configuration from multiple places. For more details, see [the documentation on setting up the mirrord config](https://mirrord.dev/docs/using-mirrord/vscode-extension/#using-the-mirrord-config).
-
-<!-- mirrord reads its configuration from the following locations:
-
-1. An active config can be set for the whole workspace using the `selectActiveConfig` command or the link in the status bar menu. If an active config is set, mirrord always uses it.
-2. If an active config is not set, mirrord searches the process environment (specified in the launch configuration) for the `MIRRORD_CONFIG_FILE` variable. This path can use the `${workspaceFolder}` variable.
-3. If no config is specified, mirrord looks for a default project config file in the `.mirrord` directory with a name ending with `mirrord.{json,toml,yaml,yml}`. If there is no default config file, mirrord uses default configuration values for everything. If there are multiple candidates for the default config file, mirrord sorts them alphabetically and uses the first one. -->
-
-You can use the `changeSettings` command or the link in the dropdown menu to quickly edit detected configs.
-
 ## Helpful Links
 
 * [Official documentation for this extension](https://mirrord.dev/docs/using-mirrord/vscode-extension/)
@@ -68,4 +56,4 @@ You can use the `changeSettings` command or the link in the dropdown menu to qui
 
 * Feel free to join to our [Discord channel](https://discord.gg/metalbear) if you need help using mirrord, or if you encounter an issue while using the extension.
 * Check our open issues for [the VSCode extension](https://github.com/metalbear-co/mirrord-vscode/issues) and [mirrord's core code](https://github.com/metalbear-co/mirrord/issues), and 👍 react to any that you would like to see addressed.
-* Before submitting a pull request for new features, please discuss it with us first by opening an issue or a discussion.
+* Before submitting a pull request for new features, please take a look at [mirrord's contributing guide](https://github.com/metalbear-co/mirrord/blob/main/CONTRIBUTING.md).
