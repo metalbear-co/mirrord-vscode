@@ -22,8 +22,7 @@ jobs:
         run: |
           echo "version=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
         id: version
-      # TypeScript set at 4.7.4 because @kubernetes/client-node 0.16.3 (and 0.17.0) breaks with version 4.8.2+
-      - run: npm install -g vsce ovsx typescript@4.7.4 esbuild
+      - run: npm install -g vsce ovsx typescript esbuild
       - run: mkdir -p /tmp/vscode-ext
       - run: |
           npm install
