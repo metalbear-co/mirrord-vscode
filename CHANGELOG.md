@@ -28,6 +28,7 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 - Updated README with new layout and content.
 - Switched to our own forks of some of the GitHub Actions.
+- Switched to the latest version of `typescript` in the release job.
 
 ## [3.65.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.1) - 2025-02-04
 
