@@ -27,7 +27,7 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 ### Internal
 
 - Updated README with new layout and content.
-- Switched to our own fork of the changed-files GitHub Action.
+- Switched to our own forks of some of the GitHub Actions.
 
 ## [3.65.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.1) - 2025-02-04
 
