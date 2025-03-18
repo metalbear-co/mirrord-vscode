@@ -8,6 +8,27 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.65.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.2) - 2025-03-18
+
+
+### Added
+
+- New releases are now published to the Open VSX registry as well.
+  [#171](https://github.com/metalbear-co/mirrord-vscode/issues/171)
+
+
+### Fixed
+
+- The extension now correctly displays the status bar,
+  even if initial download of the mirrord binary fails.
+  [#163](https://github.com/metalbear-co/mirrord-vscode/issues/163)
+
+
+### Internal
+
+- Updated README with new layout and content.
+- Switched to our own fork of the changed-files GitHub Action.
+
 ## [3.65.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.1) - 2025-02-04
 
 
