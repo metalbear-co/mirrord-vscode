@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.65.3](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.3) - 2025-04-10
+
+
+### Fixed
+
+- Fixed images in the VSCode marketplace and Open VSX registry plugin pages.
+  [#177](https://github.com/metalbear-co/mirrord-vscode/issues/177)
+
 ## [3.65.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.2) - 2025-03-18
 
 
