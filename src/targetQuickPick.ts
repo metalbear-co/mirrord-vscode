@@ -32,7 +32,7 @@ const NAMESPACE_SELECTION_PAGE: TargetQuickPickPage = {
 /**
  * Target selection pages in the @see TargetQuickPick.
  */
-const TARGET_SELECTION_PAGES: (TargetQuickPickPage & {targetType: string})[] = [
+const TARGET_SELECTION_PAGES: (TargetQuickPickPage & { targetType: string })[] = [
     {
         label: 'Show Deployments',
         targetType: 'deployment',
@@ -315,5 +315,12 @@ export class TargetQuickPick {
                     return { path: 'targetless', namespace: this.lsOutput.current_namespace };
             }
         }
+    }
+
+    /**
+     * Extract the resource types that the quick pick supports from @see TARGET_SELECTION_PAGES
+     */
+    static getSupportedTargetTypes(): string[] {
+        return TARGET_SELECTION_PAGES.map((page) => page.targetType);
     }
 }

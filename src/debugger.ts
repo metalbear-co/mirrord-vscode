@@ -117,8 +117,9 @@ async function main(
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
   if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
+    const supportedTypes = TargetQuickPick.getSupportedTargetTypes();
     const getTargets = async (namespace?: string) => {
-      return mirrordApi.listTargets(configPath?.path, config.env, namespace);
+      return mirrordApi.listTargets(configPath?.path, config.env, supportedTypes, namespace);
     };
 
     try {

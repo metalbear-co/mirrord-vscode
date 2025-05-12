@@ -29,6 +29,11 @@ const DISCORD_COUNTER = 'mirrord-discord-counter';
 const DISCORD_COUNTER_PROMPT_AFTER = 10;
 
 /**
+* Environment variable name for listing targets with a specific type via the CLI 'ls' command.
+*/
+const MIRRORD_LS_TARGET_TYPES_ENV = "MIRRORD_LS_TARGET_TYPES";
+
+/**
 * Level of the notification, different levels map to different notification boxes.
 */
 type NotificationLevel = "Info" | "Warning";
@@ -322,7 +327,7 @@ export class MirrordAPI {
   * 
   * @see MirrordLsOutput
   */
-  async listTargets(configPath: string | null | undefined, configEnv: EnvVars, namespace?: string): Promise<MirrordLsOutput> {
+  async listTargets(configPath: string | null | undefined, configEnv: EnvVars, targetTypes: string[], namespace?: string,): Promise<MirrordLsOutput> {
     const args = ['ls'];
     if (configPath) {
       args.push('-f', configPath);
@@ -331,6 +336,8 @@ export class MirrordAPI {
     if (namespace !== undefined) {
       args.push('-n', namespace);
     }
+
+    configEnv[MIRRORD_LS_TARGET_TYPES_ENV] = JSON.stringify(targetTypes);
 
     const stdout = await this.exec(args, configEnv);
 
@@ -341,7 +348,7 @@ export class MirrordAPI {
     } else {
       mirrordLsOutput = {
         targets: targets.map(path => {
-          return {path, available: true };
+          return { path, available: true };
         }),
       };
     }
@@ -394,7 +401,6 @@ export class MirrordAPI {
         const args = makeMirrordArgs(quickPickSelection?.path, configFile, executable);
         let env: EnvVars;
         if (quickPickSelection?.namespace) {
-           
           env = { MIRRORD_TARGET_NAMESPACE: quickPickSelection.namespace, ...configEnv };
         } else {
           env = configEnv;
