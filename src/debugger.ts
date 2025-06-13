@@ -153,7 +153,7 @@ async function main(
 
   let executionInfo;
   try {
-    executionInfo = await mirrordApi.binaryExecute(quickPickSelection, configPath?.path || null, executable, config.env);
+    executionInfo = await mirrordApi.binaryExecute(quickPickSelection, configPath?.path || null, executable, config.env, folder?.uri.path);
   } catch (err) {
     mirrordFailure(`mirrord preparation failed: ${err}`);
     return null;
