@@ -36,7 +36,9 @@ jobs:
         if: github.event_name != 'workflow_dispatch'
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
-        run: ovsx publish /tmp/vscode-ext/mirrord-${{ steps.version.outputs.version }}.vsix
+        run: |
+          ovsx verify /tmp/vscode-ext/mirrord-${{ steps.version.outputs.version }}.vsix
+          ovsx publish /tmp/vscode-ext/mirrord-${{ steps.version.outputs.version }}.vsix --namespace MetalBear
       - uses: actions/upload-artifact@v4
         with:
           name: vscode-ext

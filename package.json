@@ -11,6 +11,19 @@
 		"type": "git",
 		"url": "https://github.com/metalbear-co/mirrord"
 	},
+	"qna": "https://github.com/metalbear-co/mirrord/discussions",
+	"badges": [
+		{
+			"url": "https://img.shields.io/badge/Join-e5f7f7?logo=slack&label=Community%20Slack",
+			"href": "https://metalbear.co/slack",
+			"description": "Join our Slack community"
+		},
+		{
+			"url": "https://img.shields.io/discord/933706914808889356?color=5865F2&label=Discord&logo=discord&logoColor=white",
+			"href": "https://discord.gg/metalbear",
+			"description": "Join our Discord community"
+		}
+	],
 	"categories": [
 		"Testing",
 		"Debuggers",
