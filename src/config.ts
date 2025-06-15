@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 import { NotificationBuilder } from './notification';
 
-type Thenable<T> = Promise<T>;
-
 /**
  * Default mirrord configuration.
  */
@@ -98,13 +96,13 @@ export class MirrordConfigManager {
   private constructor() {
     this.fileListeners = [];
 
-    this.fileListeners.push(vscode.workspace.onDidDeleteFiles(async (event: vscode.FileDeleteEvent) => {
+    this.fileListeners.push(vscode.workspace.onDidDeleteFiles(async event => {
       const activePath = this.active?.path;
       if (!activePath) {
         return;
       }
 
-      const deleted = event.files.find((file: vscode.Uri) => activePath.startsWith(file.path));
+      const deleted = event.files.find(file => activePath.startsWith(file.path));
 
       if (deleted) {
         new NotificationBuilder()
@@ -118,13 +116,13 @@ export class MirrordConfigManager {
       }
     }));
 
-    this.fileListeners.push(vscode.workspace.onDidRenameFiles(async (event: vscode.FileRenameEvent) => {
+    this.fileListeners.push(vscode.workspace.onDidRenameFiles(async event => {
       const activePath = this.active?.path;
       if (!activePath) {
         return;
       }
 
-      const moved = event.files.find((file: { oldUri: vscode.Uri; newUri: vscode.Uri }) => activePath.startsWith(file.oldUri.path));
+      const moved = event.files.find(file => activePath.startsWith(file.oldUri.path));
       if (moved) {
         const newPath = activePath.replace(moved.oldUri.path, moved.newUri.path);
         const newUri = vscode.Uri.parse(`file://${newPath}`);
@@ -184,16 +182,8 @@ export class MirrordConfigManager {
       "**/*.mirrord/*.{json,toml,yml,yaml}", // known extensions, located in directories with names ending with `.mirrord` 
     ];
 
-    await vscode.window.withProgress({
-      location: vscode.ProgressLocation.Notification,
-      title: "Searching for mirrord config files...",
-      cancellable: false
-    }, async (progress: vscode.Progress<{ increment: number }>) => {
-      progress.report({ increment: 0 });
-      const files = await Promise.all(filePatterns.map(pattern => vscode.workspace.findFiles(pattern)));
-      progress.report({ increment: 100 });
-      files.flat().forEach((file: vscode.Uri) => options.set(vscode.workspace.asRelativePath(file), file));
-    });
+    const files = await Promise.all(filePatterns.map(pattern => vscode.workspace.findFiles(pattern)));
+    files.flat().forEach(file => options.set(vscode.workspace.asRelativePath(file), file));
 
     const displayed = this.active ? ["<unset active config>", ...options.keys()] : [...options.keys()];
     const placeHolder = this.active
@@ -218,7 +208,7 @@ export class MirrordConfigManager {
   private static async getDefaultConfig(folder: vscode.WorkspaceFolder): Promise<vscode.Uri | undefined> {
     const pattern = new vscode.RelativePattern(folder, ".mirrord/*mirrord.{toml,json,yml,yaml}");
     const files = await vscode.workspace.findFiles(pattern);
-    files.sort((f1: vscode.Uri, f2: vscode.Uri) => f1.path.localeCompare(f2.path));
+    files.sort((f1, f2) => f1.path.localeCompare(f2.path));
     return files[0];
   }
 
