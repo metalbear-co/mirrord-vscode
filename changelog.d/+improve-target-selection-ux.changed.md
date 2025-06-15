@@ -1,0 +1,1 @@
+Improved target selection UX by adding a "Use most recent target" option at the top of the list, making it easier to quickly select the last used target while maintaining the original target list order. 
