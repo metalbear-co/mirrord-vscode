@@ -3,6 +3,8 @@ import { MirrordLsOutput } from './api';
 import { globalContext } from './extension';
 import { NotificationBuilder } from './notification';
 
+type Thenable<T> = Promise<T>;
+
 /// Key used to store the last selected target in the persistent state.
 const LAST_TARGET_KEY = "mirrord-last-target";
 
@@ -128,7 +130,7 @@ export class TargetQuickPick {
     static async new(getTargets: (namespace?: string) => Thenable<MirrordLsOutput>): Promise<TargetQuickPick> {
         const getFilteredTargets = async (namespace?: string) => {
             const output = await getTargets(namespace);
-            output.targets = output.targets.filter(t => {
+            output.targets = output.targets.filter((t: { available: boolean; path: string }) => {
                 if (!t.available) {
                     return false;
                 }
@@ -298,7 +300,15 @@ export class TargetQuickPick {
                     return { path: newSelection.value, namespace: this.lsOutput.current_namespace };
 
                 case 'namespace':
-                    this.lsOutput = await this.getTargets(newSelection.value);
+                    await vscode.window.withProgress({
+                        location: vscode.ProgressLocation.Notification,
+                        title: "Fetching targets...",
+                        cancellable: false
+                    }, async (progress: vscode.Progress<{ increment: number }>) => {
+                        progress.report({ increment: 0 });
+                        this.lsOutput = await this.getTargets(newSelection.value);
+                        progress.report({ increment: 100 });
+                    });
                     this.activePage = undefined;
                     break;
 
