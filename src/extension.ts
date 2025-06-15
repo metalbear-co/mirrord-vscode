@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { ConfigurationProvider } from './debugger';
 import { MirrordStatus } from './status';
 import { getMirrordBinary } from './binaryManager';
+import { MirrordConfigManager } from './config';
+import { MirrordConfigViewProvider } from './configView';
 
 export let globalContext: vscode.ExtensionContext;
 
@@ -21,4 +23,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	new MirrordStatus(vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0))
 		.register()
 		.draw();
+
+	// Register the config view provider
+	const configManager = MirrordConfigManager.getInstance();
+	const configViewProvider = new MirrordConfigViewProvider(context.extensionUri, configManager);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(MirrordConfigViewProvider.viewType, configViewProvider)
+	);
 }
