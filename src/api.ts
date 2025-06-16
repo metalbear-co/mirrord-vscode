@@ -325,7 +325,7 @@ export class MirrordAPI {
    * @dir : the user's workplace folder
    */
   async getBranchName(dir: string): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       exec("git -C " + dir + " branch --show-current", (error, stdout, _stderr) => {
         if (error) {
           reject(error);
@@ -403,9 +403,9 @@ export class MirrordAPI {
     tickFeedbackCounter();
     tickDiscordCounter();
 
-    let branchName: string | void;
-    if (workspacePath !== null && typeof workspacePath === 'string') {
-      branchName = await this.getBranchName(workspacePath).catch(error => console.log("mirrord failed to retrieve git branch name", error));
+    let branchName = "";
+    if (workspacePath !== undefined) {
+      branchName = await this.getBranchName(workspacePath).catch(error => console.log("mirrord failed to retrieve git branch name", error)).then((res) => res ? res.trim() : "");
     }
 
     /// Create a promise that resolves when the mirrord process exits
@@ -426,10 +426,9 @@ export class MirrordAPI {
         } else {
           env = configEnv;
         }
-        if (branchName !== null && typeof branchName === 'string') {
+        if (branchName.length > 0) {
           env = { MIRRORD_BRANCH_NAME: branchName, ...env };
         }
-        console.log("promise branchName:", branchName);
 
         const child = this.spawnCliWithArgsAndEnv(args, env);
 
