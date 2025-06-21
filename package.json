@@ -31,12 +31,31 @@
 	],
 	"icon": "images/icon.png",
 	"activationEvents": [
-		"onStartupFinished"
+		"onStartupFinished",
+		"onView:mirrord.configView"
 	],
 	"extensionKind": [
 		"workspace"
 	],
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "mirrord-sidebar",
+					"title": "mirrord",
+					"icon": "images/icon.png"
+				}
+			]
+		},
+		"views": {
+			"mirrord-sidebar": [
+				{
+					"type": "webview",
+					"id": "mirrord.configView",
+					"name": "Configuration"
+				}
+			]
+		},
 		"commands": [
 			{
 				"command": "mirrord.changeSettings",
@@ -67,6 +86,11 @@
 				"command": "mirrord.documentation",
 				"category": "mirrord",
 				"title": "Open mirrord documentation"
+			},
+			{
+				"command": "mirrord.refreshConfigView",
+				"category": "mirrord",
+				"title": "Refresh Configuration View"
 			}
 		],
 		"configuration": {
@@ -187,6 +211,13 @@
 				{
 					"command": "mirrord.documentation",
 					"when": "true"
+				}
+			],
+			"view/title": [
+				{
+					"command": "mirrord.refreshConfigView",
+					"when": "view == mirrord.configView",
+					"group": "navigation"
 				}
 			]
 		},

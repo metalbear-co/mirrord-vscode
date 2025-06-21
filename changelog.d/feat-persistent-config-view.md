@@ -1,0 +1,1 @@
+Added persistent configuration view in sidebar to display active configuration status. 
