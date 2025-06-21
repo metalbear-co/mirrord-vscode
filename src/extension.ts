@@ -30,4 +30,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(MirrordConfigViewProvider.viewType, configViewProvider)
 	);
+
+	// Register the refresh command for the config view
+	context.subscriptions.push(
+		vscode.commands.registerCommand('mirrord.refreshConfigView', () => {
+			configViewProvider.refresh();
+		})
+	);
 }

@@ -9,11 +9,12 @@ export class MirrordConfigViewProvider implements vscode.WebviewViewProvider {
         private readonly _extensionUri: vscode.Uri,
         private readonly _configManager: MirrordConfigManager
     ) {
-        vscode.commands.registerCommand('mirrord.refreshConfigView', () => {
-            if (this._view) {
-                this._updateView(this._view);
-            }
-        });
+    }
+
+    public refresh() {
+        if (this._view) {
+            this._updateView(this._view);
+        }
     }
 
     public resolveWebviewView(
