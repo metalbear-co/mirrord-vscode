@@ -173,6 +173,7 @@ async function main(
       progress.report({ increment: 100 });
       return result;
     });
+    executionInfo = await mirrordApi.binaryExecute(quickPickSelection, configPath?.path || null, executable, config.env, folder?.uri.path);
   } catch (err) {
     mirrordFailure(`mirrord preparation failed: ${err}`);
     return null;
