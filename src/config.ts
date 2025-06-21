@@ -250,42 +250,54 @@ export class MirrordConfigManager {
       options.set(`(active) ${vscode.workspace.asRelativePath(this.active.path)}`, this.active);
     }
 
-    // Then all configs found in launch configurations across the workspace.
-    const folders = vscode.workspace.workspaceFolders || [];
-    for (const folder of folders) {
-      const launchConfigs = vscode.workspace.getConfiguration("launch", folder)?.get<LaunchConfig[]>("configurations") || [];
-      for (const launchConfig of launchConfigs) {
-        const rawPath = launchConfig.env?.["MIRRORD_CONFIG_FILE"];
-        if (!rawPath) {
-          continue;
-        }
+    await vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: "Gathering mirrord config options...",
+      cancellable: false
+    }, async (progress: vscode.Progress<{ increment: number }>) => {
+      progress.report({ increment: 0 });
 
-        let path;
-        if (rawPath.startsWith("/")) {
-          path = vscode.Uri.file(rawPath);
-        } else {
-          path = vscode.Uri.joinPath(folder.uri, rawPath);
+      // Then all configs found in launch configurations across the workspace.
+      const folders = vscode.workspace.workspaceFolders || [];
+      for (const folder of folders) {
+        const launchConfigs = vscode.workspace.getConfiguration("launch", folder)?.get<LaunchConfig[]>("configurations") || [];
+        for (const launchConfig of launchConfigs) {
+          const rawPath = launchConfig.env?.["MIRRORD_CONFIG_FILE"];
+          if (!rawPath) {
+            continue;
+          }
 
-        }
+          let path;
+          if (rawPath.startsWith("/")) {
+            path = vscode.Uri.file(rawPath);
+          } else {
+            path = vscode.Uri.joinPath(folder.uri, rawPath);
 
-        if (folders.length > 1) {
-          options.set(`(launch config ${folder.name}:${launchConfig.name}) ${vscode.workspace.asRelativePath(path)}`, path);
-        } else {
-          options.set(`(launch config ${launchConfig.name}) ${vscode.workspace.asRelativePath(path)}`, path);
+          }
+
+          if (folders.length > 1) {
+            options.set(`(launch config ${folder.name}:${launchConfig.name}) ${vscode.workspace.asRelativePath(path)}`, path);
+          } else {
+            options.set(`(launch config ${launchConfig.name}) ${vscode.workspace.asRelativePath(path)}`, path);
+          }
         }
       }
-    }
 
-    // Then all default configurations across the workspace.
-    for (const folder of folders) {
-      const path = await MirrordConfigManager.getDefaultConfig(folder);
-      if (path) {
-        options.set(`(default) ${vscode.workspace.asRelativePath(path)}`, path);
-      } else {
-        const path = vscode.Uri.joinPath(folder.uri, ".mirrord/mirrord.json");
-        options.set(`(create default) ${vscode.workspace.asRelativePath(path)}`, path);
+      progress.report({ increment: 50 });
+
+      // Then all default configurations across the workspace.
+      for (const folder of folders) {
+        const path = await MirrordConfigManager.getDefaultConfig(folder);
+        if (path) {
+          options.set(`(default) ${vscode.workspace.asRelativePath(path)}`, path);
+        } else {
+          const path = vscode.Uri.joinPath(folder.uri, ".mirrord/mirrord.json");
+          options.set(`(create default) ${vscode.workspace.asRelativePath(path)}`, path);
+        }
       }
-    }
+
+      progress.report({ increment: 100 });
+    });
 
     const quickPickOptions = [...options.keys()];
     const selected = quickPickOptions.length > 1

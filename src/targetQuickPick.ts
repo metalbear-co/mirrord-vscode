@@ -140,9 +140,18 @@ export class TargetQuickPick {
             return output;
         };
 
-        const lsOutput = await getFilteredTargets();
+        let lsOutput: MirrordLsOutput;
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: "Fetching targets...",
+            cancellable: false
+        }, async (progress: vscode.Progress<{ increment: number }>) => {
+            progress.report({ increment: 0 });
+            lsOutput = await getFilteredTargets();
+            progress.report({ increment: 100 });
+        });
 
-        return new TargetQuickPick(getFilteredTargets, lsOutput);
+        return new TargetQuickPick(getFilteredTargets, lsOutput!);
     }
 
     /**
