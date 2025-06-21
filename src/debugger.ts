@@ -113,7 +113,17 @@ async function main(
   let quickPickSelection: UserSelection | undefined = undefined;
 
   const configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
-  const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
+  
+  let verifiedConfig;
+  await vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: "Verifying mirrord configuration...",
+    cancellable: false
+  }, async (progress: vscode.Progress<{ increment: number }>) => {
+    progress.report({ increment: 0 });
+    verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
+    progress.report({ increment: 100 });
+  });
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
   if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
@@ -151,8 +161,18 @@ async function main(
 
   const [executableFieldName, executable] = isMac ? getFieldAndExecutable(config) : [null, null];
 
-  let executionInfo;
+  let executionInfo: MirrordExecution;
   try {
+    executionInfo = await vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: "Preparing mirrord environment...",
+      cancellable: false
+    }, async (progress: vscode.Progress<{ increment: number }>) => {
+      progress.report({ increment: 0 });
+      const result = await mirrordApi.binaryExecute(quickPickSelection, configPath?.path || null, executable, config.env);
+      progress.report({ increment: 100 });
+      return result;
+    });
     executionInfo = await mirrordApi.binaryExecute(quickPickSelection, configPath?.path || null, executable, config.env, folder?.uri.path);
   } catch (err) {
     mirrordFailure(`mirrord preparation failed: ${err}`);
