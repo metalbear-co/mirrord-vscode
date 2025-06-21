@@ -18,9 +18,10 @@ export class MirrordConfigViewProvider implements vscode.WebviewViewProvider {
 
     public resolveWebviewView(
         webviewView: vscode.WebviewView,
-        context: vscode.WebviewViewResolveContext,
+        _context: vscode.WebviewViewResolveContext,
         _token: vscode.CancellationToken,
     ) {
+        console.log('ConfigView: resolveWebviewView called');
         this._view = webviewView;
 
         webviewView.webview.options = {
@@ -29,27 +30,47 @@ export class MirrordConfigViewProvider implements vscode.WebviewViewProvider {
         };
 
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        console.log('ConfigView: HTML set for webview');
+
+        // Handle messages from the webview
+        webviewView.webview.onDidReceiveMessage(
+            message => {
+                console.log('ConfigView: Received message from webview:', message);
+                switch (message.type) {
+                    case 'ready':
+                        console.log('ConfigView: Webview is ready');
+                        this._updateView(webviewView);
+                        break;
+                }
+            }
+        );
 
         this._configManager.onActiveConfigChange(async (activeConfig) => {
+            console.log('ConfigView: Active config changed:', activeConfig?.path);
             if (this._view) {
                 await this._updateView(this._view);
             }
         });
 
-        this._updateView(webviewView);
+        // Don't call _updateView here, wait for ready message from webview
     }
 
     private async _updateView(webviewView: vscode.WebviewView) {
-        const activeConfig = this._configManager.activeConfig();
-        const configPath = activeConfig ? vscode.workspace.asRelativePath(activeConfig) : 'No active configuration';
+        try {
+            const activeConfig = this._configManager.activeConfig();
+            const configPath = activeConfig ? vscode.workspace.asRelativePath(activeConfig) : 'No active configuration';
+            console.log('ConfigView: Updating view with config path:', configPath);
 
-        webviewView.webview.postMessage({
-            type: 'update',
-            configPath: configPath
-        });
+            webviewView.webview.postMessage({
+                type: 'update',
+                configPath: configPath
+            });
+        } catch (error) {
+            console.error('Error updating config view:', error);
+        }
     }
 
-    private _getHtmlForWebview(webview: vscode.Webview) {
+    private _getHtmlForWebview(_webview: vscode.Webview) {
         return `<!DOCTYPE html>
             <html lang="en">
             <head>
@@ -95,11 +116,15 @@ export class MirrordConfigViewProvider implements vscode.WebviewViewProvider {
                     (function() {
                         const vscode = acquireVsCodeApi();
                         const configPathElement = document.getElementById('configPath');
+                        
+                        console.log('ConfigView: Webview script initialized');
 
                         window.addEventListener('message', event => {
+                            console.log('ConfigView: Received message:', event.data);
                             const message = event.data;
                             switch (message.type) {
                                 case 'update':
+                                    console.log('ConfigView: Updating config path to:', message.configPath);
                                     if (message.configPath === 'No active configuration') {
                                         configPathElement.textContent = message.configPath;
                                         configPathElement.className = 'config-value no-config';
@@ -110,6 +135,9 @@ export class MirrordConfigViewProvider implements vscode.WebviewViewProvider {
                                     break;
                             }
                         });
+                        
+                        // Send initial ready message
+                        vscode.postMessage({ type: 'ready' });
                     })();
                 </script>
             </body>
