@@ -1,0 +1,1 @@
+Added Open VSX Registry publishing to the release workflow, making the extension available in Codium's marketplace. 
