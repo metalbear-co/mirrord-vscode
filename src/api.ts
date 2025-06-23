@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import { ChildProcessWithoutNullStreams, spawn, exec } from 'child_process';
 import { globalContext } from './extension';
 import { tickMirrordForTeamsCounter } from './mirrordForTeams';
 import { NotificationBuilder } from './notification';
@@ -321,6 +321,22 @@ export class MirrordAPI {
   }
 
   /**
+   * Runs git -C @dir branch --show-current and returns a promise of the branch name.
+   * @dir : the user's workplace folder
+   */
+  async getBranchName(dir: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      exec("git -C " + dir + " branch --show-current", (error, stdout, _stderr) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(stdout);
+        }
+      });
+    });
+  }
+
+  /**
   * Uses `mirrord ls` to get lists of targets and namespaces.
   * 
   * Note that old CLI versions return only targets.
@@ -382,10 +398,15 @@ export class MirrordAPI {
   *                             `undefined` if we found the target in the config,
   *                             and the widget was not shown.
   */
-  async binaryExecute(quickPickSelection: UserSelection | undefined, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
+  async binaryExecute(quickPickSelection: UserSelection | undefined, configFile: string | null, executable: string | null, configEnv: EnvVars, workspacePath: string | undefined): Promise<MirrordExecution> {
     tickMirrordForTeamsCounter();
     tickFeedbackCounter();
     tickDiscordCounter();
+
+    let branchName = "";
+    if (workspacePath !== undefined) {
+      branchName = await this.getBranchName(workspacePath).catch(error => console.log("mirrord failed to retrieve git branch name", error)).then((res) => res ? res.trim() : "");
+    }
 
     /// Create a promise that resolves when the mirrord process exits
     return await vscode.window.withProgress({
@@ -404,6 +425,9 @@ export class MirrordAPI {
           env = { MIRRORD_TARGET_NAMESPACE: quickPickSelection.namespace, ...configEnv };
         } else {
           env = configEnv;
+        }
+        if (branchName.length > 0) {
+          env = { MIRRORD_BRANCH_NAME: branchName, ...env };
         }
 
         const child = this.spawnCliWithArgsAndEnv(args, env);
