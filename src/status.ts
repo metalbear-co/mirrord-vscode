@@ -8,7 +8,7 @@ export class MirrordStatus {
     readonly statusBar: vscode.StatusBarItem;
     static readonly toggleCommandId = 'mirrord.toggleMirroring';
     static readonly settingsCommandId = 'mirrord.changeSettings';
-    static readonly joinDiscordCommandId = 'mirrord.joinDiscord';
+    static readonly joinSlackCommandId = 'mirrord.joinSlack';
     static readonly mirrordForTeamsCommandId = 'mirrord.mirrordForTeams';
     static readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
     static readonly helpCommandId = 'mirrord.help';
@@ -51,7 +51,7 @@ export class MirrordStatus {
             statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams](command:${MirrordStatus.mirrordForTeamsCommandId})`);
         }
         statusBar.tooltip.appendMarkdown(`\n\n[Documentation](command:${MirrordStatus.documentationCommandId})`);
-        statusBar.tooltip.appendMarkdown(`\n\n[Get help on Discord](command:${MirrordStatus.joinDiscordCommandId})`);
+        statusBar.tooltip.appendMarkdown(`\n\n[Get help on Slack](command:${MirrordStatus.joinSlackCommandId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Walkthrough](command:${MirrordStatus.helpCommandId})`);
 
         statusBar.show();
@@ -68,7 +68,7 @@ export class MirrordStatus {
         }));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.settingsCommandId, configManager.changeSettings.bind(configManager)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.toggleCommandId, this.toggle.bind(this)));
-        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.joinDiscordCommandId, this.joinDiscord.bind(this)));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.joinSlackCommandId, this.joinSlack.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.mirrordForTeamsCommandId, this.mirrordForTeams.bind(this)));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.helpCommandId, async () => {
             vscode.commands.executeCommand(`workbench.action.openWalkthrough`, `MetalBear.mirrord#mirrord.welcome`, false);
@@ -101,8 +101,8 @@ export class MirrordStatus {
         this.draw();
     }
 
-    joinDiscord() {
-        vscode.env.openExternal(vscode.Uri.parse('https://discord.gg/metalbear'));
+    joinSlack() {
+        vscode.env.openExternal(vscode.Uri.parse('https://metalbear.co/slack'));
     }
 
     mirrordForTeams() {

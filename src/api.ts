@@ -19,14 +19,14 @@ const FEEDBACK_COUNTER = 'mirrord-feedback-counter';
 const FEEDBACK_COUNTER_REVIEW_AFTER = 100;
 
 /**
-* Key to access the feedback counter (see `tickDiscordCounter`) from the global user config.
+* Key to access the feedback counter (see `tickSlackCounter`) from the global user config.
 */
-const DISCORD_COUNTER = 'mirrord-discord-counter';
+const SLACK_COUNTER = 'mirrord-slack-counter';
 
 /**
-* Amount of times we run mirrord before inviting the user to join the Discord server.
+* Amount of times we run mirrord before inviting the user to join the Slack server.
 */
-const DISCORD_COUNTER_PROMPT_AFTER = 10;
+const SLACK_COUNTER_PROMPT_AFTER = 10;
 
 /**
 * Environment variable name for listing targets with a specific type via the CLI 'ls' command.
@@ -169,8 +169,8 @@ function isRichMirrordLsOutput(output: MirrordLsOutput | string[]): output is Mi
 export function mirrordFailure(error: string) {
   new NotificationBuilder()
     .withMessage(`${error}. Please check the logs/errors.`)
-    .withGenericAction("Get help on Discord", async () => {
-      vscode.env.openExternal(vscode.Uri.parse('https://discord.gg/metalbear'));
+    .withGenericAction("Get help on Slack", async () => {
+      vscode.env.openExternal(vscode.Uri.parse('https://metalbear.co/slack'));
     })
     .withGenericAction("Open an issue on GitHub", async () => {
       vscode.env.openExternal(vscode.Uri.parse('https://github.com/metalbear-co/mirrord/issues/new/choose'));
@@ -401,7 +401,7 @@ export class MirrordAPI {
   async binaryExecute(quickPickSelection: UserSelection | undefined, configFile: string | null, executable: string | null, configEnv: EnvVars, workspacePath: string | undefined): Promise<MirrordExecution> {
     tickMirrordForTeamsCounter();
     tickFeedbackCounter();
-    tickDiscordCounter();
+    tickSlackCounter();
 
     let branchName = "";
     if (workspacePath !== undefined) {
@@ -576,7 +576,7 @@ function tickFeedbackCounter() {
         );
       })
       .withGenericAction("Feedback", async () => {
-        vscode.commands.executeCommand(MirrordStatus.joinDiscordCommandId);
+        vscode.commands.executeCommand(MirrordStatus.joinSlackCommandId);
       })
       .withDisableAction('promptReview')
       .info();
@@ -584,22 +584,22 @@ function tickFeedbackCounter() {
 }
 
 /**
-* Updates the global Discord counter.
-* After `DISCORD_COUNTER_PROMPT_AFTER` mirrord runs, displays a message asking the user to join the discord.
+* Updates the global Slack counter.
+* After `SLACK_COUNTER_PROMPT_AFTER` mirrord runs, displays a message asking the user to join the slack.
 */
-function tickDiscordCounter() {
-  const previousRuns = parseInt(globalContext.globalState.get(DISCORD_COUNTER) ?? '0');
+function tickSlackCounter() {
+  const previousRuns = parseInt(globalContext.globalState.get(SLACK_COUNTER) ?? '0');
   const currentRuns = previousRuns + 1;
 
-  globalContext.globalState.update(DISCORD_COUNTER, currentRuns);
+  globalContext.globalState.update(SLACK_COUNTER, currentRuns);
 
-  if ((currentRuns - DISCORD_COUNTER_PROMPT_AFTER) === 0) {
+  if ((currentRuns - SLACK_COUNTER_PROMPT_AFTER) === 0) {
     new NotificationBuilder()
-      .withMessage(`Need any help with mirrord? Come chat with our team on Discord!`)
-      .withGenericAction("Join us!", async () => {
-        vscode.commands.executeCommand(MirrordStatus.joinDiscordCommandId);
+      .withMessage(`Need any help with mirrord? Come chat with our team on Slack!`)
+      .withGenericAction("Join Slack", async () => {
+        vscode.commands.executeCommand(MirrordStatus.joinSlackCommandId);
       })
-      .withDisableAction('promptDiscord')
+      .withDisableAction('promptSlack')
       .info();
   }
 }
