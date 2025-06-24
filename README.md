@@ -1,7 +1,6 @@
 # mirrord for Visual Studio Code
 
 [![Community Slack](https://img.shields.io/badge/Join-e5f7f7?logo=slack&label=Community%20Slack)](https://metalbear.co/slack)
-[![Discord](https://img.shields.io/discord/933706914808889356?color=5865F2&label=Discord&logo=discord&logoColor=white)](https://discord.gg/metalbear)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/metalbear-co/mirrord-vscode)
 [![Twitter Follow](https://img.shields.io/twitter/follow/metalbearco?style=social)](https://twitter.com/metalbearco)
@@ -55,6 +54,6 @@ _Quick start: the easiest way to start configuring mirrord is to choose_ "Settin
 
 ## Contributions, feature requests, issues and support
 
-* Feel free to join to our [Discord channel](https://discord.gg/metalbear) if you need help using mirrord, or if you encounter an issue while using the extension.
+* Feel free to join to our [Slack](https://metalbear.co/slack) if you need help using mirrord, or if you encounter an issue while using the extension.
 * Check our open issues for [the VSCode extension](https://github.com/metalbear-co/mirrord-vscode/issues) and [mirrord's core code](https://github.com/metalbear-co/mirrord/issues), and 👍 react to any that you would like to see addressed.
 * Before submitting a pull request for new features, please take a look at [mirrord's contributing guide](https://github.com/metalbear-co/mirrord/blob/main/CONTRIBUTING.md).

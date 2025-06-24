@@ -3,7 +3,7 @@
 	"displayName": "mirrord",
 	"description": "Run your local process in the context of your cloud cluster",
 	"publisher": "MetalBear",
-	"version": "3.65.3",
+	"version": "3.66.0",
 	"engines": {
 		"vscode": "^1.63.0"
 	},
@@ -54,9 +54,9 @@
 				"title": "Select active configuration"
 			},
 			{
-				"command": "mirrord.joinDiscord",
+				"command": "mirrord.joinSlack",
 				"category": "mirrord",
-				"title": "Join our Discord"
+				"title": "Join our Slack"
 			},
 			{
 				"command": "mirrord.help",
@@ -122,10 +122,10 @@
 					"default": true,
 					"description": "Occasionally show a notification asking for plugin review."
 				},
-				"mirrord.promptDiscord": {
+				"mirrord.promptSlack": {
 					"type": "boolean",
 					"default": true,
-					"description": "Show a notification inviting the user to the Discord server."
+					"description": "Show a notification inviting the user to the Slack server."
 				},
 				"mirrord.promptAgentVersionMismatch": {
 					"type": "boolean",
@@ -177,7 +177,7 @@
 					"when": "true"
 				},
 				{
-					"command": "mirrord.joinDiscord",
+					"command": "mirrord.joinSlack",
 					"when": "true"
 				},
 				{
