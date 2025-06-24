@@ -8,6 +8,26 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.66.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.66.0) - 2025-06-24
+
+
+### Added
+
+- Retrieve the current git branch name and set into env for launching mirrord
+  to allow for Jira integration.
+
+
+### Changed
+
+- Change the target selection dialog to not fetch unsupported resource types
+  with recent versions of mirrord.
+- Remove Discord from README, link only to Slack.
+
+
+### Internal
+
+- Add a badge for the community Slack to README.
+
 ## [3.65.3](https://github.com/metalbear-co/mirrord-vscode/tree/3.65.3) - 2025-04-10
 
 

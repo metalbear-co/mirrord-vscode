@@ -1,1 +1,0 @@
-Changed the target selection dialog to not fetch unsupported resource types with recent versions of mirrord.
