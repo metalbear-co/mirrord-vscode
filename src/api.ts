@@ -29,6 +29,18 @@ const SLACK_COUNTER = 'mirrord-slack-counter';
 const SLACK_COUNTER_PROMPT_AFTER = 10;
 
 /**
+* Key to access the feedback counter (see `tickNewsletterCounter`) from the global user config.
+*/
+export const NEWSL_COUNTER = 'mirrord-newsletter-counter'
+
+/**
+* Amount of times we run mirrord before inviting the user to sign up to the newsletter.
+*/
+const NEWSL_COUNTER_PROMPT_AFTER_FIRST: number = 5;
+const NEWSL_COUNTER_PROMPT_AFTER_SECOND: number = 20;
+const NEWSL_COUNTER_PROMPT_AFTER_THIRD: number = 100;
+
+/**
 * Environment variable name for listing targets with a specific type via the CLI 'ls' command.
 */
 const MIRRORD_LS_TARGET_TYPES_ENV = "MIRRORD_LS_TARGET_TYPES";
@@ -402,6 +414,7 @@ export class MirrordAPI {
     tickMirrordForTeamsCounter();
     tickFeedbackCounter();
     tickSlackCounter();
+    tickNewsletterCounter();
 
     let branchName = "";
     if (workspacePath !== undefined) {
@@ -600,6 +613,43 @@ function tickSlackCounter() {
         vscode.commands.executeCommand(MirrordStatus.joinSlackCommandId);
       })
       .withDisableAction('promptSlack')
+      .info();
+  }
+}
+
+/**
+* Updates the global newsletter counter.
+* After `NEWSL_COUNTER_PROMPT_AFTER_X` mirrord runs, displays a message asking the user to sign up 
+* to the mirrord newsletter
+*/
+function tickNewsletterCounter() {
+  const previousRuns = parseInt(globalContext.globalState.get(NEWSL_COUNTER) ?? '0');
+  const currentRuns = previousRuns + 1;
+
+  globalContext.globalState.update(NEWSL_COUNTER, currentRuns);
+
+  if (currentRuns == NEWSL_COUNTER_PROMPT_AFTER_FIRST || currentRuns == NEWSL_COUNTER_PROMPT_AFTER_SECOND || currentRuns == NEWSL_COUNTER_PROMPT_AFTER_THIRD) {
+    var msg = "";
+    switch (currentRuns) {
+      case NEWSL_COUNTER_PROMPT_AFTER_FIRST:
+        msg = "Join thousands of devs using mirrord!\nGet the latest updates, tutorials, and insider info from our team.";
+        break;
+      case NEWSL_COUNTER_PROMPT_AFTER_SECOND:
+        msg = "Liking what mirrord can do?\nStay in the loop with updates, tips & tricks straight from the team.";
+        break;
+      case NEWSL_COUNTER_PROMPT_AFTER_THIRD:
+        msg = NEWSL_COUNTER_PROMPT_AFTER_THIRD + " sessions with mirrord! Looks like you're doing some serious work\nWant to hear about advanced features, upcoming releases, and cool use cases?";
+        break;
+      default:
+        break;
+    }
+
+    new NotificationBuilder()
+      .withMessage(msg)
+      .withGenericAction("Subscribe to the mirrord newsletter", async () => {
+        vscode.commands.executeCommand(MirrordStatus.newsletterCommandId);
+      })
+      .withDisableAction('promptNewsletter')
       .info();
   }
 }

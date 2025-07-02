@@ -3,6 +3,7 @@ import { MirrordConfigManager } from './config';
 import { globalContext } from './extension';
 import { NotificationBuilder } from './notification';
 import { getOperatorUsed } from './mirrordForTeams';
+import { NEWSL_COUNTER } from './api'
 
 export class MirrordStatus {
     readonly statusBar: vscode.StatusBarItem;
@@ -13,6 +14,7 @@ export class MirrordStatus {
     static readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
     static readonly helpCommandId = 'mirrord.help';
     static readonly documentationCommandId = 'mirrord.documentation';
+    static readonly newsletterCommandId = 'mirrord.newsletter'
 
     constructor(statusBar: vscode.StatusBarItem) {
         this.statusBar = statusBar;
@@ -20,7 +22,7 @@ export class MirrordStatus {
 
     draw() {
         const showStatusBar = vscode.workspace.getConfiguration('mirrord').get('showStatusBarButton', true);
-        
+
         if (!showStatusBar) {
             return;
         }
@@ -74,6 +76,7 @@ export class MirrordStatus {
             vscode.commands.executeCommand(`workbench.action.openWalkthrough`, `MetalBear.mirrord#mirrord.welcome`, false);
         }));
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.documentationCommandId, this.documentation.bind(this)));
+        globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.newsletterCommandId, this.newsletter.bind(this)));
 
         globalContext.subscriptions.push(this.statusBar);
 
@@ -107,6 +110,12 @@ export class MirrordStatus {
 
     mirrordForTeams() {
         vscode.env.openExternal(vscode.Uri.parse('https://app.metalbear.co/?utm_medium=vscode&utm_source=ui_action'));
+    }
+
+    newsletter() {
+        // todo: newsletter signup w/ utm source and medium
+        const count = globalContext.globalState.get(NEWSL_COUNTER);
+        vscode.env.openExternal(vscode.Uri.parse("https://en.wikipedia.org/wiki/Special:Random" + "?utm_medium=vscode&utm_source=newslttr" + count));
     }
 
     documentation() {
