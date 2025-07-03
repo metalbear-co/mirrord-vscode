@@ -3,7 +3,7 @@ import { MirrordConfigManager } from './config';
 import { globalContext } from './extension';
 import { NotificationBuilder } from './notification';
 import { getOperatorUsed } from './mirrordForTeams';
-import { NEWSL_COUNTER } from './api'
+import { NEWSL_COUNTER } from './api';
 
 export class MirrordStatus {
     readonly statusBar: vscode.StatusBarItem;
@@ -14,7 +14,7 @@ export class MirrordStatus {
     static readonly selectActiveConfigId = 'mirrord.selectActiveConfig';
     static readonly helpCommandId = 'mirrord.help';
     static readonly documentationCommandId = 'mirrord.documentation';
-    static readonly newsletterCommandId = 'mirrord.newsletter'
+    static readonly newsletterCommandId = 'mirrord.newsletter';
 
     constructor(statusBar: vscode.StatusBarItem) {
         this.statusBar = statusBar;
@@ -113,9 +113,8 @@ export class MirrordStatus {
     }
 
     newsletter() {
-        // todo: newsletter signup w/ utm source and medium
         const count = globalContext.globalState.get(NEWSL_COUNTER);
-        vscode.env.openExternal(vscode.Uri.parse("https://en.wikipedia.org/wiki/Special:Random" + "?utm_medium=vscode&utm_source=newslttr" + count));
+        vscode.env.openExternal(vscode.Uri.parse("https://metalbear.co/newsletter" + "?utm_medium=vscode&utm_source=newslttr" + count));
     }
 
     documentation() {

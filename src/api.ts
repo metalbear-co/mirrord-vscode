@@ -31,14 +31,14 @@ const SLACK_COUNTER_PROMPT_AFTER = 10;
 /**
 * Key to access the feedback counter (see `tickNewsletterCounter`) from the global user config.
 */
-export const NEWSL_COUNTER = 'mirrord-newsletter-counter'
+export const NEWSL_COUNTER = 'mirrord-newsletter-counter';
 
 /**
 * Amount of times we run mirrord before inviting the user to sign up to the newsletter.
 */
-const NEWSL_COUNTER_PROMPT_AFTER_FIRST: number = 5;
-const NEWSL_COUNTER_PROMPT_AFTER_SECOND: number = 20;
-const NEWSL_COUNTER_PROMPT_AFTER_THIRD: number = 100;
+const NEWSL_COUNTER_PROMPT_AFTER_FIRST = 5;
+const NEWSL_COUNTER_PROMPT_AFTER_SECOND = 20;
+const NEWSL_COUNTER_PROMPT_AFTER_THIRD = 100;
 
 /**
 * Environment variable name for listing targets with a specific type via the CLI 'ls' command.
@@ -629,7 +629,7 @@ function tickNewsletterCounter() {
   globalContext.globalState.update(NEWSL_COUNTER, currentRuns);
 
   if (currentRuns == NEWSL_COUNTER_PROMPT_AFTER_FIRST || currentRuns == NEWSL_COUNTER_PROMPT_AFTER_SECOND || currentRuns == NEWSL_COUNTER_PROMPT_AFTER_THIRD) {
-    var msg = "";
+    let msg = "";
     switch (currentRuns) {
       case NEWSL_COUNTER_PROMPT_AFTER_FIRST:
         msg = "Join thousands of devs using mirrord!\nGet the latest updates, tutorials, and insider info from our team.";
@@ -638,7 +638,7 @@ function tickNewsletterCounter() {
         msg = "Liking what mirrord can do?\nStay in the loop with updates, tips & tricks straight from the team.";
         break;
       case NEWSL_COUNTER_PROMPT_AFTER_THIRD:
-        msg = NEWSL_COUNTER_PROMPT_AFTER_THIRD + " sessions with mirrord! Looks like you're doing some serious work\nWant to hear about advanced features, upcoming releases, and cool use cases?";
+        msg = "Looks like you're doing some serious work with mirrord!\nWant to hear about advanced features, upcoming releases, and cool use cases?";
         break;
       default:
         break;
