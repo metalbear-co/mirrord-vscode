@@ -249,8 +249,11 @@ export class TargetQuickPick {
             if (this.lastTarget !== undefined) {
                 const idx = items.findIndex(i => i.value === this.lastTarget);
                 if (idx !== -1) {
-                    const removed = items.splice(idx, 1);
-                    items = removed.concat(items);
+                    items.unshift({
+                        type: 'target',
+                        value: this.lastTarget,
+                        label: `Use most recent target: ${this.lastTarget}`,
+                    });
                 }
             }
 
