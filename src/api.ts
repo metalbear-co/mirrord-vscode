@@ -31,14 +31,14 @@ const SLACK_COUNTER_PROMPT_AFTER = 10;
 /**
 * Key to access the feedback counter (see `tickNewsletterCounter`) from the global user config.
 */
-export const NEWSL_COUNTER = 'mirrord-newsletter-counter';
+export const NEWSLETTER_COUNTER = 'mirrord-newsletter-counter';
 
 /**
 * Amount of times we run mirrord before inviting the user to sign up to the newsletter.
 */
-const NEWSL_COUNTER_PROMPT_AFTER_FIRST = 5;
-const NEWSL_COUNTER_PROMPT_AFTER_SECOND = 20;
-const NEWSL_COUNTER_PROMPT_AFTER_THIRD = 100;
+const NEWSLETTER_COUNTER_PROMPT_AFTER_FIRST = 5;
+const NEWSLETTER_COUNTER_PROMPT_AFTER_SECOND = 20;
+const NEWSLETTER_COUNTER_PROMPT_AFTER_THIRD = 100;
 
 /**
 * Environment variable name for listing targets with a specific type via the CLI 'ls' command.
@@ -619,37 +619,37 @@ function tickSlackCounter() {
 
 /**
 * Updates the global newsletter counter.
-* After `NEWSL_COUNTER_PROMPT_AFTER_X` mirrord runs, displays a message asking the user to sign up 
-* to the mirrord newsletter
+* After `NEWSLETTER_COUNTER_PROMPT_AFTER_X` mirrord runs, displays a message asking the user to 
+* sign up to the mirrord newsletter
 */
 function tickNewsletterCounter() {
-  const previousRuns = parseInt(globalContext.globalState.get(NEWSL_COUNTER) ?? '0');
+  const previousRuns = parseInt(globalContext.globalState.get(NEWSLETTER_COUNTER) ?? '0');
   const currentRuns = previousRuns + 1;
 
-  globalContext.globalState.update(NEWSL_COUNTER, currentRuns);
+  globalContext.globalState.update(NEWSLETTER_COUNTER, currentRuns);
 
-  if (currentRuns == NEWSL_COUNTER_PROMPT_AFTER_FIRST || currentRuns == NEWSL_COUNTER_PROMPT_AFTER_SECOND || currentRuns == NEWSL_COUNTER_PROMPT_AFTER_THIRD) {
-    let msg = "";
-    switch (currentRuns) {
-      case NEWSL_COUNTER_PROMPT_AFTER_FIRST:
-        msg = "Join thousands of devs using mirrord!\nGet the latest updates, tutorials, and insider info from our team.";
-        break;
-      case NEWSL_COUNTER_PROMPT_AFTER_SECOND:
-        msg = "Liking what mirrord can do?\nStay in the loop with updates, tips & tricks straight from the team.";
-        break;
-      case NEWSL_COUNTER_PROMPT_AFTER_THIRD:
-        msg = "Looks like you're doing some serious work with mirrord!\nWant to hear about advanced features, upcoming releases, and cool use cases?";
-        break;
-      default:
-        break;
-    }
+  let msg;
+  switch (currentRuns) {
+    case NEWSLETTER_COUNTER_PROMPT_AFTER_FIRST:
+      msg = "Join thousands of devs using mirrord!\nGet the latest updates, tutorials, and insider info from our team.";
+      break;
+    case NEWSLETTER_COUNTER_PROMPT_AFTER_SECOND:
+      msg = "Liking what mirrord can do?\nStay in the loop with updates, tips & tricks straight from the team.";
+      break;
+    case NEWSLETTER_COUNTER_PROMPT_AFTER_THIRD:
+      msg = "Looks like you're doing some serious work with mirrord!\nWant to hear about advanced features, upcoming releases, and cool use cases?";
+      break;
+    default:
+      break;
+  }
 
+  if (msg) {
     new NotificationBuilder()
-      .withMessage(msg)
-      .withGenericAction("Subscribe to the mirrord newsletter", async () => {
-        vscode.commands.executeCommand(MirrordStatus.newsletterCommandId);
-      })
-      .withDisableAction('promptNewsletter')
-      .info();
+    .withMessage(msg)
+    .withGenericAction("Subscribe to the mirrord newsletter", async () => {
+      vscode.commands.executeCommand(MirrordStatus.newsletterCommandId);
+    })
+    .withDisableAction('promptNewsletter')
+    .info();
   }
 }
