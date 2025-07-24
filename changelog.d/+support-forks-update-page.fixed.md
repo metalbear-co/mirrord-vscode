@@ -1,0 +1,1 @@
+Support opening the extension page on update notification in VSCodium and Cursor.

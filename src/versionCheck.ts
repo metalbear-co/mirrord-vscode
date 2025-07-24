@@ -16,13 +16,35 @@ export async function checkVersion(version: string) {
 	https.get(versionUrl, (res: IncomingMessage) => {
 		res.on('data', (d: Buffer) => {
 			if (semver.lt(version, d.toString())) {
-				new NotificationBuilder()
-					.withMessage("New version of mirrord is available!")
-					.withGenericAction("Update", async () => {
-						vscode.env.openExternal(vscode.Uri.parse('vscode:extension/MetalBear.mirrord'));
-					})
-					.withDisableAction("promptOutdated")
-					.info();
+				let extensionUri;
+				switch (vscode.env.appName) {
+					case 'VS Code':
+						extensionUri = vscode.Uri.parse('vscode:extension/MetalBear.mirrord');
+						break;
+					case 'VSCodium':
+						extensionUri = vscode.Uri.parse('vscodium:extension/MetalBear.mirrord');
+						break;
+					case 'Cursor':
+						extensionUri = vscode.Uri.parse('cursor:extension/MetalBear.mirrord');
+						break;
+					default:
+						break;
+				}
+				if (extensionUri) {
+					new NotificationBuilder()
+						.withMessage("New version of mirrord is available!")
+						.withGenericAction("Update", async () => {
+							vscode.env.openExternal(extensionUri);
+						})
+						.withDisableAction("promptOutdated")
+						.info();
+				} else {
+					// user is using a different fork/ app
+					new NotificationBuilder()
+						.withMessage("New version of mirrord is available! Update it now in the extensions page.")
+						.withDisableAction("promptOutdated")
+						.info();
+				}
 			}
 		});
 
