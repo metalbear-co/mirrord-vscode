@@ -8,6 +8,24 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.66.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.66.1) - 2025-08-08
+
+
+### Changed
+
+- Improved target selection UX by adding a "Use most recent target" option.
+
+
+### Fixed
+
+- Support opening the extension page on update notification in VSCodium and
+  Cursor.
+
+
+### Internal
+
+- Added notification to invite users to mirrord newsletter sign-up page.
+
 ## [3.66.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.66.0) - 2025-06-24
 
 
