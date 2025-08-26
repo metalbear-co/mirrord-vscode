@@ -269,12 +269,26 @@ export class MirrordAPI {
   }
 
   // Execute the mirrord cli with the given arguments, return stdout.
-  private async exec(args: string[], configEnv: EnvVars): Promise<string> {
+  private async exec(args: string[], configEnv: EnvVars, timeoutMs?: number): Promise<string> {
     const child = this.spawnCliWithArgsAndEnv(args, configEnv);
 
     return await new Promise<string>((resolve, reject) => {
       let stdoutData = "";
       let stderrData = "";
+      let timeoutHandle: NodeJS.Timeout | undefined;
+
+      if (timeoutMs) {
+        timeoutHandle = setTimeout(() => {
+          child.kill('SIGTERM');
+          reject(``);
+        }, timeoutMs);
+      }
+
+      const cleanup = () => {
+        if (timeoutHandle) {
+          clearTimeout(timeoutHandle);
+        }
+      };
 
       child.stdout.on("data", (data) => stdoutData += data.toString());
       child.stderr.on("data", (data) => stderrData += data.toString());
@@ -284,10 +298,12 @@ export class MirrordAPI {
 
       child.on("error", (err) => {
         console.error(err);
+        cleanup();
         reject(`process failed: ${err.message}`);
       });
 
       child.on("close", (code, signal) => {
+        cleanup();
         const match = stderrData.match(/Error: (.*)/)?.[1];
         if (match) {
           const error = JSON.parse(match);
@@ -327,7 +343,7 @@ export class MirrordAPI {
    * Runs mirrord --version and returns the version string.
    */
   async getBinaryVersion(): Promise<string | undefined> {
-    const stdout = await this.exec(["--version"], {});
+    const stdout = await this.exec(["--version"], {}, 1000); // 10 second timeout
     // parse mirrord x.y.z
     return stdout.split(" ")[1]?.trim();
   }
