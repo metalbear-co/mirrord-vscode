@@ -124,7 +124,10 @@ export async function getMirrordBinary(background: boolean): Promise<string | nu
     const configured = await getConfiguredMirrordBinary(background, latestVersion);
 
     if (configured) {
-        vscode.window.showInformationMessage(`Using mirrord binary specified in settings: ${configured}`);
+        new NotificationBuilder()
+            .withMessage(`Using mirrord binary specified in settings: ${configured}`)
+            .withDisableAction("promptUsingBinary")
+            .info();
         return configured;
     }
 
@@ -163,7 +166,11 @@ export async function getMirrordBinary(background: boolean): Promise<string | nu
     if (foundLocal) {
         const message = `Using mirrord binary found in ${foundLocal[1] ? 'path' : 'extension storage'}: \
         ${foundLocal[0]}${wantedVersion ? ` of version ${wantedVersion}` : ''}`;
-        vscode.window.showInformationMessage(message);
+        new NotificationBuilder()
+            .withMessage(message)
+            .withDisableAction("promptUsingBinary")
+            .info();
+
         return foundLocal[0];
     }
 
@@ -172,7 +179,10 @@ export async function getMirrordBinary(background: boolean): Promise<string | nu
         if (anyVersion) {
             const message = `Version check not available/allowed and no wanted version set. \
             Using mirrord binary found in ${anyVersion[1] ? 'path' : 'extension storage'}: ${anyVersion[0]}`;
-            vscode.window.showInformationMessage(message);
+            new NotificationBuilder()
+                .withMessage(message)
+                .withDisableAction("promptUsingBinary")
+                .info();
             return anyVersion[0];
         }
 
