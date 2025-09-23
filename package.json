@@ -107,6 +107,11 @@
 					"default": true,
 					"description": "Show a notification when mirrord uses default configuration."
 				},
+				"mirrord.promptUsingBinary": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show notifications indicating the used mirrord binary."
+				},
 				"mirrord.promptUsingDefaultConfigSingleFileNoFolder": {
 					"type": "boolean",
 					"default": true,
