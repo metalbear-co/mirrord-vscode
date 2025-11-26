@@ -3,7 +3,7 @@
 [![Community Slack](https://img.shields.io/badge/Join-e5f7f7?logo=slack&label=Community%20Slack)](https://metalbear.co/slack)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/metalbear-co/mirrord-vscode)
-[![Twitter Follow](https://img.shields.io/twitter/follow/metalbearco?style=social)](https://twitter.com/metalbearco)
+[![Twitter Follow](https://img.shields.io/twitter/follow/metalbearco?style=social)](https://x.com/metalbear)
 [![VSCode Marketplace](https://img.shields.io/badge/VSCode%20Extension%20Page-756df3)](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord)
 
 mirrord lets developers [run local processes in the context of their cloud environment](https://mirrord.dev). It provides the benefits of running your service on a cloud environment (e.g. staging) without going through the hassle of deploying it there, and without disrupting the environment by deploying untested code. It comes as a Visual Studio Code extension, an IntelliJ plugin and a CLI tool. You can read more about what mirrord does [in our official docs](https://mirrord.dev/docs/overview/introduction/), or [sign up to our newsletter](https://metalbear.co/newsletter) to hear about new features.
