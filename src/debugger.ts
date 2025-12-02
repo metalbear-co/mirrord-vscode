@@ -30,7 +30,6 @@ function registerCallbackToDebuggerEvents(): void {
         onDidSendMessage: (message: any) => {
           // Check if the message is the 'process' event.
           if (message.type === "event" && message.event === "process") {
-
             // SUPPORT: Python Debugger: Current File
             if (session.name === "Python Debugger: Current File") {
               const pid = message.body.systemProcessId;
