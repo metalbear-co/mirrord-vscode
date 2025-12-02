@@ -12,6 +12,37 @@ import { TargetQuickPick, UserSelection } from './targetQuickPick';
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
+// Responsible for registering a callback to all debug adapter messages, capturing
+// newly created process information, and eventually will call to mirrord to attach to
+// running process.
+function registerCallbackToDebuggerEvents(): void {
+  if (process.platform !== "win32"){
+    return;
+  }
+
+  console.log("Registering tracker for all debug adapters for win32.");
+
+  // Register a tracker for all debug adapters.
+  vscode.debug.registerDebugAdapterTrackerFactory('*', {
+    createDebugAdapterTracker(session: vscode.DebugSession) {
+      return {
+        // Callback on each `onDidSendMessage` for debug adapters.
+        onDidSendMessage: (message: any) => {
+          // Check if the message is the 'process' event.
+          if (message.type === "event" && message.event === "process") {
+
+            // SUPPORT: Python Debugger: Current File
+            if (session.name === "Python Debugger: Current File") {
+              const pid = message.body.systemProcessId;
+              console.log(`Caught PID: ${pid} for session: ${session.name}`);
+            }
+          }
+        }
+      };
+    }
+  });
+}
+
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type,
 /// and the executable. Returning the field name for replacing the value with the patched path later.
 /// Also returning the executable because in some configuration types there is some extra logic to
@@ -74,7 +105,6 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
   }
 }
 
-
 /**
 * Entrypoint for the vscode extension, called from `resolveDebugConfigurationWithSubstitutedVariables`.
 */
@@ -96,6 +126,9 @@ async function main(
   if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === 'true') {
     return config;
   }
+
+  // Windows exclusive.
+  registerCallbackToDebuggerEvents();
 
   updateTelemetries();
 
