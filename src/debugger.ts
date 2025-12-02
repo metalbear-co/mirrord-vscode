@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { globalContext } from './extension';
-import { isTargetSet, MirrordConfigManager } from './config';
+import { EnvVars, isTargetSet, MirrordConfigManager } from './config';
 import { MirrordAPI, mirrordFailure, MirrordExecution } from './api';
 import { updateTelemetries } from './versionCheck';
 import { getMirrordBinary } from './binaryManager';
@@ -39,7 +39,7 @@ function pauseDebuggersOnEntry(config: vscode.DebugConfiguration): void {
 // Responsible for registering a callback to all debug adapter messages, capturing
 // newly created process information, and eventually will call to mirrord to attach to
 // running process.
-function registerCallbackToDebuggerEvents(): void {
+function registerCallbackToDebuggerEvents(api: MirrordAPI, env: EnvVars): void {
   if (process.platform !== "win32"){
     return;
   }
@@ -60,6 +60,9 @@ function registerCallbackToDebuggerEvents(): void {
               if (message.body.isLocalProcess === true && message.body.pointerSize === 64) {
                 const pid = message.body.systemProcessId;
                 console.log(`Caught PID: ${pid} for session: ${session.name}`);
+
+                // Call to mirrord CLI to attach.
+                api.attach(pid, env);
               }
             }
           }
@@ -153,12 +156,6 @@ async function main(
     return config;
   }
 
-  // Support attaching to newly launched Windows processes.
-  if (process.platform === 'win32') {
-    pauseDebuggersOnEntry(config);
-    registerCallbackToDebuggerEvents();
-  }
-
   updateTelemetries();
 
   //TODO: add progress bar maybe ?
@@ -176,6 +173,12 @@ async function main(
 
   const configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
   const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
+
+  // Support attaching to newly launched Windows processes.
+  if (process.platform === 'win32') {
+    pauseDebuggersOnEntry(config);
+    registerCallbackToDebuggerEvents(mirrordApi, config.env);
+  }
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
   if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
