@@ -12,6 +12,30 @@ import { TargetQuickPick, UserSelection } from './targetQuickPick';
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
+// Responsible for making newly launched debug processes pause on entry, so that
+// `registerCallbackToDebuggerEvents` can depend on the process being frozen, to continue with
+// attachment.
+function pauseDebuggersOnEntry(config: vscode.DebugConfiguration): void {
+  switch (config.type) {
+    case "debugpy":
+    case "python": {
+      // https://code.visualstudio.com/docs/python/debugging#_stoponentry
+      //
+      // Python: when adding `stopOnEntry` to the debug configuration, Python will
+      // wait on a semaphore in code execution. This is true of all running threads for the
+      // resulting Python process.
+      //
+      // This should make it safe to inject at any time during the execution, and it seems to
+      // safely break before any user logic executes.
+      config["stopOnEntry"] = true;
+
+      console.log("Marked Python processes to stop on entry.");
+
+      break;
+    }
+  }
+}
+
 // Responsible for registering a callback to all debug adapter messages, capturing
 // newly created process information, and eventually will call to mirrord to attach to
 // running process.
@@ -29,11 +53,14 @@ function registerCallbackToDebuggerEvents(): void {
         // Callback on each `onDidSendMessage` for debug adapters.
         onDidSendMessage: (message: any) => {
           // Check if the message is the 'process' event.
+          console.log(message);
           if (message.type === "event" && message.event === "process") {
             // SUPPORT: Python Debugger: Current File
             if (session.name === "Python Debugger: Current File") {
-              const pid = message.body.systemProcessId;
-              console.log(`Caught PID: ${pid} for session: ${session.name}`);
+              if (message.body.isLocalProcess === true && message.body.pointerSize === 64) {
+                const pid = message.body.systemProcessId;
+                console.log(`Caught PID: ${pid} for session: ${session.name}`);
+              }
             }
           }
         }
@@ -126,8 +153,11 @@ async function main(
     return config;
   }
 
-  // Windows exclusive.
-  registerCallbackToDebuggerEvents();
+  // Support attaching to newly launched Windows processes.
+  if (process.platform === 'win32') {
+    pauseDebuggersOnEntry(config);
+    registerCallbackToDebuggerEvents();
+  }
 
   updateTelemetries();
 
