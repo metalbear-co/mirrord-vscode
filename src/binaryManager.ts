@@ -10,6 +10,9 @@ import { Uri, workspace, window, ProgressLocation, ExtensionMode } from 'vscode'
 import { NotificationBuilder } from './notification';
 import * as semver from 'semver';
 
+// Debug configuration.
+const IGNORE_AUTOUPDATE_SETTINGS = true;
+
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 // const binaryCheckInterval = 1000 * 60 * 3;
 const baseDownloadUri = 'https://github.com/metalbear-co/mirrord/releases/download';
@@ -131,7 +134,11 @@ export async function getMirrordBinary(background: boolean): Promise<string | nu
         return configured;
     }
 
-    const autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate");
+    let autoUpdateConfigured = vscode.workspace.getConfiguration().get("mirrord.autoUpdate");
+
+    if (IGNORE_AUTOUPDATE_SETTINGS === true) {
+        autoUpdateConfigured = false;
+    }
 
     // values for `mirrord.autoUpdate` can be:
     // - true or empty string: auto-update is enabled
