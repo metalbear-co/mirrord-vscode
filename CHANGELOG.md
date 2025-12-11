@@ -8,6 +8,20 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.66.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.66.2) - 2025-12-11
+
+
+### Added
+
+- Added configuration flag to toggle "Using mirrord binary..." notifications.
+- Added the option to toggle the multipod deployments warning notifications.
+
+
+### Fixed
+
+- Timeout on `mirrord --version` that can linger forever if binary is corrupt.
+- Fixed the incorrect Twitter URL for MetalBear.
+
 ## [3.66.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.66.1) - 2025-08-08
 
 
