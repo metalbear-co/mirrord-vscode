@@ -147,6 +147,11 @@
 					"default": true,
 					"description": "Show a notification when agent version does not match version of the local mirrord installation."
 				},
+				"mirrord.promptMultipodTarget": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show the warning when targeting a multi-pod deployment on OSS."
+				},
 				"mirrord.binaryPath": {
 					"type": [
 						"string",
