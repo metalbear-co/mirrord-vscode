@@ -120,6 +120,13 @@ function handleIdeMessage(message: IdeMessage) {
     }
   });
 
+  // Special case: allow users to dismiss the multipod warning.
+  if (message.id === "multipod_warning") {
+    // inject a dismiss action into actions
+    notificationBuilder.withDisableAction('promptMultipodTarget');
+  }
+
+  // Do any processing BEFORE this block, this is where notifications get fired.
   switch (message.level) {
     case "Info": {
       notificationBuilder.info();

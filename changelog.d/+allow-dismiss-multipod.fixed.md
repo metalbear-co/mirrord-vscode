@@ -1,0 +1,1 @@
+Added the option to dismiss the multipod deployments warning from mirrord.
