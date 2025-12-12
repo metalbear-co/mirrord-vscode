@@ -43,7 +43,7 @@ export async function getLocalMirrordBinary(version: string | null): Promise<[st
         }
     } catch (e) {  
         const errorMsg = e instanceof Error ? e.message : String(e);
-        Logger.error(`couldn't find mirrord in path: ${errorMsg}`);
+        Logger.warn(`couldn't find mirrord in path: ${errorMsg}`);
     }
 
     try {
@@ -60,7 +60,7 @@ export async function getLocalMirrordBinary(version: string | null): Promise<[st
         }
     } catch (e) {
         const errorMsg = e instanceof Error ? e.message : String(e);
-        Logger.error(`couldn't find mirrord in extension storage ${errorMsg}`);
+        Logger.warn(`couldn't find mirrord in extension storage ${errorMsg}`);
     }
 
     return null;

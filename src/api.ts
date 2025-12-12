@@ -445,7 +445,7 @@ export class MirrordAPI {
       branchName = await this.getBranchName(workspacePath)
         .catch(error => {
           const errorMsg = error instanceof Error ? error.message : String(error);
-          Logger.info(`cannot retrieve git branch name ${errorMsg}`);
+          Logger.debug(`cannot retrieve git branch name ${errorMsg}`);
         })
         .then((res) => res ? res.trim() : "");
     }

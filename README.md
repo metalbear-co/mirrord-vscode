@@ -47,6 +47,14 @@ _Quick start: the easiest way to start configuring mirrord is to choose_ "Settin
   <img src="https://raw.githubusercontent.com/metalbear-co/mirrord-vscode/main/media/readme/settings_opt.png" width="20%" alt="A screenshot of mirrord's status bar menu in the VSCode UI, with 'Settings' highlighted">
 </p>
 
+## Viewing and Adjusting Extension Log Levels
+
+To investigate issues or collect diagnostics from the mirrord extension, you can increase
+VSCode’s log level and view the extension’s output. Open the Command Palette and run
+**“Developer: Set Log Level…”**, then select a higher level such as Debug or Trace. 
+Next, open **“Output” (View → Output)** and choose `mirrord` from the dropdown list to see 
+all logs emitted by the extension.
+
 ## Helpful Links
 
 * [Official documentation for this extension](https://mirrord.dev/docs/using-mirrord/vscode-extension/)
