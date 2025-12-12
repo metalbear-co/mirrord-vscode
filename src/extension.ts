@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ConfigurationProvider } from './debugger';
 import { MirrordStatus } from './status';
 import { getMirrordBinary } from './binaryManager';
+import Logger from './logger';
 
 export let globalContext: vscode.ExtensionContext;
 
@@ -9,6 +10,8 @@ export let globalContext: vscode.ExtensionContext;
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
 	globalContext = context;
+
+	Logger.init(context);
 
 	const enabled = vscode.workspace.getConfiguration().get<boolean | null>("mirrord.enabledByDefault");
 	context.workspaceState.update('enabled', enabled);

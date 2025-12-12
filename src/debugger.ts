@@ -9,6 +9,7 @@ import { NotificationBuilder } from './notification';
 import { setOperatorUsed } from './mirrordForTeams';
 import fs from 'fs';
 import { TargetQuickPick, UserSelection } from './targetQuickPick';
+import Logger from './logger';
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
@@ -192,10 +193,11 @@ export class ConfigurationProvider implements vscode.DebugConfigurationProvider 
     _token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
     try {
       return await main(folder, config, _token);
-    } catch (fail) {
-      console.error(`Something went wrong in the extension: ${fail}`);
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      Logger.error(`debug config provider error: ${errorMsg}`);
       new NotificationBuilder()
-        .withMessage(`Something went wrong: ${fail}`)
+        .withMessage(`mirrord extension error: ${e}`)
         .error();
     }
   }

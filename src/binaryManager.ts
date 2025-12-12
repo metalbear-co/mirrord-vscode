@@ -9,6 +9,7 @@ import { platform } from 'os';
 import { Uri, workspace, window, ProgressLocation, ExtensionMode } from 'vscode';
 import { NotificationBuilder } from './notification';
 import * as semver from 'semver';
+import Logger from './logger';
 
 const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 // const binaryCheckInterval = 1000 * 60 * 3;
@@ -40,8 +41,9 @@ export async function getLocalMirrordBinary(version: string | null): Promise<[st
         } else {
             return [mirrordPath, true];
         }
-    } catch (e) {
-        console.debug("couldn't find mirrord in path", e);
+    } catch (e) {  
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        Logger.error(`couldn't find mirrord in path: ${errorMsg}`);
     }
 
     try {
@@ -57,7 +59,8 @@ export async function getLocalMirrordBinary(version: string | null): Promise<[st
             return [mirrordPath.fsPath, false];
         }
     } catch (e) {
-        console.log("couldn't find mirrord in extension storage", e);
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        Logger.error(`couldn't find mirrord in extension storage ${errorMsg}`);
     }
 
     return null;
