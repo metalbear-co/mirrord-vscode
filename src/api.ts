@@ -7,6 +7,7 @@ import { MirrordStatus } from './status';
 import { EnvVars, VerifiedConfig } from './config';
 import { PathLike } from 'fs';
 import { UserSelection } from './targetQuickPick';
+import Logger from './logger';
 
 /**
 * Key to access the feedback counter (see `tickFeedbackCounter`) from the global user config.
@@ -234,17 +235,17 @@ const makeMirrordArgs = (target: string | undefined, configFilePath: PathLike | 
   const args = ["ext"];
 
   if (target) {
-    console.log(`target ${target}`);
+    Logger.info(`target: ${target}`);
     args.push("-t", target);
   }
 
   if (configFilePath) {
-    console.log(`configFilePath ${configFilePath.toString()}`);
+    Logger.info(`config file path: ${configFilePath.toString()}`);
     args.push("-f", configFilePath.toString());
   }
 
   if (userExecutable) {
-    console.log(`userExecutable ${userExecutable.toString()}`);
+    Logger.info(`user executable: ${userExecutable.toString()}`);
     args.push("-e", userExecutable.toString());
   }
 
@@ -300,11 +301,11 @@ export class MirrordAPI {
       child.stdout.on("data", (data) => stdoutData += data.toString());
       child.stderr.on("data", (data) => stderrData += data.toString());
 
-      child.stdout.on('end', () => console.log(`${stdoutData}`));
-      child.stderr.on('end', () => console.log(`${stderrData}`));
+      child.stdout.on('end', () => Logger.trace(`child process stdout: ${stdoutData}`));
+      child.stderr.on('end', () => Logger.trace(`child process stderr: ${stderrData}`));
 
       child.on("error", (err) => {
-        console.error(err);
+        Logger.error(err.message);
         cleanup();
         reject(`process failed: ${err.message}`);
       });
@@ -441,7 +442,12 @@ export class MirrordAPI {
 
     let branchName = "";
     if (workspacePath !== undefined) {
-      branchName = await this.getBranchName(workspacePath).catch(error => console.log("mirrord failed to retrieve git branch name", error)).then((res) => res ? res.trim() : "");
+      branchName = await this.getBranchName(workspacePath)
+        .catch(error => {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          Logger.debug(`cannot retrieve git branch name ${errorMsg}`);
+        })
+        .then((res) => res ? res.trim() : "");
     }
 
     /// Create a promise that resolves when the mirrord process exits
@@ -472,7 +478,7 @@ export class MirrordAPI {
         child.stderr.on("data", (data) => stderrData += data.toString());
 
         child.on("error", (err) => {
-          console.error(err);
+          Logger.error(err.message);
           reject(`process failed: ${err.message}`);
         });
 
@@ -504,7 +510,7 @@ export class MirrordAPI {
 
         let buffer = "";
         child.stdout.on("data", (data) => {
-          console.log(`mirrord: ${data}`);
+          Logger.trace(`child process stdout: ${data}`);
           buffer += data;
           // fml - AH
           const messages = buffer.split("\n");
@@ -519,7 +525,8 @@ export class MirrordAPI {
             try {
               message = JSON.parse(rawMessage);
             } catch (e) {
-              console.error("Failed to parse message from mirrord: " + data, e);
+              const errorMsg = e instanceof Error ? e.message : String(e);
+              Logger.error(`Failed to parse message from mirrord: ${errorMsg} for data ${data}`);
               return;
             }
 

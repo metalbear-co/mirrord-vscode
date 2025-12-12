@@ -5,6 +5,7 @@ import { platform } from 'os';
 import { globalContext } from './extension';
 import { NotificationBuilder } from './notification';
 import { IncomingMessage } from 'http';
+import Logger from './logger';
 
 const CI_BUILD_PLUGIN = process.env.CI_BUILD_PLUGIN === 'true';
 const versionCheckEndpoint = 'https://version.mirrord.dev/get-latest-version';
@@ -49,7 +50,7 @@ export async function checkVersion(version: string) {
 		});
 
 	}).on('error', (e: Error) => {
-		console.error(e);
+		Logger.error(e.message);
 	});
 }
 
