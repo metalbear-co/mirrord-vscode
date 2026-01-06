@@ -1,1 +1,0 @@
-Added extension output panel for logging.

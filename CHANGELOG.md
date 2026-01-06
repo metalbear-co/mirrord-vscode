@@ -8,6 +8,13 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.67.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.67.0) - 2026-01-06
+
+
+### Added
+
+- Added extension output panel for logging.
+
 ## [3.66.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.66.2) - 2025-12-11
 
 
