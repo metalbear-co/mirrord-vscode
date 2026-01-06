@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { globalContext } from './extension';
-import { isTargetSet, MirrordConfigManager } from './config';
+import { EnvVars, isTargetSet, MirrordConfigManager } from './config';
 import { MirrordAPI, mirrordFailure, MirrordExecution } from './api';
 import { updateTelemetries } from './versionCheck';
 import { getMirrordBinary } from './binaryManager';
@@ -12,6 +12,66 @@ import { TargetQuickPick, UserSelection } from './targetQuickPick';
 import Logger from './logger';
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
+
+// Responsible for making newly launched debug processes pause on entry, so that
+// `registerCallbackToDebuggerEvents` can depend on the process being frozen, to continue with
+// attachment.
+function pauseDebuggersOnEntry(config: vscode.DebugConfiguration): void {
+  switch (config.type) {
+    case "debugpy":
+    case "python": {
+      // https://code.visualstudio.com/docs/python/debugging#_stoponentry
+      //
+      // Python: when adding `stopOnEntry` to the debug configuration, Python will
+      // wait on a semaphore in code execution. This is true of all running threads for the
+      // resulting Python process.
+      //
+      // This should make it safe to inject at any time during the execution, and it seems to
+      // safely break before any user logic executes.
+      config["stopOnEntry"] = true;
+
+      console.log("Marked Python processes to stop on entry.");
+
+      break;
+    }
+  }
+}
+
+// Responsible for registering a callback to all debug adapter messages, capturing
+// newly created process information, and eventually will call to mirrord to attach to
+// running process.
+function registerCallbackToDebuggerEvents(api: MirrordAPI, env: EnvVars): void {
+  if (process.platform !== "win32"){
+    return;
+  }
+
+  console.log("Registering tracker for all debug adapters for win32.");
+
+  // Register a tracker for all debug adapters.
+  vscode.debug.registerDebugAdapterTrackerFactory('*', {
+    createDebugAdapterTracker(session: vscode.DebugSession) {
+      return {
+        // Callback on each `onDidSendMessage` for debug adapters.
+        onDidSendMessage: (message: any) => {
+          // Check if the message is the 'process' event.
+          console.log(message);
+          if (message.type === "event" && message.event === "process") {
+            // SUPPORT: Python Debugger: Current File
+            if (session.name === "Python Debugger: Current File") {
+              if (message.body.isLocalProcess === true && message.body.pointerSize === 64) {
+                const pid = message.body.systemProcessId;
+                console.log(`Caught PID: ${pid} for session: ${session.name}`);
+
+                // Call to mirrord CLI to attach.
+                api.attach(pid, env);
+              }
+            }
+          }
+        }
+      };
+    }
+  });
+}
 
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type,
 /// and the executable. Returning the field name for replacing the value with the patched path later.
@@ -75,7 +135,6 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
   }
 }
 
-
 /**
 * Entrypoint for the vscode extension, called from `resolveDebugConfigurationWithSubstitutedVariables`.
 */
@@ -115,6 +174,12 @@ async function main(
 
   const configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
   const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
+
+  // Support attaching to newly launched Windows processes.
+  if (process.platform === 'win32') {
+    pauseDebuggersOnEntry(config);
+    registerCallbackToDebuggerEvents(mirrordApi, config.env);
+  }
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
   if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {

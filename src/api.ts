@@ -573,6 +573,19 @@ export class MirrordAPI {
       });
     });
   }
+
+  /**
+   * Runs CLI with attach command, making layer be injected to an arbitrary process.
+   * 
+   * @param pid target process ID, from debug adapter usually
+   * @param configEnv 
+   * @returns 
+   */
+  async attach(pid: number, configEnv: EnvVars): Promise<void> {
+      const args = ['attach', `${pid}`];
+      await this.exec(args, configEnv);
+      return Promise.resolve();
+  }
 }
 
 class MirrordWarningHandler {
