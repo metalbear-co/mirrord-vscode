@@ -31,7 +31,7 @@ jobs:
         if: github.event_name != 'workflow_dispatch'
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: vsce publish ${{ steps.version.outputs.version }}
+        run: vsce publish -i /tmp/vscode-ext/mirrord-${{ steps.version.outputs.version }}.vsix 
       - name: Publish vscode-ext to Open VSX Registry
         if: github.event_name != 'workflow_dispatch'
         env:
