@@ -89,70 +89,70 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
 //
 // The script will then execute the original program with the original arguments.
 async function patchConfigForWindows(config: vscode.DebugConfiguration, configPath: string | undefined): Promise<[patchField: string, scriptPath: string] | null> {
-	// Helper to find the field and executable to patch.
-	function getPatchInfo(config: vscode.DebugConfiguration): [string, string] | null {
-		switch (config.type) {
-			case "pwa-node":
-			case "node": {
-				const executable = config.runtimeExecutable || "node";
-				return ["runtimeExecutable", executable];
-			}
-			case "debugpy":
-			case "python": {
-				if (config.python) {
-					return ["python", config.python];
-				}
-				if (config.pythonPath) { // For legacy python extension support
-					return ["pythonPath", config.pythonPath];
-				}
-				// If no python is specified, the extension finds it.
-				// We can add it to the config and have our wrapper call `python`.
-				return ["python", "python"];
-			}
-			case "coreclr": {
-				if (config.program) {
-					return ["program", config.program];
-				}
-				return null;
-			}
-			case "go": {
-				if (config.program) {
-					return ["program", config.program];
-				}
-				return null;
-			}
-			default: {
-				if (config.program) {
-					return ["program", config.program];
-				}
-				return null;
-			}
-		}
-	}
+  // Helper to find the field and executable to patch.
+  function getPatchInfo(config: vscode.DebugConfiguration): [string, string] | null {
+    switch (config.type) {
+      case "pwa-node":
+      case "node": {
+        const executable = config.runtimeExecutable || "node";
+        return ["runtimeExecutable", executable];
+      }
+      case "debugpy":
+      case "python": {
+        if (config.python) {
+          return ["python", config.python];
+        }
+        if (config.pythonPath) { // For legacy python extension support
+          return ["pythonPath", config.pythonPath];
+        }
+        // If no python is specified, the extension finds it.
+        // We can add it to the config and have our wrapper call `python`.
+        return ["python", "python"];
+      }
+      case "coreclr": {
+        if (config.program) {
+          return ["program", config.program];
+        }
+        return null;
+      }
+      case "go": {
+        if (config.program) {
+          return ["program", config.program];
+        }
+        return null;
+      }
+      default: {
+        if (config.program) {
+          return ["program", config.program];
+        }
+        return null;
+      }
+    }
+  }
 
-	const patchInfo = getPatchInfo(config);
-	if (!patchInfo) {
-		console.log("Not patching debug configuration for Windows: could not determine executable.");
-		return null;
-	}
+  const patchInfo = getPatchInfo(config);
+  if (!patchInfo) {
+    console.log("Not patching debug configuration for Windows: could not determine executable.");
+    return null;
+  }
 
-	const [patchField, executableToWrapOriginal] = patchInfo;
+  const [patchField, executableToWrapOriginal] = patchInfo;
 
-	// The executable path might have spaces. It needs to be quoted.
-	const executableToWrap = `"${executableToWrapOriginal}"`;
+  // The executable path might have spaces. It needs to be quoted.
+  const executableToWrap = `"${executableToWrapOriginal}"`;
 
-	const fileName = `mirrord_exec_${crypto.randomBytes(16).toString('hex')}.bat`;
-	const tmpDir = os.tmpdir();
-	const scriptPath = path.join(tmpDir, fileName);
+  const fileName = `mirrord_exec_${crypto.randomBytes(16).toString('hex')}.bat`;
+  const tmpDir = os.tmpdir();
+  const scriptPath = path.join(tmpDir, fileName);
 
-	const configFlag = configPath ? `-f "${configPath}"` : '';
-	// The `%*` is important to pass all arguments to the original executable.
+  const configFlag = configPath ? `-f "${configPath}"` : '';
+  // The `%*` is important to pass all arguments to the original executable.
   // In this case, it will function exactly as in the original case.
-	const content = `mirrord.exe exec --ide-orchestrated ${configFlag} -- ${executableToWrap} %*`;
+  const content = `mirrord.exe exec --ide-orchestrated ${configFlag} -- ${executableToWrap} %*`;
 
-	await fs.promises.writeFile(scriptPath, content);
+  await fs.promises.writeFile(scriptPath, content);
 
-	return [patchField, scriptPath];
+  return [patchField, scriptPath];
 }
 
 /**
