@@ -7,7 +7,10 @@ import { getMirrordBinary } from './binaryManager';
 import { platform } from 'node:os';
 import { NotificationBuilder } from './notification';
 import { setOperatorUsed } from './mirrordForTeams';
-import fs from 'fs';
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as crypto from 'crypto';
 import { TargetQuickPick, UserSelection } from './targetQuickPick';
 import Logger from './logger';
 
@@ -75,6 +78,83 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
   }
 }
 
+// We need to patch the debug configuration to run the user's program in a mirrord-created
+// environment.
+// We do this by creating a batch script that calls `mirrord.exe exec` and then pointing the
+// debug configuration to this script.
+//
+// The patched field is going to be:
+// - `program` for compiled languages (Go, C#)
+// - `runtimeExecutable` for Node
+// - `python` for Python
+//
+// The script will then execute the original program with the original arguments.
+async function patchConfigForWindows(config: vscode.DebugConfiguration, configPath: string | undefined): Promise<[patchField: string, scriptPath: string] | null> {
+  // Helper to find the field and executable to patch.
+  function getPatchInfo(config: vscode.DebugConfiguration): [string, string] | null {
+    switch (config.type) {
+      case "pwa-node":
+      case "node": {
+        const executable = config.runtimeExecutable || "node";
+        return ["runtimeExecutable", executable];
+      }
+      case "debugpy":
+      case "python": {
+        if (config.python) {
+          return ["python", config.python];
+        }
+        if (config.pythonPath) { // For legacy python extension support
+          return ["pythonPath", config.pythonPath];
+        }
+        // If no python is specified, the extension finds it.
+        // We can add it to the config and have our wrapper call `python`.
+        return ["python", "python"];
+      }
+      case "coreclr": {
+        if (config.program) {
+          return ["program", config.program];
+        }
+        return null;
+      }
+      case "go": {
+        if (config.program) {
+          return ["program", config.program];
+        }
+        return null;
+      }
+      default: {
+        if (config.program) {
+          return ["program", config.program];
+        }
+        return null;
+      }
+    }
+  }
+
+  const patchInfo = getPatchInfo(config);
+  if (!patchInfo) {
+    console.log("Not patching debug configuration for Windows: could not determine executable.");
+    return null;
+  }
+
+  const [patchField, executableToWrapOriginal] = patchInfo;
+
+  // The executable path might have spaces. It needs to be quoted.
+  const executableToWrap = `"${executableToWrapOriginal}"`;
+
+  const fileName = `mirrord_exec_${crypto.randomBytes(16).toString('hex')}.bat`;
+  const tmpDir = os.tmpdir();
+  const scriptPath = path.join(tmpDir, fileName);
+
+  const configFlag = configPath ? `-f "${configPath}"` : '';
+  // The `%*` is important to pass all arguments to the original executable.
+  // In this case, it will function exactly as in the original case.
+  const content = `mirrord.exe exec --ide-orchestrated ${configFlag} -- ${executableToWrap} %*`;
+
+  await fs.promises.writeFile(scriptPath, content);
+
+  return [patchField, scriptPath];
+}
 
 /**
 * Entrypoint for the vscode extension, called from `resolveDebugConfigurationWithSubstitutedVariables`.
@@ -149,6 +229,15 @@ async function main(
   config.env["MIRRORD_IGNORE_DEBUGGER_PORTS"] = "45000-65535";
 
   const isMac = platform() === "darwin";
+  const isWindows = platform() === "win32";
+
+  if (isWindows) {
+    const patch = await patchConfigForWindows(config, configPath?.path);
+    if (patch) {
+      const [patchField, scriptPath] = patch;
+      config[patchField] = scriptPath;
+    }
+  }
 
   const [executableFieldName, executable] = isMac ? getFieldAndExecutable(config) : [null, null];
 
@@ -169,7 +258,6 @@ async function main(
   }
 
   const env = executionInfo?.env;
-
   config.env = Object.assign({}, config.env, Object.fromEntries(env));
 
   if (executionInfo.envToUnset) {
@@ -179,7 +267,6 @@ async function main(
   }
 
   config.env["__MIRRORD_EXT_INJECTED"] = 'true';
-
   return config;
 }
 

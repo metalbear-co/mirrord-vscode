@@ -92,15 +92,7 @@ export class MirrordStatus {
     }
 
     toggle() {
-        if (process.platform === "win32") {
-            new NotificationBuilder()
-                .withMessage("mirrord is not supported on Windows. You can use it via remote development or WSL.")
-                .error();
-            return;
-        }
-
         this.enabled = !this.enabled;
-
         this.draw();
     }
 
