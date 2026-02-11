@@ -1,15 +1,15 @@
-import * as vscode from 'vscode';
-import { globalContext } from './extension';
-import { isTargetSet, MirrordConfigManager } from './config';
-import { MirrordAPI, mirrordFailure, MirrordExecution } from './api';
-import { updateTelemetries } from './versionCheck';
-import { getMirrordBinary } from './binaryManager';
-import { platform } from 'node:os';
-import { NotificationBuilder } from './notification';
-import { setOperatorUsed } from './mirrordForTeams';
-import fs from 'fs';
-import { TargetQuickPick, UserSelection } from './targetQuickPick';
-import Logger from './logger';
+import * as vscode from "vscode";
+import { globalContext } from "./extension";
+import { isTargetSet, MirrordConfigManager } from "./config";
+import { MirrordAPI, mirrordFailure, MirrordExecution } from "./api";
+import { updateTelemetries } from "./versionCheck";
+import { getMirrordBinary } from "./binaryManager";
+import { platform } from "node:os";
+import { NotificationBuilder } from "./notification";
+import { setOperatorUsed } from "./mirrordForTeams";
+import fs from "fs";
+import { TargetQuickPick, UserSelection } from "./targetQuickPick";
+import Logger from "./logger";
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
@@ -17,7 +17,9 @@ const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 /// and the executable. Returning the field name for replacing the value with the patched path later.
 /// Also returning the executable because in some configuration types there is some extra logic to
 /// be done for retrieving the executable out of its field (see the `node-terminal` case).
-function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode.DebugConfiguration, string | null] {
+function getFieldAndExecutable(
+  config: vscode.DebugConfiguration,
+): [keyof vscode.DebugConfiguration, string | null] {
   switch (config.type) {
     case "pwa-node":
     case "node": {
@@ -53,7 +55,11 @@ function getFieldAndExecutable(config: vscode.DebugConfiguration): [keyof vscode
 /// Edit the launch configuration in order to sidestep SIP on macOS, and allow the layer to be
 /// loaded into the process. This includes replacing the executable with the path to a patched
 /// executable if the original executable is SIP protected, and some other special workarounds.
-function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldName: string, executionInfo: MirrordExecution) {
+function changeConfigForSip(
+  config: vscode.DebugConfiguration,
+  executableFieldName: string,
+  executionInfo: MirrordExecution,
+) {
   if (config.type === "node-terminal") {
     const command = config[executableFieldName];
     if (command === null) {
@@ -69,21 +75,26 @@ function changeConfigForSip(config: vscode.DebugConfiguration, executableFieldNa
 
     // Run the command in a SIP-patched shell, that way everything that runs in the original command will be SIP-patched
     // on runtime.
-    config[executableFieldName] = `echo '${escapedCommand}' | ${DYLD_ENV_VAR_NAME}=${libraryPath} ${sh} -is`;
+    config[executableFieldName] =
+      `echo '${escapedCommand}' | ${DYLD_ENV_VAR_NAME}=${libraryPath} ${sh} -is`;
   } else if (executionInfo.patchedPath !== null) {
     config[executableFieldName] = executionInfo.patchedPath!;
   }
 }
 
-
 /**
-* Entrypoint for the vscode extension, called from `resolveDebugConfigurationWithSubstitutedVariables`.
-*/
+ * Entrypoint for the vscode extension, called from `resolveDebugConfigurationWithSubstitutedVariables`.
+ */
 async function main(
   folder: vscode.WorkspaceFolder | undefined,
   config: vscode.DebugConfiguration,
-  _token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
-  if ((!globalContext.workspaceState.get('enabled') && !(config.env?.["MIRRORD_ACTIVE"] === "1")) || config.env?.["MIRRORD_ACTIVE"] === "0") {
+  _token: vscode.CancellationToken,
+): Promise<vscode.DebugConfiguration | null | undefined> {
+  if (
+    (!globalContext.workspaceState.get("enabled") &&
+      !(config.env?.["MIRRORD_ACTIVE"] === "1")) ||
+    config.env?.["MIRRORD_ACTIVE"] === "0"
+  ) {
     return config;
   }
 
@@ -94,7 +105,7 @@ async function main(
   }
 
   // For some reason resolveDebugConfiguration runs twice for Node projects. __parentId is populated.
-  if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === 'true') {
+  if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === "true") {
     return config;
   }
 
@@ -104,7 +115,9 @@ async function main(
   const cliPath = await getMirrordBinary(false);
 
   if (!cliPath) {
-    mirrordFailure(`Couldn't download mirrord binaries or find local one in path`);
+    mirrordFailure(
+      `Couldn't download mirrord binaries or find local one in path`,
+    );
     return null;
   }
 
@@ -113,14 +126,23 @@ async function main(
   config.env ||= {};
   let quickPickSelection: UserSelection | undefined = undefined;
 
-  const configPath = await MirrordConfigManager.getInstance().resolveMirrordConfig(folder, config);
+  const configPath =
+    await MirrordConfigManager.getInstance().resolveMirrordConfig(
+      folder,
+      config,
+    );
   const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
   if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
     const supportedTypes = TargetQuickPick.getSupportedTargetTypes();
     const getTargets = async (namespace?: string) => {
-      return mirrordApi.listTargets(configPath?.path, config.env, supportedTypes, namespace);
+      return mirrordApi.listTargets(
+        configPath?.path,
+        config.env,
+        supportedTypes,
+        namespace,
+      );
     };
 
     try {
@@ -133,15 +155,17 @@ async function main(
   }
 
   if (config.type === "go") {
-    config.env["MIRRORD_SKIP_PROCESSES"] = "dlv;debugserver;compile;go;asm;cgo;link;git;gcc;as;ld;collect2;cc1";
+    config.env["MIRRORD_SKIP_PROCESSES"] =
+      "dlv;debugserver;compile;go;asm;cgo;link;git;gcc;as;ld;collect2;cc1";
   } else if (config.type === "python" || config.type === "debugpy") {
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "debugpy";
   } else if (config.type === "java") {
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "javaagent";
-  } else if (config.type === "pwa-node") {
+  } else if (config.type in ["pwa-node", "node", "node-terminal"]) {
     // if any of the --inspect flags are used with node, the port for inspection should be ignored
     // see: https://nodejs.org/en/learn/getting-started/debugging#enable-inspector
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "nodeinspector";
+    config.env["MIRRORD_ENV_LOAD_FROM_PROCESS"] = "true";
   }
 
   // Add a fixed range of ports that VS Code uses for debugging.
@@ -150,11 +174,19 @@ async function main(
 
   const isMac = platform() === "darwin";
 
-  const [executableFieldName, executable] = isMac ? getFieldAndExecutable(config) : [null, null];
+  const [executableFieldName, executable] = isMac
+    ? getFieldAndExecutable(config)
+    : [null, null];
 
   let executionInfo;
   try {
-    executionInfo = await mirrordApi.binaryExecute(quickPickSelection, configPath?.path || null, executable, config.env, folder?.uri.path);
+    executionInfo = await mirrordApi.binaryExecute(
+      quickPickSelection,
+      configPath?.path || null,
+      executable,
+      config.env,
+      folder?.uri.path,
+    );
   } catch (err) {
     mirrordFailure(`mirrord preparation failed: ${err}`);
     return null;
@@ -178,19 +210,22 @@ async function main(
     }
   }
 
-  config.env["__MIRRORD_EXT_INJECTED"] = 'true';
+  config.env["__MIRRORD_EXT_INJECTED"] = "true";
 
   return config;
 }
 
 /**
-* We implement the `resolveDebugConfiguration` that comes with vscode variables resolved already.
-*/
-export class ConfigurationProvider implements vscode.DebugConfigurationProvider {
+ * We implement the `resolveDebugConfiguration` that comes with vscode variables resolved already.
+ */
+export class ConfigurationProvider
+  implements vscode.DebugConfigurationProvider
+{
   async resolveDebugConfigurationWithSubstitutedVariables(
     folder: vscode.WorkspaceFolder | undefined,
     config: vscode.DebugConfiguration,
-    _token: vscode.CancellationToken): Promise<vscode.DebugConfiguration | null | undefined> {
+    _token: vscode.CancellationToken,
+  ): Promise<vscode.DebugConfiguration | null | undefined> {
     try {
       return await main(folder, config, _token);
     } catch (e) {
