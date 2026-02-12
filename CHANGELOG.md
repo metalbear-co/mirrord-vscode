@@ -13,8 +13,7 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 ### Fixed
 
-- Node execution might get stuck/quirky because of env. changed to load from
-  process.
+- Node execution no longer gets stuck/quirky because of env, it now loads from process.
 
 ## [3.67.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.67.1) - 2026-01-08
 
