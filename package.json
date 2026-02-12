@@ -1,308 +1,308 @@
 {
-	"name": "mirrord",
-	"displayName": "mirrord",
-	"description": "Run your local process in the context of your cloud cluster",
-	"publisher": "MetalBear",
-	"version": "3.67.1",
-	"engines": {
-		"vscode": "^1.63.0"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/metalbear-co/mirrord"
-	},
-	"categories": [
-		"Testing",
-		"Debuggers",
-		"Other",
-		"Azure"
-	],
-	"keywords": [
-		"container",
-		"k8s",
-		"kubernetes",
-		"docker",
-		"connect",
-		"cluster",
-		"debug",
-		"microservice",
-		"cloud native",
-		"mirrord"
-	],
-	"icon": "images/icon.png",
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"extensionKind": [
-		"workspace"
-	],
-	"contributes": {
-		"commands": [
-			{
-				"command": "mirrord.changeSettings",
-				"category": "mirrord",
-				"title": "Change settings"
-			},
-			{
-				"command": "mirrord.mirrordForTeams",
-				"category": "mirrord",
-				"title": "Navigate to mirrord for Teams introduction"
-			},
-			{
-				"command": "mirrord.selectActiveConfig",
-				"category": "mirrord",
-				"title": "Select active configuration"
-			},
-			{
-				"command": "mirrord.joinSlack",
-				"category": "mirrord",
-				"title": "Join our Slack"
-			},
-			{
-				"command": "mirrord.help",
-				"category": "mirrord",
-				"title": "Show mirrord walkthrough"
-			},
-			{
-				"command": "mirrord.documentation",
-				"category": "mirrord",
-				"title": "Open mirrord documentation"
-			},
-			{
-				"command": "mirrord.newsletter",
-				"category": "mirrord",
-				"title": "Sign up to the newsletter"
-			}
-		],
-		"configuration": {
-			"title": "mirrord",
-			"properties": {
-				"mirrord.promptMirrordForTeams": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show notifications about mirrord for Teams."
-				},
-				"mirrord.promptActiveConfigRemoved": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when active configuration file is removed."
-				},
-				"mirrord.promptActiveConfigMoved": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when active configuration file is moved."
-				},
-				"mirrord.promptUsingActiveConfig": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when mirrord uses active configuration."
-				},
-				"mirrord.promptUsingEnvVarConfig": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when mirrord uses env var configuration."
-				},
-				"mirrord.promptUsingDefaultConfig": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when mirrord uses default configuration."
-				},
-				"mirrord.promptUsingBinary": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show notifications indicating the used mirrord binary."
-				},
-				"mirrord.promptUsingDefaultConfigSingleFileNoFolder": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when mirrord uses default configuration when running vscode with a single file (no folder)."
-				},
-				"mirrord.promptTargetless": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when mirrord runs in targetless mode."
-				},
-				"mirrord.promptOutdated": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when a new version of mirrord is available."
-				},
-				"mirrord.promptReview": {
-					"type": "boolean",
-					"default": true,
-					"description": "Occasionally show a notification asking for plugin review."
-				},
-				"mirrord.promptSlack": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification inviting the user to the Slack server."
-				},
-				"mirrord.promptNewsletter": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification inviting the user sign up to the mirrord newsletter."
-				},
-				"mirrord.promptAgentVersionMismatch": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show a notification when agent version does not match version of the local mirrord installation."
-				},
-				"mirrord.promptMultipodTarget": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show the warning when targeting a multi-pod deployment on OSS."
-				},
-				"mirrord.binaryPath": {
-					"type": [
-						"string",
-						"null"
-					],
-					"default": null,
-					"description": "Path to local mirrord installation."
-				},
-				"mirrord.autoUpdate": {
-					"type": [
-						"string",
-						"boolean"
-					],
-					"default": true,
-					"description": "Automatically update mirrord binary."
-				},
-				"mirrord.enabledByDefault": {
-					"type": [
-						"boolean"
-					],
-					"default": false,
-					"description": "Enable mirrord by default on startup."
-				},
-				"mirrord.showStatusBarButton": {
-					"type": "boolean",
-					"default": true,
-					"description": "Controls whether the mirrord status bar button is visible"
-				}
-			}
-		},
-		"menus": {
-			"commandPalette": [
-				{
-					"command": "mirrord.changeSettings",
-					"when": "true"
-				},
-				{
-					"command": "mirrord.mirrordForTeams",
-					"when": "true"
-				},
-				{
-					"command": "mirrord.selectActiveConfig",
-					"when": "true"
-				},
-				{
-					"command": "mirrord.joinSlack",
-					"when": "true"
-				},
-				{
-					"command": "mirrord.help",
-					"when": "true"
-				},
-				{
-					"command": "mirrord.documentation",
-					"when": "true"
-				},
-				{
-					"command": "mirrord.newsletter",
-					"when": "true"
-				}
-			]
-		},
-		"jsonValidation": [
-			{
-				"fileMatch": [
-					"*mirrord.json",
-					"*.mirrord/*.json"
-				],
-				"url": "https://raw.githubusercontent.com/metalbear-co/mirrord/latest/mirrord-schema.json"
-			}
-		],
-		"walkthroughs": [
-			{
-				"id": "mirrord.welcome",
-				"title": "Get Started with Development using mirrord",
-				"description": "Run your application in the context of a remote Kubernetes cluster with just one click.",
-				"steps": [
-					{
-						"id": "enablemirroring",
-						"title": "Enable mirroring",
-						"description": "Click on the status bar button to enable mirroring.",
-						"media": {
-							"markdown": "media/walkthrough/enablemirroring.md"
-						},
-						"completionEvents": [
-							"onCommand:mirrord.toggleMirroring"
-						]
-					},
-					{
-						"id": "debugapplication",
-						"title": "Debug your application",
-						"description": "Start debugging your application and pick a target to impersonate.",
-						"media": {
-							"markdown": "media/walkthrough/debugapplication.md"
-						}
-					},
-					{
-						"id": "defaultconfiguration",
-						"title": "mirrord configuration",
-						"description": "Learn about managing mirrord configuration.",
-						"media": {
-							"markdown": "media/walkthrough/configuration.md"
-						}
-					}
-				]
-			}
-		]
-	},
-	"main": "./dist/extension.js",
-	"scripts": {
-		"pretest": "npm run test-compile && npm run lint",
-		"test": "npm run pretest && node out/tests/runTests.js",
-		"lint": "eslint src -c eslint.config.mjs --ext ts",
-		"format": "eslint src -c eslint.config.mjs --ext ts --fix",
-		"vscode:prepublish": "webpack --mode production",
-		"compile": "webpack --mode none",
-		"watch": "webpack --mode none --watch",
-		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
-		"esbuild": "npm run esbuild-base -- --sourcemap",
-		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-		"test-compile": "tsc -p ./",
-		"package": "vsce package"
-	},
-	"devDependencies": {
-		"@stylistic/eslint-plugin": "^2.9.0",
-		"@types/chai": "^5.2.0",
-		"@types/mocha": "^10.0.1",
-		"@types/node": "^22.13.10",
-		"@types/semver": "^7.5.8",
-		"@types/vscode": "^1.63.0",
-		"@types/which": "^3.0.0",
-		"@typescript-eslint/eslint-plugin": "^8.0.0",
-		"@typescript-eslint/parser": "^8.0.0",
-		"@vscode/vsce": "^2.9.2",
-		"chai": "^5.2.0",
-		"esbuild": "^0.25.1",
-		"eslint": "^9.0.0",
-		"mocha": "^11.1.0",
-		"ts-loader": "^9.4.2",
-		"typescript": "^5.8.2",
-		"typescript-eslint": "^8.26.0",
-		"vscode-extension-tester": "^8.13.0",
-		"webpack": "^5.76.0",
-		"webpack-cli": "^6.0.1"
-	},
-	"dependencies": {
-		"axios": "^1.8.0",
-		"semver": "^7.5.4",
-		"toml": "^3.0.0",
-		"vscode-uri": "^3.0.7",
-		"which": "^3.0.1",
-		"yaml": "^2.1.3"
-	}
+  "name": "mirrord",
+  "displayName": "mirrord",
+  "description": "Run your local process in the context of your cloud cluster",
+  "publisher": "MetalBear",
+  "version": "3.68.0",
+  "engines": {
+    "vscode": "^1.63.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/metalbear-co/mirrord"
+  },
+  "categories": [
+    "Testing",
+    "Debuggers",
+    "Other",
+    "Azure"
+  ],
+  "keywords": [
+    "container",
+    "k8s",
+    "kubernetes",
+    "docker",
+    "connect",
+    "cluster",
+    "debug",
+    "microservice",
+    "cloud native",
+    "mirrord"
+  ],
+  "icon": "images/icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "mirrord.changeSettings",
+        "category": "mirrord",
+        "title": "Change settings"
+      },
+      {
+        "command": "mirrord.mirrordForTeams",
+        "category": "mirrord",
+        "title": "Navigate to mirrord for Teams introduction"
+      },
+      {
+        "command": "mirrord.selectActiveConfig",
+        "category": "mirrord",
+        "title": "Select active configuration"
+      },
+      {
+        "command": "mirrord.joinSlack",
+        "category": "mirrord",
+        "title": "Join our Slack"
+      },
+      {
+        "command": "mirrord.help",
+        "category": "mirrord",
+        "title": "Show mirrord walkthrough"
+      },
+      {
+        "command": "mirrord.documentation",
+        "category": "mirrord",
+        "title": "Open mirrord documentation"
+      },
+      {
+        "command": "mirrord.newsletter",
+        "category": "mirrord",
+        "title": "Sign up to the newsletter"
+      }
+    ],
+    "configuration": {
+      "title": "mirrord",
+      "properties": {
+        "mirrord.promptMirrordForTeams": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications about mirrord for Teams."
+        },
+        "mirrord.promptActiveConfigRemoved": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when active configuration file is removed."
+        },
+        "mirrord.promptActiveConfigMoved": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when active configuration file is moved."
+        },
+        "mirrord.promptUsingActiveConfig": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when mirrord uses active configuration."
+        },
+        "mirrord.promptUsingEnvVarConfig": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when mirrord uses env var configuration."
+        },
+        "mirrord.promptUsingDefaultConfig": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when mirrord uses default configuration."
+        },
+        "mirrord.promptUsingBinary": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications indicating the used mirrord binary."
+        },
+        "mirrord.promptUsingDefaultConfigSingleFileNoFolder": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when mirrord uses default configuration when running vscode with a single file (no folder)."
+        },
+        "mirrord.promptTargetless": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when mirrord runs in targetless mode."
+        },
+        "mirrord.promptOutdated": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when a new version of mirrord is available."
+        },
+        "mirrord.promptReview": {
+          "type": "boolean",
+          "default": true,
+          "description": "Occasionally show a notification asking for plugin review."
+        },
+        "mirrord.promptSlack": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification inviting the user to the Slack server."
+        },
+        "mirrord.promptNewsletter": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification inviting the user sign up to the mirrord newsletter."
+        },
+        "mirrord.promptAgentVersionMismatch": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when agent version does not match version of the local mirrord installation."
+        },
+        "mirrord.promptMultipodTarget": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the warning when targeting a multi-pod deployment on OSS."
+        },
+        "mirrord.binaryPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Path to local mirrord installation."
+        },
+        "mirrord.autoUpdate": {
+          "type": [
+            "string",
+            "boolean"
+          ],
+          "default": true,
+          "description": "Automatically update mirrord binary."
+        },
+        "mirrord.enabledByDefault": {
+          "type": [
+            "boolean"
+          ],
+          "default": false,
+          "description": "Enable mirrord by default on startup."
+        },
+        "mirrord.showStatusBarButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Controls whether the mirrord status bar button is visible"
+        }
+      }
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "mirrord.changeSettings",
+          "when": "true"
+        },
+        {
+          "command": "mirrord.mirrordForTeams",
+          "when": "true"
+        },
+        {
+          "command": "mirrord.selectActiveConfig",
+          "when": "true"
+        },
+        {
+          "command": "mirrord.joinSlack",
+          "when": "true"
+        },
+        {
+          "command": "mirrord.help",
+          "when": "true"
+        },
+        {
+          "command": "mirrord.documentation",
+          "when": "true"
+        },
+        {
+          "command": "mirrord.newsletter",
+          "when": "true"
+        }
+      ]
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": [
+          "*mirrord.json",
+          "*.mirrord/*.json"
+        ],
+        "url": "https://raw.githubusercontent.com/metalbear-co/mirrord/latest/mirrord-schema.json"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "mirrord.welcome",
+        "title": "Get Started with Development using mirrord",
+        "description": "Run your application in the context of a remote Kubernetes cluster with just one click.",
+        "steps": [
+          {
+            "id": "enablemirroring",
+            "title": "Enable mirroring",
+            "description": "Click on the status bar button to enable mirroring.",
+            "media": {
+              "markdown": "media/walkthrough/enablemirroring.md"
+            },
+            "completionEvents": [
+              "onCommand:mirrord.toggleMirroring"
+            ]
+          },
+          {
+            "id": "debugapplication",
+            "title": "Debug your application",
+            "description": "Start debugging your application and pick a target to impersonate.",
+            "media": {
+              "markdown": "media/walkthrough/debugapplication.md"
+            }
+          },
+          {
+            "id": "defaultconfiguration",
+            "title": "mirrord configuration",
+            "description": "Learn about managing mirrord configuration.",
+            "media": {
+              "markdown": "media/walkthrough/configuration.md"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "main": "./dist/extension.js",
+  "scripts": {
+    "pretest": "npm run test-compile && npm run lint",
+    "test": "npm run pretest && node out/tests/runTests.js",
+    "lint": "eslint src -c eslint.config.mjs --ext ts",
+    "format": "eslint src -c eslint.config.mjs --ext ts --fix",
+    "vscode:prepublish": "webpack --mode production",
+    "compile": "webpack --mode none",
+    "watch": "webpack --mode none --watch",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^2.9.0",
+    "@types/chai": "^5.2.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^22.13.10",
+    "@types/semver": "^7.5.8",
+    "@types/vscode": "^1.63.0",
+    "@types/which": "^3.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vscode/vsce": "^2.9.2",
+    "chai": "^5.2.0",
+    "esbuild": "^0.25.1",
+    "eslint": "^9.0.0",
+    "mocha": "^11.1.0",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.0",
+    "vscode-extension-tester": "^8.13.0",
+    "webpack": "^5.76.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "axios": "^1.8.0",
+    "semver": "^7.5.4",
+    "toml": "^3.0.0",
+    "vscode-uri": "^3.0.7",
+    "which": "^3.0.1",
+    "yaml": "^2.1.3"
+  }
 }

@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.68.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.68.0) - 2026-02-12
+
+
+### Fixed
+
+- Node execution might get stuck/quirky because of env. changed to load from
+  process.
+
 ## [3.67.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.67.1) - 2026-01-08
 
 
