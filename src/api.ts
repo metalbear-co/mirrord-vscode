@@ -425,6 +425,14 @@ export class MirrordAPI {
   }
 
   /**
+  * Attaches the mirrord layer to an already-running process by PID.
+  * Used on Windows where LD_PRELOAD is not available.
+  */
+  async attach(pid: number, configEnv: EnvVars): Promise<void> {
+    await this.exec(["attach", pid.toString()], configEnv, 30000);
+  }
+
+  /**
   * Runs the extension execute sequence, creating agent and gathering execution runtime while also
   * setting env vars, both from system, and from `launch.json` (`configEnv`).
   *
