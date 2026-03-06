@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { MirrordConfigManager } from './config';
 import { globalContext } from './extension';
-import { NotificationBuilder } from './notification';
 import { getOperatorUsed } from './mirrordForTeams';
 import { NEWSLETTER_COUNTER } from './api';
 
@@ -92,13 +91,6 @@ export class MirrordStatus {
     }
 
     toggle() {
-        if (process.platform === "win32") {
-            new NotificationBuilder()
-                .withMessage("mirrord is not supported on Windows. You can use it via remote development or WSL.")
-                .error();
-            return;
-        }
-
         this.enabled = !this.enabled;
 
         this.draw();

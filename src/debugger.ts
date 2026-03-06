@@ -13,6 +13,39 @@ import Logger from "./logger";
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
+/**
+ * Info needed by the DAP tracker to perform attach after the process starts.
+ */
+export interface PendingAttach {
+  cliPath: string;
+  configEnv: Record<string, string>;
+  stopOnEntryProperty: string;
+  userHadStopOnEntry: boolean;
+}
+
+/**
+ * Queue of pending attaches. `main()` pushes here on Windows after setting up
+ * stopOnEntry. The tracker factory in `extension.ts` shifts from it when
+ * creating a tracker for a mirrord-injected session. Config resolution and
+ * tracker creation happen sequentially per session, so ordering is preserved.
+ */
+export const pendingAttaches: PendingAttach[] = [];
+
+/**
+ * Returns the name of the "stop on entry" config property for the given debug type.
+ *
+ * Most debuggers use `stopOnEntry`, but C# (coreclr/clr) uses `stopAtEntry`.
+ */
+function getStopOnEntryProperty(debugType: string): string {
+  switch (debugType) {
+    case "coreclr":
+    case "clr":
+      return "stopAtEntry";
+    default:
+      return "stopOnEntry";
+  }
+}
+
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type,
 /// and the executable. Returning the field name for replacing the value with the patched path later.
 /// Also returning the executable because in some configuration types there is some extra logic to
@@ -173,6 +206,7 @@ async function main(
   config.env["MIRRORD_IGNORE_DEBUGGER_PORTS"] = "45000-65535";
 
   const isMac = platform() === "darwin";
+  const isWindows = platform() === "win32";
 
   const [executableFieldName, executable] = isMac
     ? getFieldAndExecutable(config)
@@ -211,6 +245,22 @@ async function main(
   }
 
   config.env["__MIRRORD_EXT_INJECTED"] = "true";
+
+  // On Windows, set up the attach flow: force stop-on-entry so we can inject
+  // the layer DLL before any user code runs.
+  if (isWindows) {
+    const stopProp = getStopOnEntryProperty(config.type);
+    const userHadStopOnEntry = !!config[stopProp];
+
+    config[stopProp] = true;
+
+    pendingAttaches.push({
+      cliPath,
+      configEnv: { ...config.env },
+      stopOnEntryProperty: stopProp,
+      userHadStopOnEntry,
+    });
+  }
 
   return config;
 }
