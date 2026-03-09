@@ -171,7 +171,7 @@ async function main(
     const supportedTypes = TargetQuickPick.getSupportedTargetTypes();
     const getTargets = async (namespace?: string) => {
       return mirrordApi.listTargets(
-        configPath?.path,
+        configPath?.fsPath,
         config.env,
         supportedTypes,
         namespace,
@@ -216,10 +216,10 @@ async function main(
   try {
     executionInfo = await mirrordApi.binaryExecute(
       quickPickSelection,
-      configPath?.path || null,
+      configPath?.fsPath || null,
       executable,
       config.env,
-      folder?.uri.path,
+      folder?.uri.fsPath,
     );
   } catch (err) {
     mirrordFailure(`mirrord preparation failed: ${err}`);
@@ -269,8 +269,7 @@ async function main(
  * We implement the `resolveDebugConfiguration` that comes with vscode variables resolved already.
  */
 export class ConfigurationProvider
-  implements vscode.DebugConfigurationProvider
-{
+  implements vscode.DebugConfigurationProvider {
   async resolveDebugConfigurationWithSubstitutedVariables(
     folder: vscode.WorkspaceFolder | undefined,
     config: vscode.DebugConfiguration,
