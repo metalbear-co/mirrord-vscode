@@ -321,9 +321,16 @@ export class MirrordAPI {
           const notification = new NotificationBuilder()
             .withMessage(`mirrord error: ${error["message"]}`);
           if (error["help"]) {
-            notification.withGenericAction("Help", async () => {
-              vscode.window.showInformationMessage(error["help"]);
-            });
+            const upgradeUrl = error["help"].match(/https:\/\/app\.metalbear\.com\/[^\s]*/)?.[0];
+            if (upgradeUrl) {
+              notification.withGenericAction("Sign up for Teams", async () => {
+                vscode.env.openExternal(vscode.Uri.parse(upgradeUrl.replace("utm_medium=cli", "utm_medium=vscode")));
+              });
+            } else {
+              notification.withGenericAction("Help", async () => {
+                vscode.window.showInformationMessage(error["help"]);
+              });
+            }
           }
           notification.error();
           return reject(error["message"]);
@@ -492,9 +499,16 @@ export class MirrordAPI {
             const notification = new NotificationBuilder()
               .withMessage(`mirrord error: ${error["message"]}`);
             if (error["help"]) {
-              notification.withGenericAction("Help", async () => {
-                vscode.window.showInformationMessage(error["help"]);
-              });
+              const upgradeUrl = error["help"].match(/https:\/\/app\.metalbear\.com\/[^\s]*/)?.[0];
+              if (upgradeUrl) {
+                notification.withGenericAction("Sign up for Teams", async () => {
+                  vscode.env.openExternal(vscode.Uri.parse(upgradeUrl.replace("utm_medium=cli", "utm_medium=vscode")));
+                });
+              } else {
+                notification.withGenericAction("Help", async () => {
+                  vscode.window.showInformationMessage(error["help"]);
+                });
+              }
             }
             notification.error();
             return reject(error["message"]);
