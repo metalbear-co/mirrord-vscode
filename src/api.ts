@@ -95,6 +95,13 @@ interface IdeMessage {
 }
 
 /**
+ * Replaces utm_medium in app.metalbear.com links with "vscode".
+ */
+function replaceUtmMedium(link: string): string {
+  return link.replace(/utm_medium=[^&]*/, "utm_medium=vscode");
+}
+
+/**
 * Handles the mirrord -> IDE messages that come in json format.
 *
 * These messages contain more information than just text, see [`IdeMessage`].
@@ -107,7 +114,7 @@ function handleIdeMessage(message: IdeMessage) {
     switch (action.kind) {
       case "Link": {
         notificationBuilder.withGenericAction(action.label, async () => {
-          vscode.env.openExternal(vscode.Uri.parse(action.link));
+          vscode.env.openExternal(vscode.Uri.parse(replaceUtmMedium(action.link)));
         });
         break;
       }
@@ -267,8 +274,6 @@ export class MirrordAPI {
       "MIRRORD_PROGRESS_MODE": "json",
       // to have "advanced" progress in IDE
       "MIRRORD_PROGRESS_SUPPORT_IDE": "true",
-      // so the CLI generates vscode-specific UTM links directly
-      "MIRRORD_IDE_NAME": "vscode",
       // to have namespaces in the `mirrord ls` output
       "MIRRORD_LS_RICH_OUTPUT": "true"
     };
@@ -319,7 +324,7 @@ export class MirrordAPI {
             const upgradeUrl = error["help"].match(/https:\/\/app\.metalbear\.com\/[^\s]*/)?.[0];
             if (upgradeUrl) {
               notification.withGenericAction("Sign up for Teams", async () => {
-                vscode.env.openExternal(vscode.Uri.parse(upgradeUrl.replace("utm_medium=cli", "utm_medium=vscode")));
+                vscode.env.openExternal(vscode.Uri.parse(replaceUtmMedium(upgradeUrl)));
               });
             } else {
               notification.withGenericAction("Help", async () => {
@@ -497,7 +502,7 @@ export class MirrordAPI {
               const upgradeUrl = error["help"].match(/https:\/\/app\.metalbear\.com\/[^\s]*/)?.[0];
               if (upgradeUrl) {
                 notification.withGenericAction("Sign up for Teams", async () => {
-                  vscode.env.openExternal(vscode.Uri.parse(upgradeUrl.replace("utm_medium=cli", "utm_medium=vscode")));
+                  vscode.env.openExternal(vscode.Uri.parse(replaceUtmMedium(upgradeUrl)));
                 });
               } else {
                 notification.withGenericAction("Help", async () => {
