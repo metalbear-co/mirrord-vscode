@@ -12,8 +12,8 @@ const OPERATOR_USED = 'mirrord-operator-used';
 async function showMirrordForTeamsNotification(message: string) {
   new NotificationBuilder()
     .withMessage(message)
-    .withGenericAction("Try it now", async () => {
-      await vscode.commands.executeCommand(MirrordStatus.mirrordForTeamsCommandId);
+    .withGenericAction("Sign up for Teams", async () => {
+      vscode.env.openExternal(vscode.Uri.parse('https://app.metalbear.com/?utm_source=teamsnotif&utm_medium=vscode'));
     })
     .withDisableAction("promptMirrordForTeams")
     .info();
