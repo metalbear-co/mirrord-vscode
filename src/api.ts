@@ -189,9 +189,6 @@ function isRichMirrordLsOutput(output: MirrordLsOutput | string[]): output is Mi
 export function mirrordFailure(error: string) {
   new NotificationBuilder()
     .withMessage(`${error}. Please check the logs/errors.`)
-    .withGenericAction("Try mirrord for Teams", async () => {
-      vscode.env.openExternal(vscode.Uri.parse('https://app.metalbear.com/?utm_source=error&utm_medium=vscode'));
-    })
     .withGenericAction("Get help on Slack", async () => {
       vscode.env.openExternal(vscode.Uri.parse('https://metalbear.co/slack'));
     })
