@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { globalContext } from './extension';
 import { NotificationBuilder } from './notification';
-import { MirrordStatus } from './status';
 
 const RUN_COUNTER = 'mirrord-for-teams-counter';
 const NOTIFICATION_STARTS_AT = 100;
