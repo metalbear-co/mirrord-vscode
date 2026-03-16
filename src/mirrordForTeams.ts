@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { globalContext } from './extension';
 import { NotificationBuilder } from './notification';
-import { MirrordStatus } from './status';
 
 const RUN_COUNTER = 'mirrord-for-teams-counter';
 const NOTIFICATION_STARTS_AT = 100;
@@ -12,8 +11,8 @@ const OPERATOR_USED = 'mirrord-operator-used';
 async function showMirrordForTeamsNotification(message: string) {
   new NotificationBuilder()
     .withMessage(message)
-    .withGenericAction("Try it now", async () => {
-      await vscode.commands.executeCommand(MirrordStatus.mirrordForTeamsCommandId);
+    .withGenericAction("Sign up for Teams", async () => {
+      vscode.env.openExternal(vscode.Uri.parse('https://app.metalbear.com/?utm_source=teamsnotif&utm_medium=vscode'));
     })
     .withDisableAction("promptMirrordForTeams")
     .info();

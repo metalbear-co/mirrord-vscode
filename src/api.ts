@@ -95,10 +95,10 @@ interface IdeMessage {
 }
 
 /**
- * Replaces the "plugin" platform query parameter in the given link with "vscode"
+ * Replaces utm_medium in app.metalbear.com links with "vscode".
  */
-function changeQueryParam(link: string): string {
-  return link.replace("utm_medium=cli", "utm_medium=vscode").replace("utm_medium=plugin", "utm_medium=vscode");
+function replaceUtmMedium(link: string): string {
+  return link.replace(/utm_medium=[^&]*/, "utm_medium=vscode");
 }
 
 /**
@@ -114,7 +114,7 @@ function handleIdeMessage(message: IdeMessage) {
     switch (action.kind) {
       case "Link": {
         notificationBuilder.withGenericAction(action.label, async () => {
-          vscode.env.openExternal(vscode.Uri.parse(changeQueryParam(action.link)));
+          vscode.env.openExternal(vscode.Uri.parse(replaceUtmMedium(action.link)));
         });
         break;
       }
@@ -271,6 +271,8 @@ export class MirrordAPI {
       "MIRRORD_PROGRESS_MODE": "json",
       // to have "advanced" progress in IDE
       "MIRRORD_PROGRESS_SUPPORT_IDE": "true",
+      // so the CLI generates vscode-specific UTM links directly
+      "MIRRORD_IDE_NAME": "vscode",
       // to have namespaces in the `mirrord ls` output
       "MIRRORD_LS_RICH_OUTPUT": "true"
     };
@@ -318,9 +320,16 @@ export class MirrordAPI {
           const notification = new NotificationBuilder()
             .withMessage(`mirrord error: ${error["message"]}`);
           if (error["help"]) {
-            notification.withGenericAction("Help", async () => {
-              vscode.window.showInformationMessage(error["help"]);
-            });
+            const upgradeUrl = error["help"].match(/https:\/\/app\.metalbear\.com\/[^\s]*/)?.[0];
+            if (upgradeUrl) {
+              notification.withGenericAction("Sign up for Teams", async () => {
+                vscode.env.openExternal(vscode.Uri.parse(replaceUtmMedium(upgradeUrl)));
+              });
+            } else {
+              notification.withGenericAction("Help", async () => {
+                vscode.window.showInformationMessage(error["help"]);
+              });
+            }
           }
           notification.error();
           return reject(error["message"]);
@@ -489,9 +498,16 @@ export class MirrordAPI {
             const notification = new NotificationBuilder()
               .withMessage(`mirrord error: ${error["message"]}`);
             if (error["help"]) {
-              notification.withGenericAction("Help", async () => {
-                vscode.window.showInformationMessage(error["help"]);
-              });
+              const upgradeUrl = error["help"].match(/https:\/\/app\.metalbear\.com\/[^\s]*/)?.[0];
+              if (upgradeUrl) {
+                notification.withGenericAction("Sign up for Teams", async () => {
+                  vscode.env.openExternal(vscode.Uri.parse(replaceUtmMedium(upgradeUrl)));
+                });
+              } else {
+                notification.withGenericAction("Help", async () => {
+                  vscode.window.showInformationMessage(error["help"]);
+                });
+              }
             }
             notification.error();
             return reject(error["message"]);
