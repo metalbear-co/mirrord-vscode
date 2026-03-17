@@ -1,0 +1,1 @@
+When the mirrord CLI exits with an upgrade-related error, VS Code now shows a "Sign up for Teams" button that links directly to app.metalbear.com.
