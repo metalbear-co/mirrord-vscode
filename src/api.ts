@@ -271,6 +271,8 @@ export class MirrordAPI {
       "MIRRORD_PROGRESS_MODE": "json",
       // to have "advanced" progress in IDE
       "MIRRORD_PROGRESS_SUPPORT_IDE": "true",
+      // so the CLI generates vscode-specific UTM links directly
+      "MIRRORD_IDE_NAME": "vscode",
       // to have namespaces in the `mirrord ls` output
       "MIRRORD_LS_RICH_OUTPUT": "true"
     };
