@@ -500,6 +500,10 @@ export class MirrordAPI {
               notification.withGenericAction("Sign up for Teams", async () => {
                 vscode.env.openExternal(vscode.Uri.parse(upgradeUrl));
               });
+            } else if (error["help"]) {
+              notification.withGenericAction("Help", async () => {
+                vscode.window.showInformationMessage(error["help"]);
+              });
             }
             notification.error();
             return reject(error["message"]);
