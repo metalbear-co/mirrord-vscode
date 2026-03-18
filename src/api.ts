@@ -415,7 +415,14 @@ export class MirrordAPI {
   */
   async verifyConfig(configPath: vscode.Uri | null, configEnv: EnvVars): Promise<VerifiedConfig | undefined> {
     if (configPath) {
-      const args = ['verify-config', '--ide', `${configPath.path}`];
+      // NOTE: `fsPath`/`_fsPath` is correct, whereas `path` is incorrect,
+      // for cross-platform support. e.g.:
+      //
+      // _fsPath = 'c:\\dev\\latest-ide-test'
+      // path = '/c:/dev/latest-ide-test'
+      //
+      // See the documentation for more information.
+      const args = ['verify-config', '--ide', `${configPath.fsPath}`];
       const stdout = await this.exec(args, configEnv);
 
       const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
@@ -423,6 +430,14 @@ export class MirrordAPI {
     } else {
       return undefined;
     }
+  }
+
+  /**
+  * Attaches the mirrord layer to an already-running process by PID.
+  * Used on Windows where LD_PRELOAD is not available.
+  */
+  async attach(pid: number, configEnv: EnvVars): Promise<void> {
+    await this.exec(["attach", pid.toString()], configEnv, 30000);
   }
 
   /**
@@ -676,11 +691,11 @@ function tickNewsletterCounter() {
 
   if (msg) {
     new NotificationBuilder()
-    .withMessage(msg)
-    .withGenericAction("Subscribe to the mirrord newsletter", async () => {
-      vscode.commands.executeCommand(MirrordStatus.newsletterCommandId);
-    })
-    .withDisableAction('promptNewsletter')
-    .info();
+      .withMessage(msg)
+      .withGenericAction("Subscribe to the mirrord newsletter", async () => {
+        vscode.commands.executeCommand(MirrordStatus.newsletterCommandId);
+      })
+      .withDisableAction('promptNewsletter')
+      .info();
   }
 }
