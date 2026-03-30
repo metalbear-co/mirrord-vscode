@@ -37,13 +37,18 @@ export const pendingAttaches: PendingAttach[] = [];
  * Most debuggers use `stopOnEntry`, but C# (coreclr/clr) uses `stopAtEntry`.
  */
 function getStopOnEntryProperty(debugType: string): string {
+  let prop: string;
   switch (debugType) {
     case "coreclr":
     case "clr":
-      return "stopAtEntry";
+      prop = "stopAtEntry";
+      break;
     default:
-      return "stopOnEntry";
+      prop = "stopOnEntry";
+      break;
   }
+  console.log(`[mirrord] getStopOnEntryProperty: debugType="${debugType}" -> "${prop}"`);
+  return prop;
 }
 
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type,
@@ -134,6 +139,7 @@ async function main(
   // Sometimes VSCode launches then attaches, so having a warning/error here is confusing
   // We used to return null in that case but that failed the attach.
   if (config.request === "attach") {
+    console.log(`[mirrord] main: skipping attach request (type="${config.type}", name="${config.name}")`);
     return config;
   }
 
@@ -249,17 +255,21 @@ async function main(
   // On Windows, set up the attach flow: force stop-on-entry so we can inject
   // the layer DLL before any user code runs.
   if (isWindows) {
+    console.log(`[mirrord] main: Windows attach flow — setting up stop-on-entry for type="${config.type}"`);
     const stopProp = getStopOnEntryProperty(config.type);
     const userHadStopOnEntry = !!config[stopProp];
+    console.log(`[mirrord] main: stopProp="${stopProp}", userHadStopOnEntry=${userHadStopOnEntry}`);
 
     config[stopProp] = true;
 
-    pendingAttaches.push({
+    const pendingEntry: PendingAttach = {
       cliPath,
       configEnv: { ...config.env },
       stopOnEntryProperty: stopProp,
       userHadStopOnEntry,
-    });
+    };
+    pendingAttaches.push(pendingEntry);
+    console.log(`[mirrord] main: pushed pendingAttach (queue length=${pendingAttaches.length}), cliPath="${cliPath}"`);
   }
 
   return config;
