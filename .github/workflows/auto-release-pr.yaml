@@ -98,7 +98,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          branch="auto-release/v${{ steps.version.outputs.new_version }}"
+          branch="release/${{ steps.version.outputs.new_version }}"
           title="Release ${{ steps.version.outputs.new_version }}"
           body_file=$(mktemp)
 

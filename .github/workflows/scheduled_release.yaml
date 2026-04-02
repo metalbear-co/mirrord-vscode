@@ -8,6 +8,8 @@ on:
 jobs:
   evaluate_release_conditions:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     outputs:
       should_trigger: ${{ steps.evaluate.outputs.should_trigger }}
       changelog_entry_count: ${{ steps.evaluate.outputs.changelog_entry_count }}

@@ -50,12 +50,12 @@ in the launch configuration of the second window.
 
 The release flow is split into two stages: preparing a release PR and publishing a release.
 
-The release PR is handled by [`.github/workflows/scheduled_release.yaml`](/Users/aviramhassan/Code/mirrord-vscode/.github/workflows/scheduled_release.yaml), which runs daily and can also be triggered manually. It checks whether `changelog.d/*.md` contains unreleased entries and whether the latest release entry in [`CHANGELOG.md`](/Users/aviramhassan/Code/mirrord-vscode/CHANGELOG.md) is older than 7 days. If both conditions are true, it triggers [`.github/workflows/auto-release-pr.yaml`](/Users/aviramhassan/Code/mirrord-vscode/.github/workflows/auto-release-pr.yaml).
+The release PR is handled by `.github/workflows/scheduled_release.yaml`, which runs daily and can also be triggered manually. It checks whether `changelog.d/*.md` contains unreleased entries and whether the latest release entry in `CHANGELOG.md` is older than 7 days. If both conditions are true, it triggers `.github/workflows/auto-release-pr.yaml`.
 
 The auto-release PR workflow determines the next version from the changelog fragment categories:
 - `internal` and `fixed` only produce a patch bump.
 - Any other fragment category, including `added`, `changed`, and `removed`, produces a minor bump.
 
-It then updates [`package.json`](/Users/aviramhassan/Code/mirrord-vscode/package.json) and [`package-lock.json`](/Users/aviramhassan/Code/mirrord-vscode/package-lock.json), runs `towncrier` to fold the `changelog.d` entries into [`CHANGELOG.md`](/Users/aviramhassan/Code/mirrord-vscode/CHANGELOG.md), pushes an `auto-release/v<version>` branch, and creates or updates the corresponding PR to `main`.
+It then updates `package.json` and `package-lock.json`, runs `towncrier` to fold the `changelog.d` entries into `CHANGELOG.md`, pushes a `release/<version>` branch, and creates or updates the corresponding PR to `main`.
 
-Publishing is handled by [`.github/workflows/release.yaml`](/Users/aviramhassan/Code/mirrord-vscode/.github/workflows/release.yaml). On pushes to `main`, it only proceeds when the last commit modified `CHANGELOG.md`, `package.json`, and `package-lock.json`. It builds and publishes the extension, creates the GitHub release using the version currently in `package.json` as the release tag, updates the tracking tags, and finally dispatches the `metalbear-co/infra` workflow `update-vscode-version.yml` with the released version.
+Publishing is handled by `.github/workflows/release.yaml`. On pushes to `main`, it only proceeds when the last commit modified `CHANGELOG.md`, `package.json`, and `package-lock.json`. It builds and publishes the extension, creates the GitHub release using the version currently in `package.json` as the release tag, updates the tracking tags, and finally dispatches the `metalbear-co/infra` workflow `update-vscode-version.yml` with the released version.

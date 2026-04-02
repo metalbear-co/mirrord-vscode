@@ -18,6 +18,8 @@ on:
 jobs:
   vscode-e2e:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     env:
       CI_BUILD_PLUGIN: "true"
     steps:

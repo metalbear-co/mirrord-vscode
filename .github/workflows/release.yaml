@@ -54,6 +54,8 @@ jobs:
     needs: check_release_commit
     if: needs.check_release_commit.outputs.should_release == 'true'
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -129,6 +131,8 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [check_release_commit, release_gh]
     if: github.event_name != 'workflow_dispatch' && needs.check_release_commit.outputs.should_release == 'true'
+    permissions:
+      contents: write
     steps:
       - name: Check out code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
