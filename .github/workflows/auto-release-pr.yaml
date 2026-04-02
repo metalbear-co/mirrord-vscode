@@ -78,7 +78,7 @@ jobs:
           echo "new_version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
       - name: Generate changelog
-        run: uv run towncrier build --yes --version "${{ steps.bump.outputs.new_version }}" --date "$(date -u +%F)"
+        run: uv run towncrier build --yes --version "${{ steps.bump.outputs.new_version }}"
 
       - name: Create or update release pull request
         env:
