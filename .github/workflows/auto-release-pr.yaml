@@ -1,0 +1,145 @@
+name: Auto Release PR
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create_release_pr:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867 # v7.1.6
+
+      - name: Install Python
+        run: uv python install
+
+      - name: Create virtual environment
+        run: uv venv
+
+      - name: Install towncrier
+        run: uv pip install towncrier==23.11.0
+
+      - name: Determine next release version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          fragments=(changelog.d/*.md)
+          if [ ${#fragments[@]} -eq 0 ]; then
+            echo "No changelog entries found in changelog.d"
+            exit 1
+          fi
+
+          bump_level=patch
+          for fragment in "${fragments[@]}"; do
+            category=$(basename "${fragment}")
+            category="${category%.md}"
+            category="${category##*.}"
+
+            case "${category}" in
+              internal|fixed)
+                ;;
+              *)
+                bump_level=minor
+                break
+                ;;
+            esac
+          done
+
+          current_version=$(node -p "require('./package.json').version")
+          new_version=$(
+            node -e '
+              const [major, minor, patch] = require("./package.json").version.split(".").map(Number);
+              const bumpLevel = process.argv[1];
+
+              if (bumpLevel === "minor") {
+                process.stdout.write([major, minor + 1, 0].join("."));
+              } else {
+                process.stdout.write([major, minor, patch + 1].join("."));
+              }
+            ' "${bump_level}"
+          )
+
+          {
+            echo "bump_level=${bump_level}"
+            echo "current_version=${current_version}"
+            echo "new_version=${new_version}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Bump package version
+        run: npm version "${{ steps.version.outputs.bump_level }}" --no-git-tag-version
+
+      - name: Generate changelog
+        run: uv run towncrier build --yes --version "${{ steps.version.outputs.new_version }}" --date "$(date -u +%F)"
+
+      - name: Create or update release pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          branch="auto-release/v${{ steps.version.outputs.new_version }}"
+          title="Release ${{ steps.version.outputs.new_version }}"
+          body_file=$(mktemp)
+
+          cat > "${body_file}" <<EOF
+          Automated release preparation for \`${{ steps.version.outputs.new_version }}\`.
+
+          This PR updates:
+          - \`package.json\`
+          - \`package-lock.json\`
+          - \`CHANGELOG.md\`
+          - consumed \`changelog.d\` entries
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet; then
+            echo "No release changes to commit."
+            exit 0
+          fi
+
+          git checkout -B "${branch}"
+          git add package.json package-lock.json CHANGELOG.md changelog.d
+          git commit -m "Prepare release ${{ steps.version.outputs.new_version }}"
+          git push --force-with-lease --set-upstream origin "${branch}"
+
+          existing_pr_url=$(
+            gh pr list \
+              --head "${branch}" \
+              --base main \
+              --state open \
+              --json url \
+              --jq '.[0].url'
+          )
+
+          if [ -n "${existing_pr_url}" ]; then
+            gh pr edit "${existing_pr_url}" --title "${title}" --body-file "${body_file}"
+          else
+            gh pr create \
+              --base main \
+              --head "${branch}" \
+              --title "${title}" \
+              --body-file "${body_file}"
+          fi
