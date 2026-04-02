@@ -65,31 +65,20 @@ jobs:
             esac
           done
 
-          current_version=$(node -p "require('./package.json').version")
-          new_version=$(
-            node -e '
-              const [major, minor, patch] = require("./package.json").version.split(".").map(Number);
-              const bumpLevel = process.argv[1];
-
-              if (bumpLevel === "minor") {
-                process.stdout.write([major, minor + 1, 0].join("."));
-              } else {
-                process.stdout.write([major, minor, patch + 1].join("."));
-              }
-            ' "${bump_level}"
-          )
-
           {
             echo "bump_level=${bump_level}"
-            echo "current_version=${current_version}"
-            echo "new_version=${new_version}"
           } >> "${GITHUB_OUTPUT}"
 
       - name: Bump package version
-        run: npm version "${{ steps.version.outputs.bump_level }}" --no-git-tag-version
+        id: bump
+        run: |
+          set -euo pipefail
+
+          npm version "${{ steps.version.outputs.bump_level }}" --no-git-tag-version
+          echo "new_version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
       - name: Generate changelog
-        run: uv run towncrier build --yes --version "${{ steps.version.outputs.new_version }}" --date "$(date -u +%F)"
+        run: uv run towncrier build --yes --version "${{ steps.bump.outputs.new_version }}" --date "$(date -u +%F)"
 
       - name: Create or update release pull request
         env:
@@ -98,12 +87,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          branch="release/${{ steps.version.outputs.new_version }}"
-          title="Release ${{ steps.version.outputs.new_version }}"
+          branch="release/${{ steps.bump.outputs.new_version }}"
+          title="Release ${{ steps.bump.outputs.new_version }}"
           body_file=$(mktemp)
 
           cat > "${body_file}" <<EOF
-          Automated release preparation for \`${{ steps.version.outputs.new_version }}\`.
+          Automated release preparation for \`${{ steps.bump.outputs.new_version }}\`.
 
           This PR updates:
           - \`package.json\`
@@ -122,7 +111,7 @@ jobs:
 
           git checkout -B "${branch}"
           git add package.json package-lock.json CHANGELOG.md changelog.d
-          git commit -m "Prepare release ${{ steps.version.outputs.new_version }}"
+          git commit -m "Prepare release ${{ steps.bump.outputs.new_version }}"
           git push --force-with-lease --set-upstream origin "${branch}"
 
           existing_pr_url=$(
