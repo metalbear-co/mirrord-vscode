@@ -5,10 +5,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  # Needed to explicitly dispatch ci.yaml for the release branch PR.
-  actions: write
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   create_release_pr:
@@ -17,6 +14,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
+          # Avoid persisting GITHUB_TOKEN credentials; pushes must use RELEASE_PR_TOKEN instead.
+          persist-credentials: false
           ref: main
 
       - name: Setup Node.js
@@ -79,21 +78,31 @@ jobs:
           npm version "${{ steps.version.outputs.bump_level }}" --no-git-tag-version
           echo "new_version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
+      - name: Generate release notes
+        run: uv run towncrier build --draft --version "${{ steps.bump.outputs.new_version }}" > /tmp/release-notes.md
+
       - name: Generate changelog
         run: uv run towncrier build --yes --version "${{ steps.bump.outputs.new_version }}"
 
       - name: Create or update release pull request
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_PR_TOKEN }}
+          RELEASE_PR_TOKEN: ${{ secrets.RELEASE_PR_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
+
+          if [ -z "${RELEASE_PR_TOKEN}" ]; then
+            echo "RELEASE_PR_TOKEN secret is required to push the release branch and open the PR."
+            exit 1
+          fi
 
           branch="release/${{ steps.bump.outputs.new_version }}"
           title="Release ${{ steps.bump.outputs.new_version }}"
           body_file=$(mktemp)
 
-          cat > "${body_file}" <<EOF
+          {
+            cat <<EOF
           Automated release preparation for \`${{ steps.bump.outputs.new_version }}\`.
 
           This PR updates:
@@ -101,10 +110,15 @@ jobs:
           - \`package-lock.json\`
           - \`CHANGELOG.md\`
           - consumed \`changelog.d\` entries
-          EOF
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          Draft release notes:
+
+          EOF
+            cat /tmp/release-notes.md
+          } > "${body_file}"
+
+          git config user.name "Aviram Hassan"
+          git config user.email "aviram@metalbear.com"
 
           if git diff --quiet; then
             echo "No release changes to commit."
@@ -114,6 +128,8 @@ jobs:
           git checkout -B "${branch}"
           git add package.json package-lock.json CHANGELOG.md changelog.d
           git commit -m "Prepare release ${{ steps.bump.outputs.new_version }}"
+          # Use a non-GITHUB_TOKEN credential so PR opened/synchronize events trigger CI normally.
+          git remote set-url origin "https://x-access-token:${RELEASE_PR_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force-with-lease --set-upstream origin "${branch}"
 
           existing_pr_url=$(
@@ -134,15 +150,3 @@ jobs:
               --title "${title}" \
               --body-file "${body_file}"
           fi
-
-          pr_number=$(
-            gh pr list \
-              --head "${branch}" \
-              --base main \
-              --state open \
-              --json number \
-              --jq '.[0].number'
-          )
-
-          # Trigger CI on the PR ref because branch refs do not satisfy the required checks here.
-          gh workflow run ci.yaml --ref "refs/pull/${pr_number}/head"
