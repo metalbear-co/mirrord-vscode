@@ -118,8 +118,7 @@ jobs:
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: vscode-ext
-          path: |
-            /tmp/vscode-ext
+          path: /tmp/vscode-ext/mirrord-${{ steps.version.outputs.version }}.vsix
           if-no-files-found: error
 
   release_gh:
@@ -137,7 +136,8 @@ jobs:
           ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          path: /tmp/artifacts
+          name: vscode-ext
+          path: /tmp/release
       - uses: metalbear-co/action-zip@0852c26906e00f8a315c704958823928d8018b28 # default branch HEAD
       - name: Create app token for release publishing
         id: app_token
@@ -146,10 +146,6 @@ jobs:
           app-id: ${{ secrets.CUBBY_CLIENT_ID }}
           private-key: ${{ secrets.CUBBY_PRIVATE_KEY }}
           permission-contents: write
-      - name: Prepare binaries for upload
-        run: |
-          mkdir /tmp/release
-          mv /tmp/artifacts/vscode-ext/* /tmp/release/
       - name: Prepare release notes
         run: |
           set -euo pipefail

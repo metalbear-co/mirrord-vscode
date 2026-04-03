@@ -126,8 +126,8 @@ jobs:
             cat /tmp/release-notes.md
           } > "${body_file}"
 
-          git config user.name "Metal Cubby"
-          git config user.email "cubby@metalbear.com"
+          git config user.name "cubby-mb[bot]"
+          git config user.email "273354325+cubby-mb[bot]@users.noreply.github.com"
 
           if git diff --quiet; then
             echo "No release changes to commit."
