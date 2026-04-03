@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -132,3 +133,5 @@ jobs:
               --title "${title}" \
               --body-file "${body_file}"
           fi
+
+          gh workflow run ci.yaml --ref "${branch}"
