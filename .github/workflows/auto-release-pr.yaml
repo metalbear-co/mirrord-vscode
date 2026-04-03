@@ -14,6 +14,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
+          # Avoid persisting GITHUB_TOKEN credentials; pushes must use RELEASE_PR_TOKEN instead.
+          persist-credentials: false
           ref: main
 
       - name: Setup Node.js
@@ -115,8 +117,8 @@ jobs:
             cat /tmp/release-notes.md
           } > "${body_file}"
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "Aviram Hassan"
+          git config user.email "aviram@metalbear.com"
 
           if git diff --quiet; then
             echo "No release changes to commit."
