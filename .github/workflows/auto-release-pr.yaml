@@ -135,5 +135,14 @@ jobs:
               --body-file "${body_file}"
           fi
 
-          # Trigger CI for the release branch because PR-open does not start it automatically here.
-          gh workflow run ci.yaml --ref "${branch}"
+          pr_number=$(
+            gh pr list \
+              --head "${branch}" \
+              --base main \
+              --state open \
+              --json number \
+              --jq '.[0].number'
+          )
+
+          # Trigger CI on the PR ref because branch refs do not satisfy the required checks here.
+          gh workflow run ci.yaml --ref "refs/pull/${pr_number}/head"
