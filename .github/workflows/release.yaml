@@ -40,7 +40,7 @@ jobs:
             fi
 
             case "${{ github.event.pull_request.head.ref }}" in
-              releases/*)
+              release/*|releases/*)
                 ;;
               *)
                 echo "should_release=false" >> "$GITHUB_OUTPUT"
