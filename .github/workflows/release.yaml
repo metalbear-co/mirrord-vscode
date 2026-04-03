@@ -141,7 +141,7 @@ jobs:
       - uses: metalbear-co/action-zip@0852c26906e00f8a315c704958823928d8018b28 # default branch HEAD
       - name: Create app token for release publishing
         id: app_token
-        uses: actions/create-github-app-token@f8d387b06d89ba5f9a0ca7f09f3dd3c5fb4fca7f # v3.0.0
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         with:
           app-id: ${{ secrets.CUBBY_CLIENT_ID }}
           private-key: ${{ secrets.CUBBY_PRIVATE_KEY }}
@@ -185,7 +185,7 @@ jobs:
 
       - name: Create app token for tag updates
         id: app_token
-        uses: actions/create-github-app-token@f8d387b06d89ba5f9a0ca7f09f3dd3c5fb4fca7f # v3.0.0
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         with:
           app-id: ${{ secrets.CUBBY_CLIENT_ID }}
           private-key: ${{ secrets.CUBBY_PRIVATE_KEY }}
@@ -209,7 +209,7 @@ jobs:
     steps:
       - name: Create app token for infra workflow dispatch
         id: app_token
-        uses: actions/create-github-app-token@f8d387b06d89ba5f9a0ca7f09f3dd3c5fb4fca7f # v3.0.0
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         with:
           app-id: ${{ secrets.CUBBY_CLIENT_ID }}
           private-key: ${{ secrets.CUBBY_PRIVATE_KEY }}
