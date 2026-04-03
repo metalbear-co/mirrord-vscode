@@ -76,6 +76,9 @@ jobs:
           npm version "${{ steps.version.outputs.bump_level }}" --no-git-tag-version
           echo "new_version=$(jq -r '.version' package.json)" >> "$GITHUB_OUTPUT"
 
+      - name: Generate release notes
+        run: uv run towncrier build --draft --version "${{ steps.bump.outputs.new_version }}" > /tmp/release-notes.md
+
       - name: Generate changelog
         run: uv run towncrier build --yes --version "${{ steps.bump.outputs.new_version }}"
 
@@ -96,7 +99,8 @@ jobs:
           title="Release ${{ steps.bump.outputs.new_version }}"
           body_file=$(mktemp)
 
-          cat > "${body_file}" <<EOF
+          {
+            cat <<EOF
           Automated release preparation for \`${{ steps.bump.outputs.new_version }}\`.
 
           This PR updates:
@@ -104,7 +108,12 @@ jobs:
           - \`package-lock.json\`
           - \`CHANGELOG.md\`
           - consumed \`changelog.d\` entries
+
+          Draft release notes:
+
           EOF
+            cat /tmp/release-notes.md
+          } > "${body_file}"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
