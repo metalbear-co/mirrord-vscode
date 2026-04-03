@@ -8,6 +8,17 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.68.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.68.1) - 2026-04-03
+
+
+### Internal
+
+- Another fix CI trigger on auto release PRs
+- Fix CI trigger on auto release PRs
+- Fully automated release with auto-nudge.
+- Set MIRRORD_IDE_NAME=vscode when spawning the CLI for IDE-aware UTM
+  attribution in upgrade links.
+
 ## [3.68.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.68.0) - 2026-02-12
 
 
