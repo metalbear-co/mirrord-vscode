@@ -14,7 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          # Avoid persisting GITHUB_TOKEN credentials; pushes must use RELEASE_PR_TOKEN instead.
+          # Avoid persisting GITHUB_TOKEN credentials; pushes must use the app token instead.
           persist-credentials: false
           ref: main
 
@@ -84,16 +84,25 @@ jobs:
       - name: Generate changelog
         run: uv run towncrier build --yes --version "${{ steps.bump.outputs.new_version }}"
 
+      - name: Create app token for release PR updates
+        id: app_token
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        with:
+          app-id: ${{ secrets.CUBBY_CLIENT_ID }}
+          private-key: ${{ secrets.CUBBY_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
       - name: Create or update release pull request
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_PR_TOKEN }}
-          RELEASE_PR_TOKEN: ${{ secrets.RELEASE_PR_TOKEN }}
+          APP_TOKEN: ${{ steps.app_token.outputs.token }}
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
         shell: bash
         run: |
           set -euo pipefail
 
-          if [ -z "${RELEASE_PR_TOKEN}" ]; then
-            echo "RELEASE_PR_TOKEN secret is required to push the release branch and open the PR."
+          if [ -z "${APP_TOKEN}" ]; then
+            echo "GitHub App token is required to push the release branch and open the PR."
             exit 1
           fi
 
@@ -117,8 +126,8 @@ jobs:
             cat /tmp/release-notes.md
           } > "${body_file}"
 
-          git config user.name "Aviram Hassan"
-          git config user.email "aviram@metalbear.com"
+          git config user.name "Metal Cubby"
+          git config user.email "cubby@metalbear.com"
 
           if git diff --quiet; then
             echo "No release changes to commit."
@@ -128,8 +137,8 @@ jobs:
           git checkout -B "${branch}"
           git add package.json package-lock.json CHANGELOG.md changelog.d
           git commit -m "Prepare release ${{ steps.bump.outputs.new_version }}"
-          # Use a non-GITHUB_TOKEN credential so PR opened/synchronize events trigger CI normally.
-          git remote set-url origin "https://x-access-token:${RELEASE_PR_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          # Use an app token so PR opened/synchronize events trigger CI normally.
+          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push --force-with-lease --set-upstream origin "${branch}"
 
           existing_pr_url=$(
