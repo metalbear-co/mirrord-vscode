@@ -70,8 +70,5 @@ jobs:
     if: needs.evaluate_release_conditions.outputs.should_trigger == 'true'
     uses: ./.github/workflows/auto-release-pr.yaml
     permissions:
-      # Needed because the called workflow explicitly dispatches ci.yaml.
-      actions: write
-      contents: write
-      pull-requests: write
+      contents: read
     secrets: inherit
