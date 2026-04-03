@@ -106,7 +106,7 @@ jobs:
             exit 1
           fi
 
-          branch="release/${{ steps.bump.outputs.new_version }}"
+          branch="releases/${{ steps.bump.outputs.new_version }}"
           title="Release ${{ steps.bump.outputs.new_version }}"
           body_file=$(mktemp)
 
