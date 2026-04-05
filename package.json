@@ -285,6 +285,7 @@
 		"@types/which": "^3.0.0",
 		"@typescript-eslint/eslint-plugin": "^8.0.0",
 		"@typescript-eslint/parser": "^8.0.0",
+		"@vscode/debugprotocol": "^1.68.0",
 		"@vscode/vsce": "^2.9.2",
 		"chai": "^5.2.0",
 		"esbuild": "^0.25.1",

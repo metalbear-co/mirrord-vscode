@@ -13,6 +13,44 @@ import Logger from "./logger";
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 
+/**
+ * Info needed by the DAP tracker to perform attach after the process starts.
+ */
+export interface PendingAttach {
+  cliPath: string;
+  configEnv: Record<string, string>;
+  stopOnEntryProperty: string;
+  userHadStopOnEntry: boolean;
+}
+
+/**
+ * Queue of pending attaches. `main()` pushes here on Windows after setting up
+ * stopOnEntry. The tracker factory in `extension.ts` shifts from it when
+ * creating a tracker for a mirrord-injected session. Config resolution and
+ * tracker creation happen sequentially per session, so ordering is preserved.
+ */
+export const pendingAttaches: PendingAttach[] = [];
+
+/**
+ * Returns the name of the "stop on entry" config property for the given debug type.
+ *
+ * Most debuggers use `stopOnEntry`, but C# (coreclr/clr) uses `stopAtEntry`.
+ */
+function getStopOnEntryProperty(debugType: string): string {
+  let prop: string;
+  switch (debugType) {
+    case "coreclr":
+    case "clr":
+      prop = "stopAtEntry";
+      break;
+    default:
+      prop = "stopOnEntry";
+      break;
+  }
+  console.log(`[mirrord] getStopOnEntryProperty: debugType="${debugType}" -> "${prop}"`);
+  return prop;
+}
+
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type,
 /// and the executable. Returning the field name for replacing the value with the patched path later.
 /// Also returning the executable because in some configuration types there is some extra logic to
@@ -101,6 +139,7 @@ async function main(
   // Sometimes VSCode launches then attaches, so having a warning/error here is confusing
   // We used to return null in that case but that failed the attach.
   if (config.request === "attach") {
+    console.log(`[mirrord] main: skipping attach request (type="${config.type}", name="${config.name}")`);
     return config;
   }
 
@@ -138,7 +177,7 @@ async function main(
     const supportedTypes = TargetQuickPick.getSupportedTargetTypes();
     const getTargets = async (namespace?: string) => {
       return mirrordApi.listTargets(
-        configPath?.path,
+        configPath?.fsPath,
         config.env,
         supportedTypes,
         namespace,
@@ -173,6 +212,7 @@ async function main(
   config.env["MIRRORD_IGNORE_DEBUGGER_PORTS"] = "45000-65535";
 
   const isMac = platform() === "darwin";
+  const isWindows = platform() === "win32";
 
   const [executableFieldName, executable] = isMac
     ? getFieldAndExecutable(config)
@@ -182,10 +222,10 @@ async function main(
   try {
     executionInfo = await mirrordApi.binaryExecute(
       quickPickSelection,
-      configPath?.path || null,
+      configPath?.fsPath || null,
       executable,
       config.env,
-      folder?.uri.path,
+      folder?.uri.fsPath,
     );
   } catch (err) {
     mirrordFailure(`mirrord preparation failed: ${err}`);
@@ -212,6 +252,26 @@ async function main(
 
   config.env["__MIRRORD_EXT_INJECTED"] = "true";
 
+  // On Windows, set up the attach flow: force stop-on-entry so we can inject
+  // the layer DLL before any user code runs.
+  if (isWindows) {
+    console.log(`[mirrord] main: Windows attach flow — setting up stop-on-entry for type="${config.type}"`);
+    const stopProp = getStopOnEntryProperty(config.type);
+    const userHadStopOnEntry = !!config[stopProp];
+    console.log(`[mirrord] main: stopProp="${stopProp}", userHadStopOnEntry=${userHadStopOnEntry}`);
+
+    config[stopProp] = true;
+
+    const pendingEntry: PendingAttach = {
+      cliPath,
+      configEnv: { ...config.env },
+      stopOnEntryProperty: stopProp,
+      userHadStopOnEntry,
+    };
+    pendingAttaches.push(pendingEntry);
+    console.log(`[mirrord] main: pushed pendingAttach (queue length=${pendingAttaches.length}), cliPath="${cliPath}"`);
+  }
+
   return config;
 }
 
@@ -219,8 +279,7 @@ async function main(
  * We implement the `resolveDebugConfiguration` that comes with vscode variables resolved already.
  */
 export class ConfigurationProvider
-  implements vscode.DebugConfigurationProvider
-{
+  implements vscode.DebugConfigurationProvider {
   async resolveDebugConfigurationWithSubstitutedVariables(
     folder: vscode.WorkspaceFolder | undefined,
     config: vscode.DebugConfiguration,
