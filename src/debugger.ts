@@ -37,13 +37,17 @@ export const pendingAttaches: PendingAttach[] = [];
  * Most debuggers use `stopOnEntry`, but C# (coreclr/clr) uses `stopAtEntry`.
  */
 function getStopOnEntryProperty(debugType: string): string {
+  let prop: string;
   switch (debugType) {
     case "coreclr":
     case "clr":
-      return "stopAtEntry";
+      prop = "stopAtEntry";
+      break;
     default:
-      return "stopOnEntry";
+      prop = "stopOnEntry";
+      break;
   }
+  return prop;
 }
 
 /// Get the name of the field that holds the exectuable in a debug configuration of the given type,
@@ -254,12 +258,13 @@ async function main(
 
     config[stopProp] = true;
 
-    pendingAttaches.push({
+    const pendingEntry: PendingAttach = {
       cliPath,
       configEnv: { ...config.env },
       stopOnEntryProperty: stopProp,
       userHadStopOnEntry,
-    });
+    };
+    pendingAttaches.push(pendingEntry);
   }
 
   return config;
