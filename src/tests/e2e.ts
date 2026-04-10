@@ -132,8 +132,12 @@ describe("mirrord sample flow test", function() {
     const terminal = await panel.openTerminalView();
 
     await browser.driver.wait(async () => {
-      const text = await terminal.getText();
-      return await terminal.isDisplayed() && text.includes("Local app started");
+      try {
+        const text = await terminal.getText();
+        return await terminal.isDisplayed() && text.includes("Local app started");
+      } catch {
+        return false;
+      }
     }, 4 * defaultTimeout, "terminal text not found -- timed out");
 
     await sendTrafficToPod();

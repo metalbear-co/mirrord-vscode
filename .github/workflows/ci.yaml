@@ -34,7 +34,7 @@ jobs:
       - name: verify newsfragment exist
         run: uv run towncrier check
 
-  lint:
+  check:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -46,6 +46,8 @@ jobs:
       - run: |
           npm install --no-package-lock --no-save eslint
           npm run lint
+      - run: |
+          npm run test-compile
 
   e2e:
     uses: ./.github/workflows/reusable_e2e.yaml    
@@ -59,7 +61,7 @@ jobs:
     name: ci
     # We want this to run even if some of the required jobs got skipped
     if: always()
-    needs: [towncrier_check, e2e, lint]
+    needs: [towncrier_check, e2e, check]
     runs-on: ubuntu-24.04
     steps:
       - name: CI succeeded
@@ -68,5 +70,5 @@ jobs:
         env:
           CI_SUCCESS: ${{ (needs.e2e.result == 'success') &&
             (needs.towncrier_check.result == 'success') &&
-            (needs.lint.result == 'success') }}
+            (needs.check.result == 'success') }}
         run: echo $CI_SUCCESS && if [ "$CI_SUCCESS" == "true" ]; then echo "SUCCESS" && exit 0; else echo "Failure" && exit 1; fi

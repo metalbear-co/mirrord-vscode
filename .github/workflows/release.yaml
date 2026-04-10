@@ -97,9 +97,10 @@ jobs:
         id: version
       - run: npm install -g vsce ovsx typescript esbuild
       - run: mkdir -p /tmp/vscode-ext
+      # not sure why we run test-compile here but afraid to remove
       - run: |
           npm install
-          tsc && vsce package -o /tmp/vscode-ext
+          npm run test-compile  && vsce package -o /tmp/vscode-ext
       - name: Publish vscode-ext to VSCode Marketplace
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
