@@ -1,1 +1,0 @@
-Implemented Windows support for extension.
