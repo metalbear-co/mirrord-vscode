@@ -95,7 +95,6 @@ jobs:
         run: |
           echo "version=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
         id: version
-      - run: npm install -g vsce ovsx typescript esbuild
       - run: mkdir -p /tmp/vscode-ext
       - run: |
           npm install
@@ -104,6 +103,8 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: vsce publish -i /tmp/vscode-ext/mirrord-${{ steps.version.outputs.version }}.vsix 
+      - name: Install OVSX
+        run: npm i -g ovsx   
       - name: Publish vscode-ext to Open VSX Registry
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
