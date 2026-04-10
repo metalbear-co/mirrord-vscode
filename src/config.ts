@@ -97,12 +97,12 @@ export class MirrordConfigManager {
     this.fileListeners = [];
 
     this.fileListeners.push(vscode.workspace.onDidDeleteFiles(async event => {
-      const activePath = this.active?.path;
+      const activePath = this.active?.fsPath;
       if (!activePath) {
         return;
       }
 
-      const deleted = event.files.find(file => activePath.startsWith(file.path));
+      const deleted = event.files.find(file => activePath.startsWith(file.fsPath));
 
       if (deleted) {
         new NotificationBuilder()
@@ -117,14 +117,14 @@ export class MirrordConfigManager {
     }));
 
     this.fileListeners.push(vscode.workspace.onDidRenameFiles(async event => {
-      const activePath = this.active?.path;
+      const activePath = this.active?.fsPath;
       if (!activePath) {
         return;
       }
 
-      const moved = event.files.find(file => activePath.startsWith(file.oldUri.path));
+      const moved = event.files.find(file => activePath.startsWith(file.oldUri.fsPath));
       if (moved) {
-        const newPath = activePath.replace(moved.oldUri.path, moved.newUri.path);
+        const newPath = activePath.replace(moved.oldUri.fsPath, moved.newUri.fsPath);
         const newUri = vscode.Uri.parse(`file://${newPath}`);
         new NotificationBuilder()
           .withMessage(`moved active mirrord configuration to ${vscode.workspace.asRelativePath(newUri)}`)
@@ -208,7 +208,7 @@ export class MirrordConfigManager {
   private static async getDefaultConfig(folder: vscode.WorkspaceFolder): Promise<vscode.Uri | undefined> {
     const pattern = new vscode.RelativePattern(folder, ".mirrord/*mirrord.{toml,json,yml,yaml}");
     const files = await vscode.workspace.findFiles(pattern);
-    files.sort((f1, f2) => f1.path.localeCompare(f2.path));
+    files.sort((f1, f2) => f1.fsPath.localeCompare(f2.fsPath));
     return files[0];
   }
 
@@ -237,7 +237,7 @@ export class MirrordConfigManager {
 
     // Active config first.
     if (this.active) {
-      options.set(`(active) ${vscode.workspace.asRelativePath(this.active.path)}`, this.active);
+      options.set(`(active) ${vscode.workspace.asRelativePath(this.active.fsPath)}`, this.active);
     }
 
     // Then all configs found in launch configurations across the workspace.
@@ -291,7 +291,7 @@ export class MirrordConfigManager {
       await MirrordConfigManager.createDefaultConfig(vscode.workspace.getWorkspaceFolder(path)!);
     }
 
-    const doc = await vscode.workspace.openTextDocument(path.path);
+    const doc = await vscode.workspace.openTextDocument(path.fsPath);
     vscode.window.showTextDocument(doc);
   }
 

@@ -1,9 +1,18 @@
 import * as vscode from 'vscode';
+import * as semver from 'semver';
 import { MirrordConfigManager } from './config';
 import { globalContext } from './extension';
-import { NotificationBuilder } from './notification';
 import { getOperatorUsed } from './mirrordForTeams';
-import { NEWSLETTER_COUNTER } from './api';
+import { NEWSLETTER_COUNTER, MirrordAPI } from './api';
+import { NotificationBuilder } from './notification';
+import { getMirrordBinary } from './binaryManager';
+
+/**
+ * Returns true if the extension host is running in a remote session (WSL, SSH, Dev Container, etc.).
+ */
+function isRemoteSession(): boolean {
+    return !!vscode.env.remoteName;
+}
 
 export class MirrordStatus {
     readonly statusBar: vscode.StatusBarItem;
@@ -60,6 +69,12 @@ export class MirrordStatus {
     }
 
     register(): MirrordStatus {
+        // Check the mirrord version for support every single time the
+        // extension is loaded.
+        if (process.platform === "win32") {
+            this.checkWindowsSupport();
+        }
+
         const configManager = MirrordConfigManager.getInstance();
         globalContext.subscriptions.push(configManager);
 
@@ -92,14 +107,15 @@ export class MirrordStatus {
     }
 
     toggle() {
-        if (process.platform === "win32") {
-            new NotificationBuilder()
-                .withMessage("mirrord is not supported on Windows. You can use it via remote development or WSL.")
-                .error();
-            return;
-        }
-
         this.enabled = !this.enabled;
+
+        // Check the mirrord version for support every single time the extension
+        // is toggled on.
+        if (this.enabled) {
+            if (process.platform === "win32") {
+                this.checkWindowsSupport();
+            }
+        }
 
         this.draw();
     }
@@ -119,5 +135,44 @@ export class MirrordStatus {
 
     documentation() {
         vscode.env.openExternal(vscode.Uri.parse('https://mirrord.dev/docs/using-mirrord/vscode-extension/?utm_medium=vscode&utm_source=ui_action'));
+    }
+
+    /**
+     * Checks whether the installed mirrord binary supports Windows.
+     * Windows support requires mirrord version 3.201.0 or above.
+     *
+     * Skips the check when running in a remote session (WSL, SSH, Dev Container)
+     * since mirrord runs on the remote host, not locally.
+     *
+     * @returns `true` if the version is supported (or cannot be determined), `false` otherwise.
+     */
+    private async checkWindowsSupport(): Promise<boolean> {
+        // If it's a remote (including WSL), we don't need to check
+        // locally for mirrord.exe.
+        if (isRemoteSession()) {
+            return true;
+        }
+
+        try {
+            const binaryPath = await getMirrordBinary(true);
+            // Just in case, return true if we can't get the binary path yet.
+            if (!binaryPath) {
+                return true;
+            }
+
+            const api = new MirrordAPI(binaryPath);
+            const version = await api.getBinaryVersion();
+            if (version && semver.lt(version, '3.201.0')) {
+                new NotificationBuilder()
+                    .withMessage(`mirrord ${version} is not supported on Windows. Windows support requires mirrord version 3.201.0 or above.`)
+                    .error();
+                return false;
+            }
+            
+            return true;
+        } catch {
+            // If we can't determine the version, don't block the user.
+            return true;
+        }
     }
 }
