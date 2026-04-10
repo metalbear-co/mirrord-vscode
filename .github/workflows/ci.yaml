@@ -46,6 +46,7 @@ jobs:
       - run: |
           npm install --no-package-lock --no-save eslint
           npm run lint
+          tsc
 
   e2e:
     uses: ./.github/workflows/reusable_e2e.yaml    
