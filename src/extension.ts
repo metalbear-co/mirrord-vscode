@@ -164,7 +164,7 @@ export async function activate(context: vscode.ExtensionContext) {
 								return;
 							}
 
-							Logger.info(`mirrord: resuming after forced stop-on-entry`);
+							Logger.debug(`mirrord: resuming after forced stop-on-entry`);
 							try {
 								await session.customRequest('continue', { threadId });
 								Logger.debug(`Resumed thread ${threadId} for "${session.name}"`);
