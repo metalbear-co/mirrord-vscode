@@ -16,7 +16,9 @@ const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 const baseDownloadUri = 'https://github.com/metalbear-co/mirrord/releases/download';
 
 function getExtensionMirrordPath(): Uri {
-    return Utils.joinPath(globalContext.globalStorageUri, 'mirrord');
+    // NOTE: windows does not support running executables without an extension.
+    const binaryName = process.platform === 'win32' ? 'mirrord.exe' : 'mirrord';
+    return Utils.joinPath(globalContext.globalStorageUri, binaryName);
 }
 
 
@@ -41,7 +43,7 @@ export async function getLocalMirrordBinary(version: string | null): Promise<[st
         } else {
             return [mirrordPath, true];
         }
-    } catch (e) {  
+    } catch (e) {
         const errorMsg = e instanceof Error ? e.message : String(e);
         Logger.warn(`couldn't find mirrord in path: ${errorMsg}`);
     }
@@ -235,7 +237,32 @@ function getMirrordDownloadUrl(version: string): string {
             default:
                 break;
         }
+    } else if (process.platform === "win32") {
+        switch (process.arch) {
+            case 'x64':
+                return `${baseDownloadUri}/${version}/mirrord.exe`;
+
+            case `arm64`:
+                throw new Error(
+                    `mirrord does not currently provide a Windows ${process.arch} build. `
+                    + `If you require ${process.arch} support, please open an issue at `
+                    + `https://github.com/metalbear-co/mirrord/issues so we can gauge interest.`
+                );
+
+            // Windows is one of the cursed places where you still find people using, god forbid, 32-bit.
+            case 'ia32':
+            case 'arm':
+                // https://github.com/torvalds/linux/blob/master/include/math-emu/double.h#L29
+                throw new Error(
+                    `Here's a nickel kid. Go buy yourself a real computer `
+                    + `(${process.platform} ${process.arch} not supported).`
+                );
+
+            default:
+                break;
+        }
     }
+
     throw new Error(`Unsupported platform ${process.platform} ${process.arch}`);
 }
 
