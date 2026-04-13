@@ -8,6 +8,13 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.69.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.69.2) - 2026-04-13
+
+
+### Fixed
+
+- Fixed auto-update to support Windows.
+
 ## [3.69.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.69.1) - 2026-04-10
 
 No significant changes.
