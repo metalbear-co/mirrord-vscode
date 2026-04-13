@@ -138,19 +138,49 @@ export class MirrordStatus {
     }
 
     /**
-     * Checks whether the installed mirrord binary supports Windows.
-     * Windows support requires mirrord version 3.201.0 or above.
+     * Checks whether the current host can run mirrord on Windows.
+     *
+     * Verifies two things, in order:
+     * 1. The host architecture is supported — mirrord currently only ships a
+     *    Windows x64 build, so any other `process.arch` is rejected with a
+     *    notification pointing users at the issue tracker.
+     * 2. The installed mirrord binary is recent enough — Windows support
+     *    requires mirrord version 3.201.0 or above.
      *
      * Skips the check when running in a remote session (WSL, SSH, Dev Container)
      * since mirrord runs on the remote host, not locally.
      *
-     * @returns `true` if the version is supported (or cannot be determined), `false` otherwise.
+     * @returns `true` if the host is supported and the version is compatible
+     * (or cannot be determined), `false` if the arch is unsupported or the
+     * installed binary is too old.
      */
     private async checkWindowsSupport(): Promise<boolean> {
         // If it's a remote (including WSL), we don't need to check
         // locally for mirrord.exe.
         if (isRemoteSession()) {
             return true;
+        }
+
+        if (process.arch === 'ia32' || process.arch === 'arm') {
+            // Windows is one of the cursed places where you still find people using, god forbid, 32-bit.
+            new NotificationBuilder()
+                .withMessage(
+                    `Here's a nickel kid. Go buy yourself a real computer `
+                    + `(${process.platform} ${process.arch} not supported).`
+                )
+                .error();
+            return false;
+        }
+
+        if (process.arch !== 'x64') {
+            new NotificationBuilder()
+                .withMessage(
+                    `mirrord does not currently provide a Windows ${process.arch} build. `
+                    + `If you require ${process.arch} support, please upvote or comment on `
+                    + `https://github.com/metalbear-co/mirrord/issues/4162 so we can gauge interest.`
+                )
+                .error();
+            return false;
         }
 
         try {
