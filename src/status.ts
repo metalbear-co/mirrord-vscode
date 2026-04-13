@@ -161,12 +161,23 @@ export class MirrordStatus {
             return true;
         }
 
+        if (process.arch === 'ia32' || process.arch === 'arm') {
+            // Windows is one of the cursed places where you still find people using, god forbid, 32-bit.
+            new NotificationBuilder()
+                .withMessage(
+                    `Here's a nickel kid. Go buy yourself a real computer `
+                    + `(${process.platform} ${process.arch} not supported).`
+                )
+                .error();
+            return false;
+        }
+
         if (process.arch !== 'x64') {
             new NotificationBuilder()
                 .withMessage(
                     `mirrord does not currently provide a Windows ${process.arch} build. `
-                    + `If you require ${process.arch} support, please open an issue at `
-                    + `https://github.com/metalbear-co/mirrord/issues so we can gauge interest.`
+                    + `If you require ${process.arch} support, please upvote or comment on `
+                    + `https://github.com/metalbear-co/mirrord/issues/4162 so we can gauge interest.`
                 )
                 .error();
             return false;
