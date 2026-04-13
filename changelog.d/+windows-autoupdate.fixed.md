@@ -1,0 +1,1 @@
+Fixed auto-update to support Windows.
