@@ -51,14 +51,29 @@ export async function getLocalMirrordBinary(version: string | null): Promise<[st
     try {
         const mirrordPath = getExtensionMirrordPath();
         await workspace.fs.stat(mirrordPath);
-        if (version) {
+
+        try {
             const api = new MirrordAPI(mirrordPath.fsPath);
-            const installedVersion = await api.getBinaryVersion();
-            if (installedVersion === version) {
+            if (version) {
+                const installedVersion = await api.getBinaryVersion();
+                if (installedVersion === version) {
+                    return [mirrordPath.fsPath, false];
+                }
+            } else {
+                // Verify the binary can actually run before returning it.
+                await api.getBinaryVersion();
                 return [mirrordPath.fsPath, false];
             }
-        } else {
-            return [mirrordPath.fsPath, false];
+        } catch (runError) {
+            // Binary exists but failed to run — probably corrupted, delete it.
+            const errorMsg = runError instanceof Error ? runError.message : String(runError);
+            Logger.warn(`mirrord binary in extension storage failed to run, deleting it: ${errorMsg}`);
+            try {
+                await workspace.fs.delete(mirrordPath);
+            } catch (deleteError) {
+                const deleteErrorMsg = deleteError instanceof Error ? deleteError.message : String(deleteError);
+                Logger.warn(`failed to delete corrupted mirrord binary: ${deleteErrorMsg}`);
+            }
         }
     } catch (e) {
         const errorMsg = e instanceof Error ? e.message : String(e);
