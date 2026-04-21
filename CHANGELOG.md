@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.69.3](https://github.com/metalbear-co/mirrord-vscode/tree/3.69.3) - 2026-04-21
+
+
+### Fixed
+
+- Fix cases where downloaded binary is corrupt and user needs to manually
+  delete by deleting it ourselves on failure
+
 ## [3.69.2](https://github.com/metalbear-co/mirrord-vscode/tree/3.69.2) - 2026-04-13
 
 
