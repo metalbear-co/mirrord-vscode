@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.69.4](https://github.com/metalbear-co/mirrord-vscode/tree/3.69.4) - 2026-04-23
+
+
+### Fixed
+
+- Fixed mirrord binary version check failures due to incorrect timeout
+  duration.
+
 ## [3.69.3](https://github.com/metalbear-co/mirrord-vscode/tree/3.69.3) - 2026-04-21
 
 
