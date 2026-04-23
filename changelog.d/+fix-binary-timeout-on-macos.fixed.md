@@ -1,1 +1,1 @@
-fix mirrord binary failed with too strict timeout
+Fixed mirrord binary version check failures due to incorrect timeout duration.
