@@ -289,7 +289,7 @@ export class MirrordAPI {
       if (timeoutMs) {
         timeoutHandle = setTimeout(() => {
           child.kill('SIGTERM');
-          reject(``);
+          reject(new Error(`timed out after ${timeoutMs}ms`));
         }, timeoutMs);
       }
 
@@ -352,7 +352,7 @@ export class MirrordAPI {
    * Runs mirrord --version and returns the version string.
    */
   async getBinaryVersion(): Promise<string | undefined> {
-    const stdout = await this.exec(["--version"], {}, 1000); // 10 second timeout
+    const stdout = await this.exec(["--version"], {}, 10000); // 10 second timeout
     // parse mirrord x.y.z
     return stdout.split(" ")[1]?.trim();
   }
