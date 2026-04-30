@@ -222,3 +222,19 @@ jobs:
             repos/metalbear-co/infra/actions/workflows/update-vscode-version.yml/dispatches \
             -f ref=main \
             -f inputs[vscode_version]=${{ needs.release.outputs.version }}
+
+  linear_release:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    needs: [validate_release_request, update_latest]
+    if: needs.validate_release_request.outputs.should_release == 'true'
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0 # Required for commit history
+
+      - uses: metalbear-co/linear-release-action@76a250988b9470b152ec13d24d661140084042c1
+        with:
+          access_key: ${{ secrets.LINEAR_ACCESS_KEY }}
+          version: ${{ needs.validate_release_request.outputs.version }}
