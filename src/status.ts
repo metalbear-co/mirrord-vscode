@@ -121,16 +121,16 @@ export class MirrordStatus {
     }
 
     joinSlack() {
-        vscode.env.openExternal(vscode.Uri.parse('https://metalbear.co/slack'));
+        vscode.env.openExternal(vscode.Uri.parse('https://metalbear.com/slack'));
     }
 
     mirrordForTeams() {
-        vscode.env.openExternal(vscode.Uri.parse('https://app.metalbear.co/?utm_medium=vscode&utm_source=ui_action'));
+        vscode.env.openExternal(vscode.Uri.parse('https://app.metalbear.com/?utm_medium=vscode&utm_source=ui_action'));
     }
 
     newsletter() {
         const count = globalContext.globalState.get(NEWSLETTER_COUNTER);
-        vscode.env.openExternal(vscode.Uri.parse("https://metalbear.co/newsletter" + "?utm_medium=vscode&utm_source=newsletter" + count));
+        vscode.env.openExternal(vscode.Uri.parse("https://metalbear.com/newsletter" + "?utm_medium=vscode&utm_source=newsletter" + count));
     }
 
     documentation() {

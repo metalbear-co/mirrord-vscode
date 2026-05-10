@@ -26,7 +26,7 @@ export function tickMirrordForTeamsCounter() {
   if (counter >= NOTIFICATION_STARTS_AT) {
     if (((counter - NOTIFICATION_STARTS_AT) % NOTIFICATION_REPEATS_EVERY === 0) && !operatorUsed) {
       showMirrordForTeamsNotification(
-        'For more features of mirrord, including multi-pod impersonation, check out mirrord for Teams.'
+        'mirrord for Teams unlocks team workflow features: DB branching for parallel devs, preview environments for branch testing, and shared targets with queue splitting.'
       );
     }
   }

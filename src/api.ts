@@ -37,9 +37,8 @@ export const NEWSLETTER_COUNTER = 'mirrord-newsletter-counter';
 /**
 * Amount of times we run mirrord before inviting the user to sign up to the newsletter.
 */
-const NEWSLETTER_COUNTER_PROMPT_AFTER_FIRST = 5;
-const NEWSLETTER_COUNTER_PROMPT_AFTER_SECOND = 20;
-const NEWSLETTER_COUNTER_PROMPT_AFTER_THIRD = 100;
+const NEWSLETTER_COUNTER_PROMPT_AFTER_FIRST = 20;
+const NEWSLETTER_COUNTER_PROMPT_AFTER_SECOND = 100;
 
 /**
 * Environment variable name for listing targets with a specific type via the CLI 'ls' command.
@@ -190,13 +189,13 @@ export function mirrordFailure(error: string) {
   new NotificationBuilder()
     .withMessage(`${error}. Please check the logs/errors.`)
     .withGenericAction("Get help on Slack", async () => {
-      vscode.env.openExternal(vscode.Uri.parse('https://metalbear.co/slack'));
+      vscode.env.openExternal(vscode.Uri.parse('https://metalbear.com/slack'));
     })
     .withGenericAction("Open an issue on GitHub", async () => {
       vscode.env.openExternal(vscode.Uri.parse('https://github.com/metalbear-co/mirrord/issues/new/choose'));
     })
     .withGenericAction("Send us an email", async () => {
-      vscode.env.openExternal(vscode.Uri.parse('mailto:hi@metalbear.co'));
+      vscode.env.openExternal(vscode.Uri.parse('mailto:hi@metalbear.com'));
     })
     .error();
 }
@@ -677,12 +676,9 @@ function tickNewsletterCounter() {
   let msg;
   switch (currentRuns) {
     case NEWSLETTER_COUNTER_PROMPT_AFTER_FIRST:
-      msg = "Join thousands of devs using mirrord!\nGet the latest updates, tutorials, and insider info from our team.";
-      break;
-    case NEWSLETTER_COUNTER_PROMPT_AFTER_SECOND:
       msg = "Liking what mirrord can do?\nStay in the loop with updates, tips & tricks straight from the team.";
       break;
-    case NEWSLETTER_COUNTER_PROMPT_AFTER_THIRD:
+    case NEWSLETTER_COUNTER_PROMPT_AFTER_SECOND:
       msg = "Looks like you're doing some serious work with mirrord!\nWant to hear about advanced features, upcoming releases, and cool use cases?";
       break;
     default:
