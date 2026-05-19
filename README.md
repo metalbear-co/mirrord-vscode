@@ -3,7 +3,7 @@
 [![Community Slack](https://img.shields.io/badge/Join-e5f7f7?logo=slack&label=Community%20Slack)](https://metalbear.com/slack)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/metalbear-co/mirrord-vscode)
-[![Twitter Follow](https://img.shields.io/twitter/follow/metalbear?style=social)](https://x.com/metalbear)
+[![X Follow](https://img.shields.io/twitter/follow/metalbear?style=social)](https://x.com/metalbear)
 [![VSCode Marketplace](https://img.shields.io/badge/VSCode%20Extension%20Page-756df3)](https://marketplace.visualstudio.com/items?itemName=MetalBear.mirrord)
 
 mirrord lets developers and AI coding agents [run local processes inside a live Kubernetes cluster](https://metalbear.com/mirrord). Your code stays on your machine, but mirrord routes its traffic, files, and environment through a target pod in the cluster. Use it to read live cluster context while writing code (real env vars, real service responses, real queue contents), and to run the code against those same services and data once it's written. You get the feedback of a deploy in seconds, without the deploy, and without disrupting the cluster for anyone else.
