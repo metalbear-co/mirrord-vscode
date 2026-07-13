@@ -126,6 +126,11 @@ function handleIdeMessage(message: IdeMessage) {
     notificationBuilder.withDisableAction('promptMultipodTarget');
   }
 
+  // Special case: allow users to dismiss the queue splitting nudge.
+  if (message.id === "queue_splitting_hint") {
+    notificationBuilder.withDisableAction('promptQueueSplitting');
+  }
+
   // Do any processing BEFORE this block, this is where notifications get fired.
   switch (message.level) {
     case "Info": {
