@@ -8,6 +8,13 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.71.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.71.0) - 2026-07-14
+
+
+### Added
+
+- Detect missing queue splitting configuration.
+
 ## [3.70.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.70.0) - 2026-06-16
 
 
