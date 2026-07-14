@@ -82,6 +82,11 @@
 					"default": true,
 					"description": "Show notifications about mirrord for Teams."
 				},
+				"mirrord.promptQueueSplitting": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show a notification suggesting queue splitting when the target uses a queue technology."
+				},
 				"mirrord.promptActiveConfigRemoved": {
 					"type": "boolean",
 					"default": true,
