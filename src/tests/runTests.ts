@@ -18,7 +18,7 @@ async function main(): Promise<void> {
         console.log(`Running tests from ${testPath}`);
         const exTester = new ExTester(storageFolder, ReleaseQuality.Stable, extFolder);
         await exTester.downloadCode(version);
-        await exTester.installVsix({ useYarn: false });
+        await exTester.installVsix();
         await exTester.installFromMarketplace(requiredExtension);
         await exTester.downloadChromeDriver(version);
         const result = await exTester.runTests(testPath, {
