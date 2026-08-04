@@ -1,5 +1,4 @@
 {
-  "strictness": 2,
   "excludeAuthors": ["cubby-mb[bot]", "dependabot[bot]"],
   "ignorePatterns": [
     "package-lock.json",
