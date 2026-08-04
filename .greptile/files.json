@@ -1,0 +1,23 @@
+{
+  "files": [
+    {
+      "path": "CONTRIBUTING.md",
+      "description": "Build, debug, packaging, and release-flow guidance, including how changelog fragments drive automated releases."
+    },
+    {
+      "path": "README.md",
+      "description": "The user-visible contract for enabling mirrord, selecting a target, launching a debug session, and editing mirrord configuration.",
+      "scope": ["src/**/*.ts", "package.json"]
+    },
+    {
+      "path": "package.json",
+      "description": "The extension manifest: activation, commands, settings, walkthroughs, debugger integration, scripts, and runtime dependencies.",
+      "scope": ["src/**/*.ts", "media/walkthrough/**", "webpack.config.js"]
+    },
+    {
+      "path": "tsconfig.json",
+      "description": "Strict TypeScript compilation settings and generated-output exclusions.",
+      "scope": ["src/**/*.ts"]
+    }
+  ]
+}
