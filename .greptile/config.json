@@ -4,7 +4,12 @@
     "package-lock.json",
     "flake.lock",
     "**/*.gif",
-    "**/*.png"
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.jpeg",
+    "**/*.svg",
+    "**/*.ico",
+    "**/*.webp"
   ],
   "context": {
     "repos": ["metalbear-co/mirrord", "metalbear-co/mirrord-intellij"]
