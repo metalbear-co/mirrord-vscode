@@ -1,6 +1,5 @@
 {
   "strictness": 2,
-  "commentTypes": ["logic", "syntax", "style"],
   "excludeAuthors": ["cubby-mb[bot]", "dependabot[bot]"],
   "ignorePatterns": [
     "package-lock.json",
