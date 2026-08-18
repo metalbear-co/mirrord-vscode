@@ -1,0 +1,1 @@
+Pass the workspace's git branch (`MIRRORD_BRANCH_NAME`) to `mirrord verify-config` and `mirrord ls`, so configs using the `git_branch` template variable no longer fail with "Variable `git_branch` not found in context".
