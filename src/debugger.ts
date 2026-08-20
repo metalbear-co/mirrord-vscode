@@ -168,7 +168,11 @@ async function main(
       folder,
       config,
     );
-  const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
+  const verifiedConfig = await mirrordApi.verifyConfig(
+    configPath,
+    config.env,
+    folder?.uri.fsPath,
+  );
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
   if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
@@ -178,6 +182,7 @@ async function main(
         configPath?.fsPath,
         config.env,
         supportedTypes,
+        folder?.uri.fsPath,
         namespace,
       );
     };

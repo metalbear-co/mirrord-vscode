@@ -378,13 +378,38 @@ export class MirrordAPI {
   }
 
   /**
+  * Returns `configEnv` extended with `MIRRORD_BRANCH_NAME` set to the workspace's current git
+  * branch. The CLI resolves the `git_branch` config template variable from its own working
+  * directory, but processes spawned by the extension inherit the extension host's working
+  * directory rather than the user's project, so the branch has to be passed explicitly.
+  */
+  private async envWithBranchName(configEnv: EnvVars, workspacePath: string | undefined): Promise<EnvVars> {
+    if (workspacePath === undefined) {
+      return configEnv;
+    }
+
+    const branchName = await this.getBranchName(workspacePath)
+      .catch(error => {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        Logger.debug(`cannot retrieve git branch name ${errorMsg}`);
+      })
+      .then((res) => res ? res.trim() : "");
+
+    if (branchName.length === 0) {
+      return configEnv;
+    }
+
+    return { MIRRORD_BRANCH_NAME: branchName, ...configEnv };
+  }
+
+  /**
   * Uses `mirrord ls` to get lists of targets and namespaces.
-  * 
+  *
   * Note that old CLI versions return only targets.
-  * 
+  *
   * @see MirrordLsOutput
   */
-  async listTargets(configPath: string | null | undefined, configEnv: EnvVars, targetTypes: string[], namespace?: string,): Promise<MirrordLsOutput> {
+  async listTargets(configPath: string | null | undefined, configEnv: EnvVars, targetTypes: string[], workspacePath: string | undefined, namespace?: string,): Promise<MirrordLsOutput> {
     const args = ['ls'];
     if (configPath) {
       args.push('-f', configPath);
@@ -396,7 +421,7 @@ export class MirrordAPI {
 
     configEnv[MIRRORD_LS_TARGET_TYPES_ENV] = JSON.stringify(targetTypes);
 
-    const stdout = await this.exec(args, configEnv);
+    const stdout = await this.exec(args, await this.envWithBranchName(configEnv, workspacePath));
 
     const targets = JSON.parse(stdout) as MirrordLsOutput | string[];
     let mirrordLsOutput: MirrordLsOutput;
@@ -417,7 +442,7 @@ export class MirrordAPI {
   * Executes the `mirrord verify-config {configPath}` command, parsing its output into a
   * `VerifiedConfig`.
   */
-  async verifyConfig(configPath: vscode.Uri | null, configEnv: EnvVars): Promise<VerifiedConfig | undefined> {
+  async verifyConfig(configPath: vscode.Uri | null, configEnv: EnvVars, workspacePath: string | undefined): Promise<VerifiedConfig | undefined> {
     if (configPath) {
       // NOTE: `fsPath`/`_fsPath` is correct, whereas `path` is incorrect,
       // for cross-platform support. e.g.:
@@ -427,7 +452,7 @@ export class MirrordAPI {
       //
       // See the documentation for more information.
       const args = ['verify-config', '--ide', `${configPath.fsPath}`];
-      const stdout = await this.exec(args, configEnv);
+      const stdout = await this.exec(args, await this.envWithBranchName(configEnv, workspacePath));
 
       const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
       return verifiedConfig;
@@ -460,15 +485,7 @@ export class MirrordAPI {
     tickSlackCounter();
     tickNewsletterCounter();
 
-    let branchName = "";
-    if (workspacePath !== undefined) {
-      branchName = await this.getBranchName(workspacePath)
-        .catch(error => {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          Logger.debug(`cannot retrieve git branch name ${errorMsg}`);
-        })
-        .then((res) => res ? res.trim() : "");
-    }
+    const envWithBranch = await this.envWithBranchName(configEnv, workspacePath);
 
     /// Create a promise that resolves when the mirrord process exits
     return await vscode.window.withProgress({
@@ -484,12 +501,9 @@ export class MirrordAPI {
         const args = makeMirrordArgs(quickPickSelection?.path, configFile, executable);
         let env: EnvVars;
         if (quickPickSelection?.namespace) {
-          env = { MIRRORD_TARGET_NAMESPACE: quickPickSelection.namespace, ...configEnv };
+          env = { MIRRORD_TARGET_NAMESPACE: quickPickSelection.namespace, ...envWithBranch };
         } else {
-          env = configEnv;
-        }
-        if (branchName.length > 0) {
-          env = { MIRRORD_BRANCH_NAME: branchName, ...env };
+          env = envWithBranch;
         }
 
         const child = this.spawnCliWithArgsAndEnv(args, env);
