@@ -158,7 +158,7 @@ async function main(
     return null;
   }
 
-  const mirrordApi = new MirrordAPI(cliPath);
+  const mirrordApi = new MirrordAPI(cliPath, folder?.uri.fsPath);
 
   config.env ||= {};
   let quickPickSelection: UserSelection | undefined = undefined;
@@ -223,7 +223,6 @@ async function main(
       configPath?.fsPath || null,
       executable,
       config.env,
-      folder?.uri.fsPath,
     );
   } catch (err) {
     mirrordFailure(`mirrord preparation failed: ${err}`);
