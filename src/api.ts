@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ChildProcessWithoutNullStreams, spawn, exec } from 'child_process';
+import { ChildProcessWithoutNullStreams, spawn, execFile } from 'child_process';
 import { globalContext } from './extension';
 import { tickMirrordForTeamsCounter } from './mirrordForTeams';
 import { NotificationBuilder } from './notification';
@@ -78,17 +78,17 @@ interface IdeMessage {
   id: string,
 
   /**
-  * Level we should display this message as. 
+  * Level we should display this message as.
   */
   level: NotificationLevel,
 
   /**
-  * The main content of the message, that fills the pop-up box. 
+  * The main content of the message, that fills the pop-up box.
   */
   text: string,
 
   /**
-  * Buttons/actions that this message might contain. 
+  * Buttons/actions that this message might contain.
   */
   actions: Set<IdeAction>
 }
@@ -168,13 +168,13 @@ export interface MirrordLsOutput {
   targets: FoundTarget[];
   /**
    * The namespace where the lookup was done.
-   * 
+   *
    * If the CLI does not support listing namespaces, this is undefined.
    */
   current_namespace?: string;
   /**
    * All namespaces visible to the user.
-   * 
+   *
    * If the CLI does not support listing namespaces, this is undefined.
    */
   namespaces?: string[];
@@ -182,7 +182,7 @@ export interface MirrordLsOutput {
 
 /**
  * Checks whether the JSON value is in the @see MirrordLsOutput format.
- * 
+ *
  * @param output JSON parsed from `mirrord ls` stdout
  */
 function isRichMirrordLsOutput(output: MirrordLsOutput | string[]): output is MirrordLsOutput {
@@ -262,8 +262,22 @@ const makeMirrordArgs = (target: string | undefined, configFilePath: PathLike | 
 export class MirrordAPI {
   cliPath: string;
 
-  constructor(cliPath: string) {
+  /**
+  * Filesystem path of the workspace folder associated with this debug launch.
+  *
+  * Undefined when the launch is not associated with an open workspace folder.
+  */
+  private readonly workspacePath: string | undefined;
+
+  /**
+   * Stores the resolved workspace branch name for reuse in `envWithBranchName`, so we don't
+   * need to resolve it again for each invocation of `mirrord` in the same launch.
+   */
+  private workspaceBranchName: Promise<string | undefined> | undefined;
+
+  constructor(cliPath: string, workspacePath?: string) {
     this.cliPath = cliPath;
+    this.workspacePath = workspacePath;
   }
 
   // Return environment for the spawned mirrord cli processes.
@@ -361,27 +375,58 @@ export class MirrordAPI {
     return stdout.split(" ")[1]?.trim();
   }
 
-  /**
-   * Runs git -C @dir branch --show-current and returns a promise of the branch name.
-   * @dir : the user's workplace folder
-   */
-  async getBranchName(dir: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      exec("git -C " + dir + " branch --show-current", (error, stdout, _stderr) => {
+  private resolveWorkspaceBranchName(): Promise<string | undefined> {
+    const workspacePath = this.workspacePath;
+    if (workspacePath === undefined) {
+      return Promise.resolve(undefined);
+    }
+
+    return new Promise(resolve => {
+      execFile("git", ["-C", workspacePath, "branch", "--show-current"], (error, stdout) => {
         if (error) {
-          reject(error);
-        } else {
-          resolve(stdout);
+          Logger.debug(`cannot retrieve git branch name ${error.message}`);
+          resolve(undefined);
+          return;
         }
+
+        resolve(stdout.trim() || undefined);
       });
     });
   }
 
+   /**
+    * To allow people using `{{ git_branch }}` we need to do some shenaningans when running
+    * `mirrord verify-config` (and other mirrord commands) so it resolves the right git
+    * branch name consistently, for example, when the user launches a debugging session,
+    * first `mirrord verify-config` gets invoked, so we resolve the branch name, then
+    * `mirrord exec` gets invoked, and we re-use the thing we resolved.
+    *
+    * Checks if `configEnv` has the `MIRRORD_BRANCH_NAME` env var set, if that's the case,
+    * we can just inherit the branch name, otherwise we use `resolveWorkspaceBranchName`
+    * to get the branch name and append it to `configEnv`.
+    * @param configEnv The env vars for this mirrord run.
+    * @returns The env vars for this mirrord run with the branch name appended.
+    */
+  private async envWithBranchName(configEnv: EnvVars): Promise<EnvVars> {
+    const configBranchName = configEnv["MIRRORD_BRANCH_NAME"];
+    const inheritedBranchName = process.env["MIRRORD_BRANCH_NAME"];
+    if ((configBranchName?.length ?? 0) > 0 ||
+      (configBranchName === undefined && (inheritedBranchName?.length ?? 0) > 0)) {
+      return configEnv;
+    }
+
+    this.workspaceBranchName ??= this.resolveWorkspaceBranchName();
+    const branchName = await this.workspaceBranchName;
+    return branchName === undefined
+      ? configEnv
+      : { ...configEnv, MIRRORD_BRANCH_NAME: branchName };
+  }
+
   /**
   * Uses `mirrord ls` to get lists of targets and namespaces.
-  * 
+  *
   * Note that old CLI versions return only targets.
-  * 
+  *
   * @see MirrordLsOutput
   */
   async listTargets(configPath: string | null | undefined, configEnv: EnvVars, targetTypes: string[], namespace?: string,): Promise<MirrordLsOutput> {
@@ -396,7 +441,7 @@ export class MirrordAPI {
 
     configEnv[MIRRORD_LS_TARGET_TYPES_ENV] = JSON.stringify(targetTypes);
 
-    const stdout = await this.exec(args, configEnv);
+    const stdout = await this.exec(args, await this.envWithBranchName(configEnv));
 
     const targets = JSON.parse(stdout) as MirrordLsOutput | string[];
     let mirrordLsOutput: MirrordLsOutput;
@@ -427,7 +472,7 @@ export class MirrordAPI {
       //
       // See the documentation for more information.
       const args = ['verify-config', '--ide', `${configPath.fsPath}`];
-      const stdout = await this.exec(args, configEnv);
+      const stdout = await this.exec(args, await this.envWithBranchName(configEnv));
 
       const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
       return verifiedConfig;
@@ -449,26 +494,18 @@ export class MirrordAPI {
   * setting env vars, both from system, and from `launch.json` (`configEnv`).
   *
   * Has 60 seconds timeout
-  * 
+  *
   * @param quickPickSelection target selected by the user from the quick pick widget.
   *                             `undefined` if we found the target in the config,
   *                             and the widget was not shown.
   */
-  async binaryExecute(quickPickSelection: UserSelection | undefined, configFile: string | null, executable: string | null, configEnv: EnvVars, workspacePath: string | undefined): Promise<MirrordExecution> {
+  async binaryExecute(quickPickSelection: UserSelection | undefined, configFile: string | null, executable: string | null, configEnv: EnvVars): Promise<MirrordExecution> {
     tickMirrordForTeamsCounter();
     tickFeedbackCounter();
     tickSlackCounter();
     tickNewsletterCounter();
 
-    let branchName = "";
-    if (workspacePath !== undefined) {
-      branchName = await this.getBranchName(workspacePath)
-        .catch(error => {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          Logger.debug(`cannot retrieve git branch name ${errorMsg}`);
-        })
-        .then((res) => res ? res.trim() : "");
-    }
+    const envWithBranch = await this.envWithBranchName(configEnv);
 
     /// Create a promise that resolves when the mirrord process exits
     return await vscode.window.withProgress({
@@ -484,12 +521,9 @@ export class MirrordAPI {
         const args = makeMirrordArgs(quickPickSelection?.path, configFile, executable);
         let env: EnvVars;
         if (quickPickSelection?.namespace) {
-          env = { MIRRORD_TARGET_NAMESPACE: quickPickSelection.namespace, ...configEnv };
+          env = { MIRRORD_TARGET_NAMESPACE: quickPickSelection.namespace, ...envWithBranch };
         } else {
-          env = configEnv;
-        }
-        if (branchName.length > 0) {
-          env = { MIRRORD_BRANCH_NAME: branchName, ...env };
+          env = envWithBranch;
         }
 
         const child = this.spawnCliWithArgsAndEnv(args, env);
@@ -669,7 +703,7 @@ function tickSlackCounter() {
 
 /**
 * Updates the global newsletter counter.
-* After `NEWSLETTER_COUNTER_PROMPT_AFTER_X` mirrord runs, displays a message asking the user to 
+* After `NEWSLETTER_COUNTER_PROMPT_AFTER_X` mirrord runs, displays a message asking the user to
 * sign up to the mirrord newsletter
 */
 function tickNewsletterCounter() {
