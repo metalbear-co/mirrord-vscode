@@ -139,7 +139,11 @@ jobs:
           git commit -m "Prepare release ${{ steps.bump.outputs.new_version }}"
           # Use an app token so PR opened/synchronize events trigger CI normally.
           git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push --force-with-lease --set-upstream origin "${branch}"
+
+          remote_sha=$(git ls-remote origin "refs/heads/${branch}" | cut -f1)
+          git push \
+            --force-with-lease="refs/heads/${branch}:${remote_sha}" \
+            --set-upstream origin "${branch}"
 
           existing_pr_url=$(
             gh pr list \

@@ -94,32 +94,60 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.10"
+      - name: use the locally built agent image
+        if: ${{ inputs.mirrord_release_branch }}
+        run: echo "MIRRORD_AGENT_IMAGE=test" >> "$GITHUB_ENV"
+
       # we can't run chrome like apps in the CI, we use a virtual frame buffer:
       # refer: http://elementalselenium.com/tips/38-headless
       - name: Run vscode e2e in headless state
-        if: ${{ inputs.mirrord_release_branch }}
         env:
           POD_TO_SELECT: ${{ env.POD_TO_SELECT }}
           KUBE_SERVICE: ${{ env.KUBE_SERVICE }}
-          MIRRORD_AGENT_IMAGE: "test"
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb x11-xserver-utils ffmpeg
-          /usr/bin/xvfb-run -s ":99 -auth /tmp/xvfb.auth -ac -screen 0 1920x1080x24" npm run test &
-          ffmpeg -loglevel panic -y -framerate 30 -f x11grab -video_size 1920x1080 -i :99 out.webm
-          wait -n
 
-      - name: Run vscode e2e in headless state
-        if: ${{ !inputs.mirrord_release_branch }}
-        env:
-          POD_TO_SELECT: ${{ env.POD_TO_SELECT }}
-          KUBE_SERVICE: ${{ env.KUBE_SERVICE }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb x11-xserver-utils ffmpeg
           /usr/bin/xvfb-run -s ":99 -auth /tmp/xvfb.auth -ac -screen 0 1920x1080x24" npm run test &
-          ffmpeg -loglevel panic -y -framerate 30 -f x11grab -video_size 1920x1080 -i :99 out.webm
-          wait -n
+          test_pid=$!
+
+          display_up=false
+          for _ in $(seq 1 60); do
+            if xset -display :99 q > /dev/null 2>&1; then
+              display_up=true
+              break
+            fi
+            # Nothing left to record for if the tests already died with the display.
+            if ! kill -0 "${test_pid}" 2> /dev/null; then
+              break
+            fi
+            sleep 0.5
+          done
+
+          ffmpeg_pid=
+          if [ "${display_up}" = "true" ]; then
+            ffmpeg -loglevel error -y -framerate 30 -f x11grab -video_size 1920x1080 -i :99 out.webm &
+            ffmpeg_pid=$!
+          else
+            echo "::warning::display :99 never came up, running the tests without a recording"
+          fi
+
+          test_exit=0
+          wait "${test_pid}" || test_exit=$?
+
+          if [ -n "${ffmpeg_pid}" ]; then
+            # SIGINT so ffmpeg writes the trailer instead of leaving an unplayable file behind,
+            # but never let a stuck recorder hold the job open.
+            kill -INT "${ffmpeg_pid}" 2> /dev/null || true
+            for _ in $(seq 1 20); do
+              kill -0 "${ffmpeg_pid}" 2> /dev/null || break
+              sleep 0.5
+            done
+            kill -KILL "${ffmpeg_pid}" 2> /dev/null || true
+            wait "${ffmpeg_pid}" 2> /dev/null || true
+          fi
+
+          exit "${test_exit}"
 
       # the video starts at around ~2 minutes, before that you will see a black screen
       - name: Upload video
