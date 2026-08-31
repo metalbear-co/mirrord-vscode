@@ -84,6 +84,9 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
+      # Lets the runner mint the OIDC token that Azure exchanges for the managed
+      # identity used to publish to the VSCode Marketplace.
+      id-token: write
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -108,10 +111,19 @@ jobs:
       - run: |
           npm install
           npm run test-compile  && vsce package -o /tmp/vscode-ext
+      - name: Log in to Azure
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Publish vscode-ext to VSCode Marketplace
+        # --azure-credential resolves the identity established by the login step above,
+        # so the Marketplace publish needs no long-lived personal access token. The
+        # identity must be a Contributor on the publisher for this to be authorized.
         env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: vsce publish -i /tmp/vscode-ext/mirrord-${{ steps.version.outputs.version }}.vsix 
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: vsce publish --azure-credential -i /tmp/vscode-ext/mirrord-${{ steps.version.outputs.version }}.vsix
       - name: Publish vscode-ext to Open VSX Registry
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
