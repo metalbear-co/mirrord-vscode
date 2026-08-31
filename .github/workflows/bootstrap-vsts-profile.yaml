@@ -1,0 +1,36 @@
+# TEMPORARY — delete before merging PR #263.
+#
+# Prints the VSCode Marketplace profile id of the publishing managed identity.
+# That id has to be added as a Contributor on the MetalBear publisher before
+# `vsce publish --azure-credential` is authorized, and it can only be read by
+# the identity itself, so it has to come from a workflow run rather than a
+# developer's az session.
+name: Bootstrap VSTS profile id
+on:
+  pull_request:
+    paths:
+      - .github/workflows/bootstrap-vsts-profile.yaml
+
+jobs:
+  profile:
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Read profile id
+        run: |
+          set -euo pipefail
+          # 499b84ac-... is the Azure DevOps resource id, a constant that vsce
+          # itself requests when it exchanges the credential for a token.
+          az rest \
+            -u https://app.vssps.visualstudio.com/_apis/profile/profiles/me \
+            --resource 499b84ac-1321-427f-aa17-267ca6975798 \
+            --query id -o tsv
