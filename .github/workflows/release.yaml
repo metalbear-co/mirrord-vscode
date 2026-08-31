@@ -82,10 +82,12 @@ jobs:
     needs: validate_release_request
     if: github.event_name == 'workflow_dispatch' || needs.validate_release_request.outputs.should_release == 'true'
     runs-on: ubuntu-24.04
+    environment: release
     permissions:
       contents: read
       # Lets the runner mint the OIDC token that Azure exchanges for the managed
-      # identity used to publish to the VSCode Marketplace.
+      # identity used to publish to the VSCode Marketplace. The federated credential
+      # is bound to this job's environment, so the subject holds across triggers.
       id-token: write
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -105,7 +107,7 @@ jobs:
         run: |
           echo "version=$(cat package.json | jq -r '.version')" >> $GITHUB_OUTPUT
         id: version
-      - run: npm install -g vsce ovsx typescript esbuild
+      - run: npm install -g @vscode/vsce ovsx typescript esbuild
       - run: mkdir -p /tmp/vscode-ext
       # not sure why we run test-compile here but afraid to remove
       - run: |
