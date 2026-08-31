@@ -111,6 +111,9 @@ jobs:
           /usr/bin/xvfb-run -s ":99 -auth /tmp/xvfb.auth -ac -screen 0 1920x1080x24" npm run test &
           test_pid=$!
 
+          # xvfb-run is backgrounded, so display :99 does not exist yet at this point.
+          # ffmpeg exits 251 (AVERROR(EIO)) if it attaches before the display is up, which
+          # under `bash -e` aborts the step before a single test has run.
           display_up=false
           for _ in $(seq 1 60); do
             if xset -display :99 q > /dev/null 2>&1; then
