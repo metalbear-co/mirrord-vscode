@@ -85,9 +85,6 @@ jobs:
     environment: release
     permissions:
       contents: read
-      # Lets the runner mint the OIDC token that Azure exchanges for the managed
-      # identity used to publish to the VSCode Marketplace. The federated credential
-      # is bound to this job's environment, so the subject holds across triggers.
       id-token: write
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -118,13 +115,8 @@ jobs:
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          # The identity exists only to publish to the Marketplace and holds no
-          # role on any subscription, so login must not try to select one.
           allow-no-subscriptions: true
       - name: Publish vscode-ext to VSCode Marketplace
-        # --azure-credential resolves the identity established by the login step above,
-        # so the Marketplace publish needs no long-lived personal access token. The
-        # identity must be a Contributor on the publisher for this to be authorized.
         env:
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: vsce publish --azure-credential -i /tmp/vscode-ext/mirrord-${{ steps.version.outputs.version }}.vsix
