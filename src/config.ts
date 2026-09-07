@@ -201,14 +201,19 @@ export class MirrordConfigManager {
   /**
    * Searches the given workspace folder for a default config.
    * Default configs are located in the `.mirrord` directory and their names end with `mirrord.{toml,json,yml,yaml}`.
-   * If there are multiple candidates, they are sorted according alphabetically and the first one is returned.
+   * A config named exactly `mirrord.{toml,json,yml,yaml}` wins over a prefixed one such as
+   * `dev-mirrord.json`, since a plain alphabetical order puts anything starting with a character
+   * below `m` first. Remaining candidates are ordered alphabetically and the first is returned.
    * @param folder searched workspace folder
    * @returns path to the found config
    */
   private static async getDefaultConfig(folder: vscode.WorkspaceFolder): Promise<vscode.Uri | undefined> {
     const pattern = new vscode.RelativePattern(folder, ".mirrord/*mirrord.{toml,json,yml,yaml}");
     const files = await vscode.workspace.findFiles(pattern);
-    files.sort((f1, f2) => f1.fsPath.localeCompare(f2.fsPath));
+    const isUnprefixed = (file: vscode.Uri): boolean => /(^|\/)mirrord\.(toml|json|yml|yaml)$/.test(file.fsPath);
+    files.sort(
+      (f1, f2) => Number(isUnprefixed(f2)) - Number(isUnprefixed(f1)) || f1.fsPath.localeCompare(f2.fsPath)
+    );
     return files[0];
   }
 
