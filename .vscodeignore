@@ -1,12 +1,30 @@
+# Sources and build config
 **/*.ts
-tsconfig.json
-.eslintrc.json
-*.vsix
-package-lock.json
-.vscode
-node_modules
-out/
 src/
+out/
+node_modules
 tsconfig.json
-webpack.config.json
+webpack.config.js
+eslint.config.mjs
+markdownlint-config.json
+package-lock.json
+*.vsix
+
+# Editor / VCS / OS
+.vscode
+.gitignore
+.dockerignore
+
+# Repo tooling, not shipped to users
+.github/
+.devcontainer/
+.greptile/
+changelog.d/
+towncrier.toml
+flake.nix
+flake.lock
+CODEOWNERS
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
 test-workspace/
+sample/

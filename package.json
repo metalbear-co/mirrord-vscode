@@ -291,7 +291,7 @@
 		"@typescript-eslint/eslint-plugin": "^8.0.0",
 		"@typescript-eslint/parser": "^8.0.0",
 		"@vscode/debugprotocol": "^1.68.0",
-		"@vscode/vsce": "^2.9.2",
+		"@vscode/vsce": "^3.9.2",
 		"chai": "^5.2.0",
 		"esbuild": "^0.25.1",
 		"eslint": "^9.0.0",
@@ -308,9 +308,8 @@
 		"serialize-javascript": "^7.0.5"
 	},
 	"dependencies": {
-		"axios": "^1.8.0",
+		"axios": "^1.18.0",
 		"semver": "^7.5.4",
-		"toml": "^3.0.0",
 		"vscode-uri": "^3.0.7",
 		"which": "^3.0.1",
 		"yaml": "^2.1.3"
