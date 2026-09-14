@@ -31,7 +31,8 @@
 	],
 	"icon": "images/icon.png",
 	"activationEvents": [
-		"onStartupFinished"
+		"onStartupFinished",
+		"onFileSystem:mirrord-schema"
 	],
 	"extensionKind": [
 		"workspace"
@@ -225,7 +226,7 @@
 					"*mirrord.json",
 					"*.mirrord/*.json"
 				],
-				"url": "https://raw.githubusercontent.com/metalbear-co/mirrord/latest/mirrord-schema.json"
+				"url": "mirrord-schema://mirrord/mirrord-schema.json"
 			}
 		],
 		"walkthroughs": [
