@@ -8,6 +8,17 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.72.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.72.0) - 2026-09-14
+
+
+### Changed
+
+- The mirrord config JSON schema is now taken from the local mirrord binary
+  (`mirrord print-schema`), instead of always being fetched from GitHub. The
+  schema now matches the version of mirrord that is actually used. GitHub is
+  used only as a fallback, when the binary is missing or too old to support the
+  command.
+
 ## [3.71.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.71.1) - 2026-08-31
 
 No significant changes.
