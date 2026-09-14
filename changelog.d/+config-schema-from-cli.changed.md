@@ -1,1 +1,0 @@
-The mirrord config JSON schema is now taken from the local mirrord binary (`mirrord print-schema`), instead of always being fetched from GitHub. The schema now matches the version of mirrord that is actually used. GitHub is used only as a fallback, when the binary is missing or too old to support the command.
