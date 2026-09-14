@@ -15,19 +15,32 @@ const mirrordBinaryEndpoint = 'https://version.mirrord.dev/v1/version';
 // const binaryCheckInterval = 1000 * 60 * 3;
 const baseDownloadUri = 'https://github.com/metalbear-co/mirrord/releases/download';
 
+/**
+ * Fired when the mirrord binary used by this extension might have changed,
+ * e.g. after a new version was downloaded in the background.
+ * 
+ * This emitter is private, subscribing to the events is available with
+ * the exported {@link onDidChangeMirrordBinary}.
+ */
+const binaryChangeEmitter = new vscode.EventEmitter<void>();
+
+/**
+ * Event fired when the mirrord binary used by this extension might have changed.
+ */
+export const onDidChangeMirrordBinary = binaryChangeEmitter.event;
+
 function getExtensionMirrordPath(): Uri {
     // NOTE: windows does not support running executables without an extension.
     const binaryName = process.platform === 'win32' ? 'mirrord.exe' : 'mirrord';
     return Utils.joinPath(globalContext.globalStorageUri, binaryName);
 }
 
-
 /**
  * Tries to find local mirrord in path or in extension storage.
  * @param version If specified, then the version of the binary is checked and matched path is returned.
  * @returns (path to mirrord binary, whether it was found in $PATH) or null if not found
  */
-export async function getLocalMirrordBinary(version: string | null): Promise<[string, boolean] | null> {
+async function getLocalMirrordBinary(version: string | null): Promise<[string, boolean] | null> {
     try {
         const mirrordPath = await which("mirrord");
         if (version) {
@@ -119,6 +132,15 @@ async function getConfiguredMirrordBinary(background: boolean, latestVersion: st
 }
 
 /**
+ * Version of the last mirrord binary resolved with {@link getMirrordBinary}.
+ * 
+ * Used when firing binary update events with {@link binaryChangeEmitter} – the event is only
+ * fired on version change. This makes {@link getMirrordBinary} safe to use in response
+ * to {@link onDidChangeMirrordBinary}.
+ */
+let lastResolvedBinaryVersion: string | undefined = undefined;
+
+/**
  * Toggles auto-update of mirrord binary.
  * Criteria for auto-update:
  * - Auto-update is enabled by default
@@ -132,6 +154,23 @@ async function getConfiguredMirrordBinary(background: boolean, latestVersion: st
  * @returns Path to mirrord binary
 */
 export async function getMirrordBinary(background: boolean): Promise<string | null> {
+    const resolved = await resolveMirrordBinary(background);
+
+    if (resolved != null) {
+        const version = await new MirrordAPI(resolved).getBinaryVersion();
+        if (lastResolvedBinaryVersion !== version) {
+            lastResolvedBinaryVersion = version;
+            binaryChangeEmitter.fire();
+        }
+    }
+
+    return resolved;
+}
+
+/**
+ * Private part of {@link getMirrordBinary}.
+ */
+async function resolveMirrordBinary(background: boolean): Promise<string | null> {
     let latestVersion: string | null;
     let wantedVersion: string | null = null;
 
