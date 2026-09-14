@@ -132,11 +132,13 @@ async function getConfiguredMirrordBinary(background: boolean, latestVersion: st
 }
 
 /**
- * Last mirrord binary path resolved with {@link getMirrordBinary}.
+ * Version of the last mirrord binary resolved with {@link getMirrordBinary}.
  * 
- * Used when firing binary update events with {@link binaryChangeEmitter}.
+ * Used when firing binary update events with {@link binaryChangeEmitter} – the event is only
+ * fired on version change. This makes {@link getMirrordBinary} safe to use in response
+ * to {@link onDidChangeMirrordBinary}.
  */
-let lastResolvedBinary: string | undefined = undefined;
+let lastResolvedBinaryVersion: string | undefined = undefined;
 
 /**
  * Toggles auto-update of mirrord binary.
@@ -154,9 +156,12 @@ let lastResolvedBinary: string | undefined = undefined;
 export async function getMirrordBinary(background: boolean): Promise<string | null> {
     const resolved = await resolveMirrordBinary(background);
 
-    if (resolved != null && resolved !== lastResolvedBinary) {
-        lastResolvedBinary = resolved;
-        binaryChangeEmitter.fire();
+    if (resolved != null) {
+        const version = await new MirrordAPI(resolved).getBinaryVersion();
+        if (lastResolvedBinaryVersion !== version) {
+            lastResolvedBinaryVersion = version;
+            binaryChangeEmitter.fire();
+        }
     }
 
     return resolved;
