@@ -42,6 +42,12 @@ const FALLBACK_SCHEMA_TIMEOUT_MS = 10000;
 */
 class MirrordConfigSchemaProvider implements vscode.TextDocumentContentProvider {
   private readonly changeEmitter: vscode.EventEmitter<vscode.Uri>;
+
+  /**
+   * Declared in {@link vscode.TextDocumentContentProvider}.
+   * 
+   * VSCode uses subscribes to this in order to make the UI reactive.
+   */
   readonly onDidChange: vscode.Event<vscode.Uri>;
 
   constructor() {
@@ -56,7 +62,13 @@ class MirrordConfigSchemaProvider implements vscode.TextDocumentContentProvider 
     this.changeEmitter.fire(SCHEMA_URI);
   }
 
-  async provideTextDocumentContent(): Promise<string> {
+  /**
+   * Declared in {@link vscode.TextDocumentContentProvider}.
+   * 
+   * @param _uri is ignored, because we only serve one ({@link SCHEMA_URI})
+   * @returns JSON schema for the mirrord config
+   */
+  async provideTextDocumentContent(_uri: vscode.Uri): Promise<string> {
     return await schemaFromBinary() ?? await schemaFromGitHub();
   }
 }
