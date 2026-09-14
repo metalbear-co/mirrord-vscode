@@ -124,6 +124,6 @@ export function registerConfigSchemaProvider(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.registerTextDocumentContentProvider(SCHEMA_SCHEME, provider),
     // The schema comes from the mirrord binary, so it changes when the binary changes.
-    onDidChangeMirrordBinary(provider.refresh),
+    onDidChangeMirrordBinary(() => provider.refresh),
   );
 }
