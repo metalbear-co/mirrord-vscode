@@ -3,6 +3,7 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { ConfigurationProvider, PendingAttach, pendingAttaches } from './debugger';
 import { MirrordStatus } from './status';
 import { getMirrordBinary } from './binaryManager';
+import { registerConfigSchemaProvider } from './schema';
 import { MirrordAPI } from './api';
 import Logger from './logger';
 
@@ -14,6 +15,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	globalContext = context;
 
 	Logger.init(context);
+
+	// Serves the mirrord config JSON schema, must be registered before any config file is opened.
+	registerConfigSchemaProvider(context);
 
 	const enabled = vscode.workspace.getConfiguration().get<boolean | null>("mirrord.enabledByDefault");
 	context.workspaceState.update('enabled', enabled);
@@ -179,7 +183,9 @@ export async function activate(context: vscode.ExtensionContext) {
 		});
 	}
 
-	// Start mirrord binary update, so that we avoid downloading mid session.
+	// Start mirrord binary update, so that:
+	// 1. we avoid downloading mid session; AND
+	// 2. config schema provider gets the schema.
 	// Do not `await` here. Let this happen in the background.
 	getMirrordBinary(true);
 

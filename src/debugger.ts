@@ -198,7 +198,7 @@ async function main(
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "debugpy";
   } else if (config.type === "java") {
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "javaagent";
-  } else if (config.type in ["pwa-node", "node", "node-terminal"]) {
+  } else if (["pwa-node", "node", "node-terminal"].includes(config.type)) {
     // if any of the --inspect flags are used with node, the port for inspection should be ignored
     // see: https://nodejs.org/en/learn/getting-started/debugging#enable-inspector
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "nodeinspector";

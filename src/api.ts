@@ -375,6 +375,15 @@ export class MirrordAPI {
     return stdout.split(" ")[1]?.trim();
   }
 
+  /**
+   * Runs `mirrord print-schema` and returns the mirrord config JSON schema.
+   *
+   * Fails when the binary is too old to support this command.
+   */
+  async printSchema(): Promise<string> {
+    return await this.exec(["print-schema"], {}, 10000); // 10 second timeout
+  }
+
   private resolveWorkspaceBranchName(): Promise<string | undefined> {
     const workspacePath = this.workspacePath;
     if (workspacePath === undefined) {
