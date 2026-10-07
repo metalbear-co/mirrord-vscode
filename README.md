@@ -49,6 +49,11 @@ _Quick start: the easiest way to start configuring mirrord is to choose_ "Settin
   <img src="https://raw.githubusercontent.com/metalbear-co/mirrord-vscode/main/media/readme/settings_opt.png" width="20%" alt="A screenshot of mirrord's status bar menu in the VSCode UI, with 'Settings' highlighted">
 </p>
 
+### Default configuration file
+
+By default, mirrord will use the file `.mirrord/mirrord.{json/toml/yaml/yml}` for configuration. If none of these exist, it will use any file in `.mirrord/` ending in `mirrord.{json/toml/yaml/yml}`.
+Files are chosen alphabetically, and files in sibfolders are not considered. Without any of these files present, mirrord will launch without a configuration file.
+
 ## Viewing and Adjusting Extension Log Levels
 
 To investigate issues or collect diagnostics from the mirrord extension, you can increase
