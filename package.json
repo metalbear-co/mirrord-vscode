@@ -181,6 +181,19 @@
 					"default": false,
 					"description": "Enable mirrord by default on startup."
 				},
+				"mirrord.windowsInjectionMethod": {
+					"type": "string",
+					"enum": [
+						"load-library",
+						"apc"
+					],
+					"enumDescriptions": [
+						"Load the mirrord layer through a remote thread, and wait for it to be ready before resuming the debugged process.",
+						"Queue the layer load as an APC on the debugged process' main thread, which runs it when the debugger resumes the process."
+					],
+					"default": "load-library",
+					"markdownDescription": "How mirrord injects its layer into the debugged process on Windows. Sets `MIRRORD_INJECTION_METHOD` for `mirrord attach` and for the processes it starts, unless the launch configuration's `env` already sets it."
+				},
 				"mirrord.showStatusBarButton": {
 					"type": "boolean",
 					"default": true,

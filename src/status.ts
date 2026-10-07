@@ -145,7 +145,7 @@ export class MirrordStatus {
      *    Windows x64 build, so any other `process.arch` is rejected with a
      *    notification pointing users at the issue tracker.
      * 2. The installed mirrord binary is recent enough — Windows support
-     *    requires mirrord version 3.201.0 or above.
+     *    requires mirrord version 3.271.0 or above.
      *
      * Skips the check when running in a remote session (WSL, SSH, Dev Container)
      * since mirrord runs on the remote host, not locally.
@@ -192,9 +192,9 @@ export class MirrordStatus {
 
             const api = new MirrordAPI(binaryPath);
             const version = await api.getBinaryVersion();
-            if (version && semver.lt(version, '3.201.0')) {
+            if (version && semver.lt(version, '3.271.0')) {
                 new NotificationBuilder()
-                    .withMessage(`mirrord ${version} is not supported on Windows. Windows support requires mirrord version 3.201.0 or above.`)
+                    .withMessage(`mirrord ${version} is not supported on Windows. Windows support requires mirrord version 3.271.0 or above.`)
                     .error();
                 return false;
             }
