@@ -200,16 +200,25 @@ export class MirrordConfigManager {
 
   /**
    * Searches the given workspace folder for a default config.
-   * Default configs are located in the `.mirrord` directory and their names end with `mirrord.{toml,json,yml,yaml}`.
+   * Default configs are located in the `.mirrord` directory and are called `mirrord.{json,toml,yml,yaml}`.
+   * If none of these exist, then select from file ending in `mirrord.{json,toml,yml,yaml}`.
    * If there are multiple candidates, they are sorted according alphabetically and the first one is returned.
    * @param folder searched workspace folder
    * @returns path to the found config
    */
   private static async getDefaultConfig(folder: vscode.WorkspaceFolder): Promise<vscode.Uri | undefined> {
-    const pattern = new vscode.RelativePattern(folder, ".mirrord/*mirrord.{toml,json,yml,yaml}");
+    const pattern = new vscode.RelativePattern(folder, ".mirrord/mirrord.{toml,json,yml,yaml}");
     const files = await vscode.workspace.findFiles(pattern);
-    files.sort((f1, f2) => f1.fsPath.localeCompare(f2.fsPath));
-    return files[0];
+    if (files.length > 0) {
+      files.sort((f1, f2) => f1.fsPath.localeCompare(f2.fsPath));
+      return files[0];
+    } else {
+      // widen search to files ending in mirrord.ext
+      const pattern = new vscode.RelativePattern(folder, ".mirrord/*mirrord.{toml,json,yml,yaml}");
+      const files = await vscode.workspace.findFiles(pattern);
+      files.sort((f1, f2) => f1.fsPath.localeCompare(f2.fsPath));
+      return files[0];
+    }
   }
 
   /**

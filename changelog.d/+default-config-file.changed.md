@@ -1,0 +1,2 @@
+The default configuration file is now chosen from `.mirrord/mirrord.{json/toml/yaml/yml}` alphabetically. If none of these exist,
+it is chosen from files in `.mirrord/` ending in `mirrord.{json/toml/yaml/yml}` alphabetically.
