@@ -17,12 +17,24 @@ const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
 const MIRRORD_INJECTION_METHOD_ENV_VAR_NAME = "MIRRORD_INJECTION_METHOD";
 
 /**
- * Returns the `mirrord.windowsInjectionMethod` setting, or `undefined` when the user has not set it
- * anywhere, so that a `MIRRORD_INJECTION_METHOD` inherited from the environment still applies.
+ * Returns the `mirrord.windowsInjectionMethod` setting for the launch's folder, or `undefined` when
+ * the user has not set it anywhere, so that a `MIRRORD_INJECTION_METHOD` inherited from the
+ * environment still applies.
  */
-function getConfiguredInjectionMethod(): string | undefined {
-  const setting = vscode.workspace.getConfiguration().inspect<string>("mirrord.windowsInjectionMethod");
+function getConfiguredInjectionMethod(folder: vscode.WorkspaceFolder | undefined): string | undefined {
+  const setting = vscode.workspace
+    .getConfiguration(undefined, folder?.uri)
+    .inspect<string>("mirrord.windowsInjectionMethod");
   return setting?.workspaceFolderValue ?? setting?.workspaceValue ?? setting?.globalValue;
+}
+
+/**
+ * Whether the launch configuration's `env` has the variable at all, under any casing, since Windows
+ * matches names without regard to case. A `null` or empty value counts, because it is the user's
+ * choice too.
+ */
+function launchEnvHas(env: Record<string, unknown>, name: string): boolean {
+  return Object.keys(env).some((key) => key.toUpperCase() === name.toUpperCase());
 }
 
 /**
@@ -270,8 +282,8 @@ async function main(
     config[stopProp] = true;
 
     // A value from the launch configuration's `env` wins over the setting.
-    const injectionMethod = getConfiguredInjectionMethod();
-    if (injectionMethod && !config.env[MIRRORD_INJECTION_METHOD_ENV_VAR_NAME]) {
+    const injectionMethod = getConfiguredInjectionMethod(folder);
+    if (injectionMethod && !launchEnvHas(config.env, MIRRORD_INJECTION_METHOD_ENV_VAR_NAME)) {
       config.env[MIRRORD_INJECTION_METHOD_ENV_VAR_NAME] = injectionMethod;
     }
 
