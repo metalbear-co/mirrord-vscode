@@ -8,6 +8,17 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.73.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.73.0) - 2026-10-08
+
+
+### Changed
+
+- The default configuration file is now chosen from
+  `.mirrord/mirrord.{json/toml/yaml/yml}` alphabetically. If none of these
+  exist,
+  it is chosen from files in `.mirrord/` ending in
+  `mirrord.{json/toml/yaml/yml}` alphabetically.
+
 ## [3.72.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.72.1) - 2026-09-25
 
 
