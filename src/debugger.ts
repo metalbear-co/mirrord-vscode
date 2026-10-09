@@ -5,6 +5,7 @@ import { MirrordAPI, mirrordFailure, MirrordExecution } from "./api";
 import { updateTelemetries } from "./versionCheck";
 import { getMirrordBinary } from "./binaryManager";
 import { platform } from "node:os";
+import { delimiter } from "node:path";
 import { NotificationBuilder } from "./notification";
 import { setOperatorUsed } from "./mirrordForTeams";
 import fs from "fs";
@@ -12,6 +13,58 @@ import { TargetQuickPick, UserSelection } from "./targetQuickPick";
 import Logger from "./logger";
 
 const DYLD_ENV_VAR_NAME = "DYLD_INSERT_LIBRARIES";
+const JUPYTER_EXTENSION_ID = "ms-toolsai.jupyter";
+const JUPYTER_DEBUG_TYPES = new Set([
+  "Python Kernel Debug Adapter",
+  "Python Interactive Window Debug Adapter",
+]);
+
+interface JupyterOutput {
+  items: {
+    mime: string;
+    data: Uint8Array;
+  }[];
+}
+
+interface JupyterKernel {
+  executeCode(
+    code: string,
+    token: vscode.CancellationToken,
+  ): AsyncIterable<JupyterOutput>;
+}
+
+interface JupyterApi {
+  kernels: {
+    getKernel(uri: vscode.Uri): Thenable<JupyterKernel | undefined>;
+  };
+}
+
+function isolateJupyterCode(code: string): string {
+  const encoded = Buffer.from(code).toString("base64");
+  return `exec(compile(__import__("base64").b64decode("${encoded}"), "<mirrord>", "exec"), {})`;
+}
+
+async function executeJupyterCode(
+  kernel: JupyterKernel,
+  code: string,
+  token: vscode.CancellationToken,
+): Promise<string> {
+  let stdout = "";
+
+  for await (const output of kernel.executeCode(code, token)) {
+    for (const item of output.items) {
+      const data = Buffer.from(item.data).toString();
+      if (item.mime === "application/x.notebook.stream.stdout") {
+        stdout += data;
+      } else if (item.mime === "application/vnd.code.notebook.error") {
+        const error = JSON.parse(data) as { message?: string };
+        throw new Error(error.message ?? data);
+      }
+    }
+  }
+
+  return stdout;
+}
 
 /// Read by `mirrord attach`, and by the layer when it injects child processes.
 const MIRRORD_INJECTION_METHOD_ENV_VAR_NAME = "MIRRORD_INJECTION_METHOD";
@@ -149,7 +202,7 @@ function changeConfigForSip(
 async function main(
   folder: vscode.WorkspaceFolder | undefined,
   config: vscode.DebugConfiguration,
-  _token: vscode.CancellationToken,
+  token: vscode.CancellationToken,
 ): Promise<vscode.DebugConfiguration | null | undefined> {
   if (
     (!globalContext.workspaceState.get("enabled") &&
@@ -159,15 +212,50 @@ async function main(
     return config;
   }
 
-  // Sometimes VSCode launches then attaches, so having a warning/error here is confusing
-  // We used to return null in that case but that failed the attach.
-  if (config.request === "attach") {
+  const isJupyterDebug =
+    config.request === "attach" && JUPYTER_DEBUG_TYPES.has(config.type);
+
+  // Sometimes VSCode launches then attaches, so having a warning/error here is confusing.
+  // Jupyter is handled below because it starts cell debugging with an attach request.
+  if (config.request === "attach" && !isJupyterDebug) {
     return config;
   }
 
   // For some reason resolveDebugConfiguration runs twice for Node projects. __parentId is populated.
   if (config.__parentId || config.env?.["__MIRRORD_EXT_INJECTED"] === "true") {
     return config;
+  }
+
+  let jupyterKernel: JupyterKernel | undefined;
+  if (isJupyterDebug) {
+    const notebookUri = config["__notebookUri"];
+    const jupyterExtension = vscode.extensions.getExtension<JupyterApi>(
+      JUPYTER_EXTENSION_ID,
+    );
+    if (!jupyterExtension || typeof notebookUri !== "string") {
+      mirrordFailure("mirrord could not access the Jupyter kernel");
+      return null;
+    }
+
+    const jupyterApi = await jupyterExtension.activate();
+    jupyterKernel = await jupyterApi.kernels.getKernel(
+      vscode.Uri.parse(notebookUri),
+    );
+    if (!jupyterKernel) {
+      mirrordFailure("mirrord could not access the Jupyter kernel");
+      return null;
+    }
+
+    const injected = await executeJupyterCode(
+      jupyterKernel,
+      isolateJupyterCode(
+        'import os; print(os.environ.get("__MIRRORD_EXT_INJECTED", ""))',
+      ),
+      token,
+    );
+    if (injected.trim() === "true") {
+      return config;
+    }
   }
 
   updateTelemetries();
@@ -218,7 +306,11 @@ async function main(
   if (config.type === "go") {
     config.env["MIRRORD_SKIP_PROCESSES"] =
       "dlv;debugserver;compile;go;asm;cgo;link;git;gcc;as;ld;collect2;cc1";
-  } else if (config.type === "python" || config.type === "debugpy") {
+  } else if (
+    config.type === "python" ||
+    config.type === "debugpy" ||
+    isJupyterDebug
+  ) {
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "debugpy";
   } else if (config.type === "java") {
     config.env["MIRRORD_DETECT_DEBUGGER_PORT"] = "javaagent";
@@ -236,7 +328,7 @@ async function main(
   const isMac = platform() === "darwin";
   const isWindows = platform() === "win32";
 
-  const [executableFieldName, executable] = isMac
+  const [executableFieldName, executable] = isMac && !isJupyterDebug
     ? getFieldAndExecutable(config)
     : [null, null];
 
@@ -257,7 +349,7 @@ async function main(
     setOperatorUsed();
   }
 
-  if (isMac) {
+  if (isMac && !isJupyterDebug) {
     changeConfigForSip(config, executableFieldName as string, executionInfo);
   }
 
@@ -269,6 +361,50 @@ async function main(
     for (const key of executionInfo.envToUnset) {
       delete config.env[key];
     }
+  }
+
+  if (jupyterKernel) {
+    const libraryVariable = isMac
+      ? DYLD_ENV_VAR_NAME
+      : isWindows
+        ? "MIRRORD_LAYER_FILE"
+        : "LD_PRELOAD";
+    const library = executionInfo.env.get(libraryVariable)?.split(delimiter).pop();
+    if (!library) {
+      mirrordFailure(`mirrord did not provide ${libraryVariable}`);
+      return null;
+    }
+
+    const payload = Buffer.from(
+      JSON.stringify({
+        environment: Object.fromEntries(
+          Object.entries(config.env).filter(
+            (entry): entry is [string, string] =>
+              typeof entry[1] === "string",
+          ),
+        ),
+        envToUnset: executionInfo.envToUnset ?? [],
+        library,
+      }),
+    ).toString("base64");
+    const code = isolateJupyterCode([
+      "import base64, ctypes, json, os",
+      `payload = json.loads(base64.b64decode("${payload}"))`,
+      'os.environ.update(payload["environment"])',
+      'for name in payload["envToUnset"]: os.environ.pop(name, None)',
+      'ctypes.CDLL(payload["library"])',
+      'os.environ["__MIRRORD_EXT_INJECTED"] = "true"',
+    ].join("\n"));
+
+    try {
+      await executeJupyterCode(jupyterKernel, code, token);
+    } catch (err) {
+      mirrordFailure(`mirrord failed to load in the Jupyter kernel: ${err}`);
+      return null;
+    }
+
+    config.env["__MIRRORD_EXT_INJECTED"] = "true";
+    return config;
   }
 
   config.env["__MIRRORD_EXT_INJECTED"] = "true";
