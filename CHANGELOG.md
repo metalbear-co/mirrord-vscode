@@ -8,6 +8,15 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.74.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.74.0) - 2026-10-16
+
+
+### Added
+
+- Added the `mirrord.windowsInjectionMethod` setting, which picks how the
+  mirrord layer is injected into debugged processes on Windows: `load-library`
+  (default) or `apc`.
+
 ## [3.73.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.73.0) - 2026-10-08
 
 
