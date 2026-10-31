@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.75.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.75.0) - 2026-10-31
+
+
+### Security
+
+- Update `follow-redirects` to 1.16.2, `markdown-it` to 14.3.3 and `undici` to
+  7.30.1, which fix high-severity advisories.
+
 ## [3.74.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.74.0) - 2026-10-16
 
 
