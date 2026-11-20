@@ -238,7 +238,10 @@
 			{
 				"fileMatch": [
 					"*mirrord.json",
-					"*.mirrord/*.json"
+					"mirrord*.json",
+					"*.mirrord/*.json",
+					"!mirrord-schema.json",
+					"!mirrord-up-schema.json"
 				],
 				"url": "mirrord-schema://mirrord/mirrord-schema.json"
 			}
