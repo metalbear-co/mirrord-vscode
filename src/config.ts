@@ -25,6 +25,11 @@ const ABSOLUTE_PATH = /^([a-zA-Z]:)?[\\/]/;
  * Whether `uri` is `parent` itself, or a file somewhere inside of it.
  */
 function isSameOrInside(uri: vscode.Uri, parent: vscode.Uri): boolean {
+  // The authority is the server of a UNC path, which isn't part of `path`.
+  if (uri.scheme !== parent.scheme || uri.authority !== parent.authority) {
+    return false;
+  }
+
   const parentDir = parent.path.endsWith("/") ? parent.path : `${parent.path}/`;
   return uri.path === parent.path || uri.path.startsWith(parentDir);
 }
