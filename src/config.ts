@@ -1,5 +1,12 @@
+import { basename } from 'path';
 import * as vscode from 'vscode';
 import { NotificationBuilder } from './notification';
+
+/**
+ * mirrord files that are not session configs: JSON schemas and `mirrord up` configs.
+ * `mirrord up` configs are excluded until the extension supports them.
+ */
+const NON_CONFIG_FILES = /^mirrord-(up-)?schema\.json$|^mirrord-up\.ya?ml$/;
 
 /**
  * Default mirrord configuration.
@@ -191,18 +198,23 @@ export class MirrordConfigManager {
   /**
    * Handles `mirrord.selectActiveConfig` command.
    * Allows the user to set an active mirrord config from quick pick.
-   * Any path across the workspace is available, as long as its name ends with `mirrord.{json,toml,yml,yaml}`.
+   * Any `{json,toml,yml,yaml}` file across the workspace is available, as long as its name starts 
+   * or ends with `mirrord`, or it is located in a directory with name ending with `.mirrord`.
    */
   public async selectActiveConfig() {
     const options = new Map<string, vscode.Uri>();
 
     const filePatterns = [
+      "**/mirrord*.{json,toml,yml,yaml}", // known extensions, names starting with `mirrord`
       "**/*mirrord.{json,toml,yml,yaml}", // known extensions, names ending with `mirrord`
-      "**/*.mirrord/*.{json,toml,yml,yaml}", // known extensions, located in directories with names ending with `.mirrord` 
+      "**/*.mirrord/*.{json,toml,yml,yaml}", // known extensions, located in directories with names ending with `.mirrord`
     ];
 
+    // Filtered here, as passing `exclude` to `findFiles` would disable the user's `files.exclude`.
     const files = await Promise.all(filePatterns.map(pattern => vscode.workspace.findFiles(pattern)));
-    files.flat().forEach(file => options.set(vscode.workspace.asRelativePath(file), file));
+    files.flat()
+      .filter(file => !NON_CONFIG_FILES.test(basename(file.fsPath)))
+      .forEach(file => options.set(vscode.workspace.asRelativePath(file), file));
 
     const displayed = this.active ? ["<unset active config>", ...options.keys()] : [...options.keys()];
     const placeHolder = this.active
