@@ -62,6 +62,8 @@ You can also use the `workspaceFolder` variable:
 }
 ```
 
+A relative path, like `.mirrord/sample_mirrord.json`, is relative to the workspace folder of the launch configuration.
+
 # Active config feature
 
 You can also temporarily override the configuration file used by setting the active config.

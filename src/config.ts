@@ -1,4 +1,4 @@
-import { basename } from 'path';
+import { basename, sep } from 'path';
 import * as vscode from 'vscode';
 import { NotificationBuilder } from './notification';
 
@@ -22,6 +22,25 @@ const DEFAULT_CONFIG = `{
     }
 }
 `;
+
+/**
+ * Matches absolute paths, both POSIX (`/home/...`) and Windows (`C:\...`, `C:/...`, `\\server\...`).
+ */
+const ABSOLUTE_PATH = /^([a-zA-Z]:)?[\\/]/;
+
+/**
+ * Whether `uri` is `parent` itself, or a file somewhere inside of it.
+ */
+function isSameOrInside(uri: vscode.Uri, parent: vscode.Uri): boolean {
+  // The authority is the server of a UNC path, which isn't part of `path` or of a non-UNC `fsPath`.
+  if (uri.scheme !== parent.scheme || uri.authority !== parent.authority) {
+    return false;
+  }
+
+  // `fsPath` lowercases a Windows drive letter, and `path` keeps its case.
+  const parentDir = parent.fsPath.endsWith(sep) ? parent.fsPath : `${parent.fsPath}${sep}`;
+  return uri.fsPath === parent.fsPath || uri.fsPath.startsWith(parentDir);
+}
 
 export type EnvVars = Record<string, string>;
 
@@ -104,12 +123,12 @@ export class MirrordConfigManager {
     this.fileListeners = [];
 
     this.fileListeners.push(vscode.workspace.onDidDeleteFiles(async event => {
-      const activePath = this.active?.fsPath;
-      if (!activePath) {
+      const active = this.active;
+      if (!active) {
         return;
       }
 
-      const deleted = event.files.find(file => activePath.startsWith(file.fsPath));
+      const deleted = event.files.find(file => isSameOrInside(active, file));
 
       if (deleted) {
         new NotificationBuilder()
@@ -124,15 +143,16 @@ export class MirrordConfigManager {
     }));
 
     this.fileListeners.push(vscode.workspace.onDidRenameFiles(async event => {
-      const activePath = this.active?.fsPath;
-      if (!activePath) {
+      const active = this.active;
+      if (!active) {
         return;
       }
 
-      const moved = event.files.find(file => activePath.startsWith(file.oldUri.fsPath));
+      const moved = event.files.find(file => isSameOrInside(active, file.oldUri));
       if (moved) {
-        const newPath = activePath.replace(moved.oldUri.fsPath, moved.newUri.fsPath);
-        const newUri = vscode.Uri.parse(`file://${newPath}`);
+        const newUri = moved.newUri.with({
+          path: moved.newUri.path + active.path.slice(moved.oldUri.path.length),
+        });
         new NotificationBuilder()
           .withMessage(`moved active mirrord configuration to ${vscode.workspace.asRelativePath(newUri)}`)
           .withDisableAction("promptActiveConfigMoved")
@@ -234,6 +254,21 @@ export class MirrordConfigManager {
   }
 
   /**
+   * Turns the `MIRRORD_CONFIG_FILE` value of a launch configuration into a Uri.
+   * A relative path is relative to the workspace folder of the launch configuration.
+   * @param rawPath value of `MIRRORD_CONFIG_FILE`, with `${workspaceFolder}` already substituted
+   * @param folder workspace folder of the launch configuration
+   * @returns path to the config
+   */
+  private static configFromEnv(rawPath: string, folder: vscode.WorkspaceFolder | undefined): vscode.Uri {
+    if (folder && !ABSOLUTE_PATH.test(rawPath)) {
+      return vscode.Uri.joinPath(folder.uri, rawPath);
+    }
+
+    return vscode.Uri.file(rawPath);
+  }
+
+  /**
    * Creates a default config in the given workspace folder.
    * The config is created under `.mirrord/mirrord.json`.
    * @param folder workspace folder for the config
@@ -271,13 +306,11 @@ export class MirrordConfigManager {
           continue;
         }
 
-        let path;
-        if (rawPath.startsWith("/")) {
-          path = vscode.Uri.file(rawPath);
-        } else {
-          path = vscode.Uri.joinPath(folder.uri, rawPath);
-
-        }
+        // The `launch` settings hold the value as written, so VS Code hasn't substituted `${workspaceFolder}` in it.
+        const path = MirrordConfigManager.configFromEnv(
+          rawPath.replace(/\$\{workspaceFolder\}/g, () => folder.uri.fsPath),
+          folder,
+        );
 
         if (folders.length > 1) {
           options.set(`(launch config ${folder.name}:${launchConfig.name}) ${vscode.workspace.asRelativePath(path)}`, path);
@@ -334,7 +367,7 @@ export class MirrordConfigManager {
       return this.active;
     } else if (config.env?.["MIRRORD_CONFIG_FILE"]) {
       // Get the config path from the env var.
-      const configFromEnv = vscode.Uri.parse(`file://${config.env?.["MIRRORD_CONFIG_FILE"]}`, true);
+      const configFromEnv = MirrordConfigManager.configFromEnv(config.env["MIRRORD_CONFIG_FILE"], folder);
 
       new NotificationBuilder()
         .withMessage(`Using mirrord configuration from env var "MIRRORD_CONFIG_FILE".`)
