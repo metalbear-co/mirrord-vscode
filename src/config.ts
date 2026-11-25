@@ -1,4 +1,4 @@
-import { basename } from 'path';
+import { basename, sep } from 'path';
 import * as vscode from 'vscode';
 import { NotificationBuilder } from './notification';
 
@@ -32,13 +32,14 @@ const ABSOLUTE_PATH = /^([a-zA-Z]:)?[\\/]/;
  * Whether `uri` is `parent` itself, or a file somewhere inside of it.
  */
 function isSameOrInside(uri: vscode.Uri, parent: vscode.Uri): boolean {
-  // The authority is the server of a UNC path, which isn't part of `path`.
+  // The authority is the server of a UNC path, which isn't part of `path` or of a non-UNC `fsPath`.
   if (uri.scheme !== parent.scheme || uri.authority !== parent.authority) {
     return false;
   }
 
-  const parentDir = parent.path.endsWith("/") ? parent.path : `${parent.path}/`;
-  return uri.path === parent.path || uri.path.startsWith(parentDir);
+  // `fsPath` lowercases a Windows drive letter, and `path` keeps its case.
+  const parentDir = parent.fsPath.endsWith(sep) ? parent.fsPath : `${parent.fsPath}${sep}`;
+  return uri.fsPath === parent.fsPath || uri.fsPath.startsWith(parentDir);
 }
 
 export type EnvVars = Record<string, string>;
