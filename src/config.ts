@@ -256,7 +256,7 @@ export class MirrordConfigManager {
   /**
    * Turns the `MIRRORD_CONFIG_FILE` value of a launch configuration into a Uri.
    * A relative path is relative to the workspace folder of the launch configuration.
-   * @param rawPath value of `MIRRORD_CONFIG_FILE`, with VS Code variables already substituted
+   * @param rawPath value of `MIRRORD_CONFIG_FILE`, with `${workspaceFolder}` already substituted
    * @param folder workspace folder of the launch configuration
    * @returns path to the config
    */
@@ -306,7 +306,11 @@ export class MirrordConfigManager {
           continue;
         }
 
-        const path = MirrordConfigManager.configFromEnv(rawPath, folder);
+        // The `launch` settings hold the value as written, so VS Code hasn't substituted `${workspaceFolder}` in it.
+        const path = MirrordConfigManager.configFromEnv(
+          rawPath.replace(/\$\{workspaceFolder\}/g, () => folder.uri.fsPath),
+          folder,
+        );
 
         if (folders.length > 1) {
           options.set(`(launch config ${folder.name}:${launchConfig.name}) ${vscode.workspace.asRelativePath(path)}`, path);
