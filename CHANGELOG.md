@@ -8,6 +8,20 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.75.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.75.1) - 2026-11-25
+
+
+### Fixed
+
+- Fixed a `MIRRORD_CONFIG_FILE` path from the launch configuration resolving to
+  the wrong file on Windows, when relative, or with a `#` in it. Renaming or
+  deleting a folder no longer changes the active config when the folder name is
+  only a prefix of the folder that holds it. `MIRRORD_CONFIG_FILE` is now read
+  as a file path, so percent escapes such as `%20` in it are no longer decoded.
+  [#288](https://github.com/metalbear-co/mirrord-vscode/issues/288)
+- Active config picker now also lists `.json`/`.toml`/`.yml`/`.yaml` files
+  whose name starts with `mirrord`, e.g. `mirrord-with-queue-split.json`.
+
 ## [3.75.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.75.0) - 2026-11-05
 
 
