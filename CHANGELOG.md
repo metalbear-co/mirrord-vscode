@@ -8,6 +8,14 @@ This project uses [*towncrier*](https://towncrier.readthedocs.io/) and the chang
 
 <!-- towncrier release notes start -->
 
+## [3.75.1](https://github.com/metalbear-co/mirrord-vscode/tree/3.75.1) - 2026-11-25
+
+
+### Fixed
+
+- Active config picker now also lists `.json`/`.toml`/`.yml`/`.yaml` files
+  whose name starts with `mirrord`, e.g. `mirrord-with-queue-split.json`.
+
 ## [3.75.0](https://github.com/metalbear-co/mirrord-vscode/tree/3.75.0) - 2026-11-05
 
 
