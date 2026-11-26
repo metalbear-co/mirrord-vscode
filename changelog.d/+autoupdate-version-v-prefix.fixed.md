@@ -1,0 +1,1 @@
+A `mirrord.autoUpdate` version written with a "v" prefix, such as `"v3.70.1"`, now uses the installed mirrord 3.70.1 or downloads it, instead of failing to match and requesting a release tag that doesn't exist.
