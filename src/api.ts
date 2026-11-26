@@ -10,6 +10,28 @@ import { UserSelection } from './targetQuickPick';
 import Logger from './logger';
 
 /**
+ * The error a mirrord CLI command printed on stderr, if any.
+ *
+ * Only some commands (`ls`, `ext`, `container`) report errors as JSON
+ * (`Error: {"message": ..., "help": ...}`), the others print a plain text report.
+ */
+function cliErrorFromStderr(stderr: string): { message: string, help?: string } | undefined {
+  const match = stderr.match(/Error: (.*)/)?.[1];
+  if (!match) {
+    return undefined;
+  }
+  try {
+    const parsed = JSON.parse(match);
+    if (typeof parsed?.message === "string") {
+      return { message: parsed.message, help: typeof parsed.help === "string" ? parsed.help : undefined };
+    }
+  } catch {
+    // Not a JSON report, so the text after "Error: " is the message.
+  }
+  return { message: match.trim() };
+}
+
+/**
 * Key to access the feedback counter (see `tickFeedbackCounter`) from the global user config.
 */
 const FEEDBACK_COUNTER = 'mirrord-feedback-counter';
@@ -331,18 +353,18 @@ export class MirrordAPI {
 
       child.on("close", (code, signal) => {
         cleanup();
-        const match = stderrData.match(/Error: (.*)/)?.[1];
-        if (match) {
-          const error = JSON.parse(match);
+        const error = cliErrorFromStderr(stderrData);
+        if (error) {
           const notification = new NotificationBuilder()
-            .withMessage(`mirrord error: ${error["message"]}`);
-          if (error["help"]) {
+            .withMessage(`mirrord error: ${error.message}`);
+          const help = error.help;
+          if (help) {
             notification.withGenericAction("Help", async () => {
-              vscode.window.showInformationMessage(error["help"]);
+              vscode.window.showInformationMessage(help);
             });
           }
           notification.error();
-          return reject(error["message"]);
+          return reject(error.message);
         }
 
         if (code) {
@@ -546,18 +568,18 @@ export class MirrordAPI {
         });
 
         child.on("close", (code, signal) => {
-          const match = stderrData.match(/Error: (.*)/)?.[1];
-          if (match) {
-            const error = JSON.parse(match);
+          const error = cliErrorFromStderr(stderrData);
+          if (error) {
             const notification = new NotificationBuilder()
-              .withMessage(`mirrord error: ${error["message"]}`);
-            if (error["help"]) {
+              .withMessage(`mirrord error: ${error.message}`);
+            const help = error.help;
+            if (help) {
               notification.withGenericAction("Help", async () => {
-                vscode.window.showInformationMessage(error["help"]);
+                vscode.window.showInformationMessage(help);
               });
             }
             notification.error();
-            return reject(error["message"]);
+            return reject(error.message);
           }
 
           if (code) {
