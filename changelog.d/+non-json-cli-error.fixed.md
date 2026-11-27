@@ -1,0 +1,1 @@
+A plain text `Error:` from the mirrord CLI, for example when `mirrord attach` fails, is now shown as an error instead of throwing while parsing it as JSON, which left the attach waiting forever and the debugged process paused.
