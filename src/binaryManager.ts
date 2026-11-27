@@ -209,13 +209,15 @@ async function resolveMirrordBinary(background: boolean): Promise<string | null>
     if (autoUpdateConfigured === true || autoUpdateConfigured === '') {
         wantedVersion = latestVersion;
     } else if (typeof autoUpdateConfigured === 'string') {
-        if (!semver.valid(autoUpdateConfigured)) {
+        // `semver.valid` also accepts "v3.70.1", but mirrord release tags and versions have no "v".
+        const version = semver.valid(autoUpdateConfigured);
+        if (!version) {
             vscode.window.showErrorMessage(
                 `Invalid value of mirrord.autoUpdate setting: \`${autoUpdateConfigured}\` (string must follow semver format)`
             );
             return null;
         }
-        wantedVersion = autoUpdateConfigured;
+        wantedVersion = version;
     } else {
         // any version will do
         wantedVersion = null;
