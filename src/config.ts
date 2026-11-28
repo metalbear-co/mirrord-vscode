@@ -62,7 +62,15 @@ interface ConfigSuccess { 'type': 'Success', config: Config, warnings: string[] 
 /**
 * When `mirrord verify-config` results in a `"Fail"`.
 */
-interface ConfigFail { 'type': 'Fail', errors: string[] }
+interface ConfigFail {
+  'type': 'Fail',
+  errors: string[],
+  /**
+   * Set when the failure is the expired operator login: the login to renew. Older CLIs leave it
+   * out.
+   */
+  loginExpired?: { host: string, url: string },
+}
 
 
 /**

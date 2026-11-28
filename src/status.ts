@@ -6,6 +6,7 @@ import { getOperatorUsed } from './mirrordForTeams';
 import { NEWSLETTER_COUNTER, MirrordAPI } from './api';
 import { NotificationBuilder } from './notification';
 import { getMirrordBinary } from './binaryManager';
+import { currentLoginSummary, loginCommandId, onLoginSummaryChange, registerLoginCommands, whoamiCommandId } from './login';
 
 /**
  * Returns true if the extension host is running in a remote session (WSL, SSH, Dev Container, etc.).
@@ -58,6 +59,15 @@ export class MirrordStatus {
         }
         statusBar.tooltip.appendMarkdown(`\n\n[Select active config](command:${MirrordStatus.selectActiveConfigId})`);
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${MirrordStatus.settingsCommandId})`);
+        const login = currentLoginSummary();
+        if (login !== undefined) {
+            // The account and the kubeconfig context come from outside the extension, and this
+            // tooltip runs command links, so they go in as escaped text, never as Markdown.
+            statusBar.tooltip.appendMarkdown("\n\n");
+            statusBar.tooltip.appendText(login);
+            statusBar.tooltip.appendMarkdown(`\n\n[Show operator logins](command:${whoamiCommandId})`);
+            statusBar.tooltip.appendMarkdown(`\n\n[Log in to an operator](command:${loginCommandId})`);
+        }
         if (!getOperatorUsed()) {
             statusBar.tooltip.appendMarkdown(`\n\n[mirrord for Teams](command:${MirrordStatus.mirrordForTeamsCommandId})`);
         }
@@ -79,6 +89,9 @@ export class MirrordStatus {
         globalContext.subscriptions.push(configManager);
 
         configManager.onActiveConfigChange(async () => this.draw());
+
+        globalContext.subscriptions.push(onLoginSummaryChange(() => this.draw()));
+        registerLoginCommands();
 
         globalContext.subscriptions.push(vscode.commands.registerCommand(MirrordStatus.selectActiveConfigId, async () => {
             await configManager.selectActiveConfig();
