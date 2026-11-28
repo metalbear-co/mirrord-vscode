@@ -35,8 +35,15 @@ describe('parseCliError', () => {
     assert.deepEqual(parseCliError(stderr), { message: EXPIRED, help: 'see mirrord whoami', code: undefined });
   });
 
-  it('keeps an error line that holds no JSON as the message', () => {
-    assert.deepEqual(parseCliError('Error: something broke'), { message: 'something broke' });
+  /** A log line that starts with `Error:` must not fail a run that exited 0. */
+  it('ignores error lines that hold no JSON', () => {
+    assert.equal(parseCliError('Error: something broke'), undefined);
+  });
+
+  it('finds the JSON error after other error lines', () => {
+    const stderr = `Error: retrying the connection\nError: {"message": "${EXPIRED}","code": "${LOGIN_EXPIRED_CODE}"}\n`;
+
+    assert.equal(parseCliError(stderr)?.code, LOGIN_EXPIRED_CODE);
   });
 
   it('finds nothing when stderr holds no error', () => {

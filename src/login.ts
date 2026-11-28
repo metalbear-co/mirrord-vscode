@@ -37,6 +37,12 @@ let lastWhoami: Whoami | undefined;
  */
 let lastCliPath: string | undefined;
 
+/**
+ * Counts the `whoami` reads started, so a slow read that finishes after a newer one cannot put the
+ * older logins back.
+ */
+let whoamiReads = 0;
+
 let expiryRedraw: NodeJS.Timeout | undefined;
 const summaryChanged = new vscode.EventEmitter<void>();
 
@@ -68,6 +74,47 @@ function setWhoami(whoami: Whoami): void {
 }
 
 /**
+ * Forgets the logins, when the current CLI cannot read them: showing the old ones would name an
+ * operator and an account that may no longer be true.
+ */
+function clearWhoami(): void {
+  if (lastWhoami === undefined) {
+    return;
+  }
+  lastWhoami = undefined;
+  clearTimeout(expiryRedraw);
+  summaryChanged.fire();
+}
+
+/**
+ * Runs `mirrord whoami -o json` and keeps the result, unless a newer read started meanwhile.
+ */
+async function readWhoami(api: MirrordAPI): Promise<{ whoami: Whoami } | { failure: string }> {
+  const read = ++whoamiReads;
+  const result = await api.whoami();
+  if (read === whoamiReads) {
+    if ('whoami' in result) {
+      setWhoami(result.whoami);
+    } else {
+      clearWhoami();
+    }
+  }
+  return result;
+}
+
+/**
+ * Runs a command the user started, telling them when the CLI could not even start.
+ */
+async function reportingFailures(run: () => Promise<void>): Promise<void> {
+  try {
+    await run();
+  } catch (err) {
+    Logger.error(`mirrord login command failed: ${err}`);
+    new NotificationBuilder().withMessage(`mirrord could not run: ${err}`).error();
+  }
+}
+
+/**
  * The CLI for a command the user started, shown as an error when there is none.
  */
 async function mirrordApi(): Promise<MirrordAPI | undefined> {
@@ -92,10 +139,7 @@ export async function refreshLogins(cliPath?: string): Promise<void> {
     return;
   }
   try {
-    const result = await new MirrordAPI(lastCliPath).whoami();
-    if ('whoami' in result) {
-      setWhoami(result.whoami);
-    }
+    await readWhoami(new MirrordAPI(lastCliPath));
   } catch (err) {
     Logger.info(`could not read the mirrord logins: ${err}`);
   }
@@ -110,25 +154,24 @@ export async function showLoginExpired(message: string, url: string | undefined,
   let loginUrl = url;
   if (loginUrl === undefined) {
     try {
-      const result = await new MirrordAPI(cliPath).whoami();
+      const result = await readWhoami(new MirrordAPI(cliPath));
       if ('whoami' in result) {
-        setWhoami(result.whoami);
         loginUrl = result.whoami.activeOperator ?? undefined;
       }
     } catch (err) {
       Logger.info(`could not find the expired login: ${err}`);
     }
+  } else {
+    // Not awaited: the notification below stays open until the user acts on it.
+    refreshLogins();
   }
 
   const notification = new NotificationBuilder().withMessage(message);
   if (loginUrl !== undefined) {
     const target = loginUrl;
-    notification.withGenericAction("Log in", async () => login(target));
+    notification.withGenericAction("Log in", async () => reportingFailures(() => login(target)));
   }
   await notification.error();
-  if (url !== undefined) {
-    await refreshLogins();
-  }
 }
 
 /**
@@ -207,12 +250,11 @@ export async function login(url?: string): Promise<void> {
  * Reads the logins for a command the user started, telling them when the CLI cannot list them.
  */
 async function whoamiForUser(api: MirrordAPI): Promise<Whoami | undefined> {
-  const result = await api.whoami();
+  const result = await readWhoami(api);
   if ('failure' in result) {
     new NotificationBuilder().withMessage(result.failure).error();
     return undefined;
   }
-  setWhoami(result.whoami);
   return result.whoami;
 }
 
@@ -296,9 +338,9 @@ async function whoami(): Promise<void> {
  */
 export function registerLoginCommands(): void {
   globalContext.subscriptions.push(
-    vscode.commands.registerCommand(loginCommandId, async () => login()),
-    vscode.commands.registerCommand(logoutCommandId, logout),
-    vscode.commands.registerCommand(whoamiCommandId, whoami),
+    vscode.commands.registerCommand(loginCommandId, async () => reportingFailures(() => login())),
+    vscode.commands.registerCommand(logoutCommandId, async () => reportingFailures(logout)),
+    vscode.commands.registerCommand(whoamiCommandId, async () => reportingFailures(whoami)),
     summaryChanged,
     { dispose: () => clearTimeout(expiryRedraw) },
   );

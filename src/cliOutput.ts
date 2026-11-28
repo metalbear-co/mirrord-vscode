@@ -20,30 +20,26 @@ export interface CliError {
 }
 
 /**
- * Finds the CLI's JSON error in `stderr`, `undefined` when there is none.
- *
- * A line that starts like an error but holds no JSON comes back as the message, so the user still
- * reads what the CLI said.
+ * Finds the CLI's JSON error in `stderr`, `undefined` when there is none. Only the JSON line counts:
+ * other output that happens to start with `Error:` (a log line, a quoted error) is not the CLI's
+ * final error, so the exit code decides those runs.
  */
 export function parseCliError(stderr: string): CliError | undefined {
-  const match = stderr.match(/Error: (.*)/)?.[1];
-  if (match === undefined) {
-    return undefined;
-  }
-
-  try {
-    const parsed = JSON.parse(match);
-    if (typeof parsed?.message !== "string") {
-      return { message: match };
+  for (const match of stderr.matchAll(/Error: (.*)/g)) {
+    try {
+      const parsed = JSON.parse(match[1] ?? "");
+      if (typeof parsed?.message === "string") {
+        return {
+          message: parsed.message,
+          help: typeof parsed.help === "string" ? parsed.help : undefined,
+          code: typeof parsed.code === "string" ? parsed.code : undefined,
+        };
+      }
+    } catch {
+      // Not the JSON error; keep looking.
     }
-    return {
-      message: parsed.message,
-      help: typeof parsed.help === "string" ? parsed.help : undefined,
-      code: typeof parsed.code === "string" ? parsed.code : undefined,
-    };
-  } catch {
-    return { message: match };
   }
+  return undefined;
 }
 
 /**

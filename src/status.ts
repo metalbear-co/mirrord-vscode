@@ -61,9 +61,11 @@ export class MirrordStatus {
         statusBar.tooltip.appendMarkdown(`\n\n[Settings](command:${MirrordStatus.settingsCommandId})`);
         const login = currentLoginSummary();
         if (login !== undefined) {
-            // Square brackets would end the link text early.
-            const text = login.replace(/[[\]]/g, '');
-            statusBar.tooltip.appendMarkdown(`\n\n[${text}](command:${whoamiCommandId})`);
+            // The account and the kubeconfig context come from outside the extension, and this
+            // tooltip runs command links, so they go in as escaped text, never as Markdown.
+            statusBar.tooltip.appendMarkdown("\n\n");
+            statusBar.tooltip.appendText(login);
+            statusBar.tooltip.appendMarkdown(`\n\n[Show operator logins](command:${whoamiCommandId})`);
             statusBar.tooltip.appendMarkdown(`\n\n[Log in to an operator](command:${loginCommandId})`);
         }
         if (!getOperatorUsed()) {
