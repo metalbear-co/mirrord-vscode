@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import { globalContext } from "./extension";
 import { isTargetSet, MirrordConfigManager } from "./config";
-import { MirrordAPI, mirrordFailure, MirrordExecution } from "./api";
+import { LoginExpiredError, MirrordAPI, mirrordFailure, MirrordExecution } from "./api";
+import { refreshLogins } from "./login";
 import { updateTelemetries } from "./versionCheck";
 import { getMirrordBinary } from "./binaryManager";
 import { platform } from "node:os";
@@ -192,7 +193,16 @@ async function main(
       folder,
       config,
     );
-  const verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
+  let verifiedConfig;
+  try {
+    verifiedConfig = await mirrordApi.verifyConfig(configPath, config.env);
+  } catch (err) {
+    // The expiry was shown with a Log in action already.
+    if (err instanceof LoginExpiredError) {
+      return null;
+    }
+    throw err;
+  }
 
   // If target wasn't specified in the config file (or there's no config file), let user choose pod from dropdown
   if (!configPath || (verifiedConfig && !isTargetSet(verifiedConfig))) {
@@ -210,7 +220,9 @@ async function main(
       const quickPick = await TargetQuickPick.new(getTargets);
       quickPickSelection = await quickPick.showAndGet();
     } catch (err) {
-      mirrordFailure(`mirrord failed to list targets: ${err}`);
+      if (!(err instanceof LoginExpiredError)) {
+        mirrordFailure(`mirrord failed to list targets: ${err}`);
+      }
       return null;
     }
   }
@@ -249,9 +261,15 @@ async function main(
       config.env,
     );
   } catch (err) {
-    mirrordFailure(`mirrord preparation failed: ${err}`);
+    if (!(err instanceof LoginExpiredError)) {
+      mirrordFailure(`mirrord preparation failed: ${err}`);
+    }
     return null;
   }
+
+  // A session can change which login is in use (an expiry, a switch from a terminal), so the
+  // status bar reads the logins again.
+  refreshLogins(cliPath);
 
   if (executionInfo.usesOperator === true) {
     setOperatorUsed();

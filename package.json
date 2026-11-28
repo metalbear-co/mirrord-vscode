@@ -73,6 +73,21 @@
 				"command": "mirrord.newsletter",
 				"category": "mirrord",
 				"title": "Sign up to the newsletter"
+			},
+			{
+				"command": "mirrord.login",
+				"category": "mirrord",
+				"title": "Log in to an operator"
+			},
+			{
+				"command": "mirrord.logout",
+				"category": "mirrord",
+				"title": "Log out of an operator"
+			},
+			{
+				"command": "mirrord.whoami",
+				"category": "mirrord",
+				"title": "Show operator logins"
 			}
 		],
 		"configuration": {
@@ -231,6 +246,18 @@
 				{
 					"command": "mirrord.newsletter",
 					"when": "true"
+				},
+				{
+					"command": "mirrord.login",
+					"when": "true"
+				},
+				{
+					"command": "mirrord.logout",
+					"when": "true"
+				},
+				{
+					"command": "mirrord.whoami",
+					"when": "true"
 				}
 			]
 		},
@@ -296,6 +323,7 @@
 		"esbuild": "npm run esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
 		"test-compile": "tsc -p ./",
+		"test-unit": "npm run test-compile && mocha \"out/tests/unit/**/*.test.js\"",
 		"package": "vsce package"
 	},
 	"devDependencies": {

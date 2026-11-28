@@ -8,6 +8,8 @@ import { EnvVars, VerifiedConfig } from './config';
 import { PathLike } from 'fs';
 import { UserSelection } from './targetQuickPick';
 import Logger from './logger';
+import { LOGIN_EXPIRED_CODE, Whoami, parseCliError, parseWhoami, whoamiFailure } from './cliOutput';
+import { showLoginExpired } from './login';
 
 /**
 * Key to access the feedback counter (see `tickFeedbackCounter`) from the global user config.
@@ -189,6 +191,49 @@ function isRichMirrordLsOutput(output: MirrordLsOutput | string[]): output is Mi
   return "targets" in output && "current_namespace" in output && "namespaces" in output;
 }
 
+/**
+ * Rejection of a CLI call that failed because the operator login expired. The user has already
+ * been shown the expiry with a Log in action, so callers skip their own failure notification.
+ */
+export class LoginExpiredError extends Error { }
+
+/**
+ * Shows the CLI's JSON error from `stderr` and returns what to reject the call with, `undefined`
+ * when stderr holds no such error. An expired login gets a Log in action instead of the generic
+ * notification; `cliPath` is the CLI that failed, asked for the login to renew.
+ */
+function reportCliError(stderr: string, cliPath: string): LoginExpiredError | string | undefined {
+  const error = parseCliError(stderr);
+  if (error === undefined) {
+    return undefined;
+  }
+
+  if (error.code === LOGIN_EXPIRED_CODE) {
+    showLoginExpired(error.message, undefined, cliPath);
+    return new LoginExpiredError(error.message);
+  }
+
+  const notification = new NotificationBuilder()
+    .withMessage(`mirrord error: ${error.message}`);
+  if (error.help) {
+    const help = error.help;
+    notification.withGenericAction("Help", async () => {
+      vscode.window.showInformationMessage(help);
+    });
+  }
+  notification.error();
+  return error.message;
+}
+
+/**
+ * What a login command printed and how it ended.
+ */
+export interface LoginCommandOutput {
+  code: number | null;
+  stdout: string;
+  stderr: string;
+}
+
 // Display error message with help
 export function mirrordFailure(error: string) {
   new NotificationBuilder()
@@ -331,18 +376,9 @@ export class MirrordAPI {
 
       child.on("close", (code, signal) => {
         cleanup();
-        const match = stderrData.match(/Error: (.*)/)?.[1];
-        if (match) {
-          const error = JSON.parse(match);
-          const notification = new NotificationBuilder()
-            .withMessage(`mirrord error: ${error["message"]}`);
-          if (error["help"]) {
-            notification.withGenericAction("Help", async () => {
-              vscode.window.showInformationMessage(error["help"]);
-            });
-          }
-          notification.error();
-          return reject(error["message"]);
+        const rejection = reportCliError(stderrData, this.cliPath);
+        if (rejection !== undefined) {
+          return reject(rejection);
         }
 
         if (code) {
@@ -484,10 +520,82 @@ export class MirrordAPI {
       const stdout = await this.exec(args, await this.envWithBranchName(configEnv));
 
       const verifiedConfig: VerifiedConfig = JSON.parse(stdout);
+      // With a config file this is the first CLI call of a session, so an expired login shows up
+      // here before `ls` or `ext` run.
+      if (verifiedConfig.type === 'Fail' && verifiedConfig.loginExpired) {
+        const message = verifiedConfig.errors[0] ?? `Your login to ${verifiedConfig.loginExpired.host} expired.`;
+        showLoginExpired(message, verifiedConfig.loginExpired.url, this.cliPath);
+        throw new LoginExpiredError(message);
+      }
       return verifiedConfig;
     } else {
       return undefined;
     }
+  }
+
+  /**
+  * Runs a login command (`login`, `logout`, `whoami`) and returns what it printed, whatever its
+  * exit code: these commands print their errors for a person, not as JSON, so the caller decides
+  * how to show them. `onStdoutLine` gets each line as it arrives; cancelling `token` kills the CLI.
+  */
+  private runLoginCommand(args: string[], onStdoutLine?: (line: string) => void, token?: vscode.CancellationToken): Promise<LoginCommandOutput> {
+    const child = this.spawnCliWithArgsAndEnv(args, {});
+    token?.onCancellationRequested(() => child.kill('SIGTERM'));
+
+    return new Promise((resolve, reject) => {
+      let stdout = "";
+      let stderr = "";
+      let pending = "";
+      child.stdout.on("data", (data) => {
+        stdout += data.toString();
+        pending += data.toString();
+        const lines = pending.split("\n");
+        pending = lines.pop() ?? "";
+        lines.filter(line => line.length > 0).forEach(line => onStdoutLine?.(line));
+      });
+      child.stderr.on("data", (data) => stderr += data.toString());
+      child.on("error", (err) => reject(`process failed: ${err.message}`));
+      child.on("close", (code) => {
+        Logger.trace(`mirrord ${args[0]} exited with ${code}, stderr: ${stderr}`);
+        resolve({ code, stdout, stderr });
+      });
+    });
+  }
+
+  /**
+  * `mirrord whoami -o json`, or what to tell the user when it fails: a CLI too old for `-o json`,
+  * or the CLI's own error.
+  */
+  async whoami(): Promise<{ whoami: Whoami } | { failure: string }> {
+    const output = await this.runLoginCommand(["whoami", "-o", "json"]);
+    const whoami = output.code === 0 ? parseWhoami(output.stdout) : undefined;
+    if (whoami !== undefined) {
+      return { whoami };
+    }
+    Logger.info(`mirrord whoami -o json gave no logins: exit ${output.code}, stderr: ${output.stderr}`);
+    return { failure: whoamiFailure(output.stderr) };
+  }
+
+  /**
+  * `mirrord logout --url <url>`.
+  */
+  async logout(url: string): Promise<LoginCommandOutput> {
+    return await this.runLoginCommand(["logout", "--url", url]);
+  }
+
+  /**
+  * `mirrord login --url <url>`, which opens the browser and waits for the developer to sign in.
+  * The CLI reports its steps as JSON lines (`MIRRORD_PROGRESS_MODE=json`); each one goes to
+  * `onProgress` parsed.
+  */
+  async login(url: string, onProgress: (message: Record<string, unknown>) => void, token: vscode.CancellationToken): Promise<LoginCommandOutput> {
+    return await this.runLoginCommand(["login", "--url", url], line => {
+      try {
+        onProgress(JSON.parse(line));
+      } catch {
+        Logger.debug(`mirrord login printed a line that is not JSON: ${line}`);
+      }
+    }, token);
   }
 
   /**
@@ -546,18 +654,9 @@ export class MirrordAPI {
         });
 
         child.on("close", (code, signal) => {
-          const match = stderrData.match(/Error: (.*)/)?.[1];
-          if (match) {
-            const error = JSON.parse(match);
-            const notification = new NotificationBuilder()
-              .withMessage(`mirrord error: ${error["message"]}`);
-            if (error["help"]) {
-              notification.withGenericAction("Help", async () => {
-                vscode.window.showInformationMessage(error["help"]);
-              });
-            }
-            notification.error();
-            return reject(error["message"]);
+          const rejection = reportCliError(stderrData, this.cliPath);
+          if (rejection !== undefined) {
+            return reject(rejection);
           }
 
           if (code) {
